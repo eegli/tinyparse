@@ -1,10 +1,11 @@
-type ObjVal = string | number | boolean;
+type ObjectValue = string | number | boolean;
 
-type Options<T> = {
+type Options<T extends string> = {
   required?: T[];
+  shortFlags?: Record<string, T>;
 };
 
-export function argvToObj(args: string[]): Record<string, ObjVal> {
+export function argvToObj(args: string[]): Record<string, ObjectValue> {
   return args.reduce((acc, curr, idx, orig) => {
     if (curr.startsWith('--')) {
       const arg = curr.slice(2);
@@ -21,11 +22,11 @@ export function argvToObj(args: string[]): Record<string, ObjVal> {
       }
     }
     return acc;
-  }, {} as Record<string, ObjVal>);
+  }, {} as Record<string, ObjectValue>);
 }
 
 export function configFactory<
-  T extends Record<string, ObjVal>,
+  T extends Record<string, ObjectValue>,
   R extends keyof T = string
 >(baseConfig: T, opts?: Options<R extends string ? R : never>) {
   return function (args?: Partial<T> | Array<string>): Promise<T> {
@@ -44,7 +45,7 @@ export function configFactory<
           );
         }
       }
-      const cfmap = new Map<string, ObjVal | undefined>(
+      const cfmap = new Map<string, ObjectValue | undefined>(
         Object.entries(baseConfig)
       );
 
