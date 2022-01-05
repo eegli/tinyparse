@@ -99,11 +99,6 @@ describe('Parsing with required args', () => {
     required: ['stringProp', 'numProp'],
   });
 
-  // With undefined prop as required
-  const createConfig3 = configFactory(defaultConfig, {
-    required: ['undefinedProp'],
-  });
-
   it('resolves if all required args are present', async () => {
     const config = { stringProp: 'hello', boolProp: false };
     await expect(createConfigOne(config)).resolves.toStrictEqual({

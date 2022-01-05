@@ -56,7 +56,8 @@ export function configFactory<
         Object.entries(baseConfig)
       );
 
-      // Delete required properties - they will need to be added again later
+      // Delete required properties - they will need to be added again
+      // later
       if (requiredProps?.length) {
         requiredProps.forEach((r) => {
           cfmap.set(r, null);
@@ -69,7 +70,9 @@ export function configFactory<
 
       Object.entries(args).forEach(([arg, argVal]) => {
         if (cfmap.has(arg)) {
-          // Get the type of the argument from the default config - not via the config map, since they are set to undefined if they are required
+          // Get the type of the argument from the default config -
+          // not via the config map, since they are set to null
+          // if they are required
           if (typeof baseConfig[arg] === typeof argVal) {
             cfmap.set(arg, argVal);
           } else {
@@ -87,7 +90,7 @@ export function configFactory<
       if (requiredProps) {
         // Check for required args after parsing
         requiredProps.forEach((prop) => {
-          // Required args are still undefined if they werent included.
+          // Required args are still null if they werent included.
           // Other falsy values are allowed
           if (cfmap.get(prop) === null) {
             reject(`Missing required config property "${prop}"`);
