@@ -65,7 +65,7 @@ describe('Parsing', () => {
     await expect(
       // @ts-expect-error - test input
       createConfig({ boolProp: {} })
-    ).rejects.toEqual(
+    ).rejects.toBe(
       'Invalid type for option "boolProp". Expected boolean, got object'
     );
   });
@@ -76,7 +76,7 @@ describe('Parsing', () => {
         boolProp: false,
         numProp: '1',
       } as unknown as Config) // TS would complain for invalid input
-    ).rejects.toEqual(
+    ).rejects.toBe(
       'Invalid type for option "numProp". Expected number, got string'
     );
   });
@@ -102,19 +102,19 @@ describe('Parsing with required args', () => {
   });
 
   it('rejects for all missing required args 1', async () => {
-    await expect(createConfig()).rejects.toEqual(
+    await expect(createConfig()).rejects.toBe(
       'Missing required config properties "stringProp, boolProp"'
     );
   });
 
   it('rejects for all missing required args 2', async () => {
-    await expect(createConfig2()).rejects.toEqual(
+    await expect(createConfig2()).rejects.toBe(
       'Missing required config property "stringProp"'
     );
   });
 
   it('rejects for partially missing required args', async () => {
-    await expect(createConfig({ stringProp: 'new' })).rejects.toEqual(
+    await expect(createConfig({ stringProp: 'new' })).rejects.toBe(
       'Missing required config property "boolProp"'
     );
   });

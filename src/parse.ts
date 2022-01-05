@@ -8,7 +8,7 @@ export function argvToObj(args: string[]): Record<string, ObjVal> {
   return args.reduce((acc, curr, idx, orig) => {
     if (curr.startsWith('--')) {
       const arg = curr.slice(2);
-      let argVal: string | number | boolean = orig[idx + 1];
+      const argVal: string | number | boolean = orig[idx + 1];
       // Assume boolean flag
       if (!argVal || argVal.startsWith('--')) {
         acc[arg] = true;
