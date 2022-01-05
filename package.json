@@ -34,8 +34,8 @@
     "lint": "eslint src test --ext .ts",
     "format": "prettier --write src test",
     "prepublish": "yarn build",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "jest --verbose",
+    "test:watch": "jest  --verbose --watch",
     "test:coverage": "jest --coverage"
   },
   "devDependencies": {

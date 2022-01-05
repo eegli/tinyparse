@@ -82,28 +82,36 @@ describe('Parsing', () => {
   });
 });
 
-describe('Parsing with required string args 1', () => {
+describe('Parsing with required args', () => {
   const defaultConfig: Config = {
     stringProp: 'overwrite me',
     boolProp: true,
     numProp: 999,
   };
-  const createConfig1 = configFactory(defaultConfig, 'stringProp');
-  const createConfig2 = configFactory(defaultConfig, 'stringProp', 'boolProp');
+  const createConfig = configFactory(defaultConfig, 'stringProp', 'boolProp');
+  const createConfig2 = configFactory(defaultConfig, 'stringProp');
 
   it('resolves if all required args are present', async () => {
-    await expect(createConfig1({ stringProp: 'hello' })).resolves.toBeTruthy();
+    await expect(
+      createConfig({ stringProp: 'hello', boolProp: false })
+    ).resolves.toBeTruthy();
   });
 
-  it('rejects for missing required args 1', async () => {
-    await expect(createConfig1()).rejects.toEqual(
+  it('rejects for all missing required args 1', async () => {
+    await expect(createConfig()).rejects.toEqual(
+      'Missing required config properties "stringProp, boolProp"'
+    );
+  });
+
+  it('rejects for all missing required args 2', async () => {
+    await expect(createConfig2()).rejects.toEqual(
       'Missing required config property "stringProp"'
     );
   });
 
-  it('rejects for missing required args 2', async () => {
-    await expect(createConfig2()).rejects.toEqual(
-      'Missing required config properties "stringProp, boolProp"'
+  it('rejects for partially missing required args', async () => {
+    await expect(createConfig({ stringProp: 'new' })).rejects.toEqual(
+      'Missing required config property "boolProp"'
     );
   });
 });

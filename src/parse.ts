@@ -33,7 +33,7 @@ export function configFactory<
         } else {
           return reject(
             `Missing required config ${
-              required.length === 1 ? 'property' : 'properties'
+              required.length > 1 ? 'properties' : 'property'
             } "${required.join(', ')}"`
           );
         }
@@ -53,29 +53,28 @@ export function configFactory<
         args = argvToObj(args) as Partial<T>;
       }
 
-      if (!Array.isArray(args)) {
-        Object.entries(args).forEach(([arg, argVal]) => {
-          if (cfmap.has(arg)) {
-            // Get the type of the argument from the default config - not via the config map, since they are set to undefined if they are required
-            if (typeof baseConfig[arg] === typeof argVal) {
-              cfmap.set(arg, argVal);
-            } else {
-              reject(
-                `Invalid type for option "${arg}". Expected ${typeof baseConfig[
-                  arg
-                ]}, got ${typeof argVal}`
-              );
-            }
+      Object.entries(args).forEach(([arg, argVal]) => {
+        if (cfmap.has(arg)) {
+          // Get the type of the argument from the default config - not via the config map, since they are set to undefined if they are required
+          if (typeof baseConfig[arg] === typeof argVal) {
+            cfmap.set(arg, argVal);
           } else {
-            console.warn(`Ignoring unknown option "${arg}"`);
+            reject(
+              `Invalid type for option "${arg}". Expected ${typeof baseConfig[
+                arg
+              ]}, got ${typeof argVal}`
+            );
           }
-        });
-      }
+        } else {
+          console.warn(`Ignoring unknown option "${arg}"`);
+        }
+      });
 
       // Check for required args after parsing
       required.forEach((prop) => {
-        // Required args are still undefined if they werent included
-        if (!cfmap.get(prop)) {
+        // Required args are still undefined if they werent included.
+        // Other falsy values are allowed
+        if (cfmap.get(prop) === undefined) {
           reject(`Missing required config property "${prop}"`);
         }
       });
