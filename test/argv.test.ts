@@ -1,34 +1,34 @@
-import { argvToObj } from '../src/parse';
+import { argvTransformer } from '../src/transformer';
 
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe('Argv to object', () => {
+describe('Argv to object transformer', () => {
   it('parses empty', async () => {
-    const c = argvToObj([]);
+    const c = argvTransformer([]);
     expect(c).toStrictEqual({});
   });
   it('bool props', async () => {
-    const c = argvToObj(['--boolProp']);
+    const c = argvTransformer(['--boolProp']);
     expect(c).toStrictEqual({
       boolProp: true,
     });
   });
   it('string props', async () => {
-    const c = argvToObj(['--stringProp', 'str']);
+    const c = argvTransformer(['--stringProp', 'str']);
     expect(c).toStrictEqual({
       stringProp: 'str',
     });
   });
   it('number props (converts to number)', async () => {
-    const c = argvToObj(['--numProp', '123']);
+    const c = argvTransformer(['--numProp', '123']);
     expect(c).toStrictEqual({
       numProp: 123,
     });
   });
   it('all props', async () => {
-    const c = argvToObj([
+    const c = argvTransformer([
       '--boolProp1',
       '--stringProp',
       'str',
@@ -48,7 +48,7 @@ describe('Argv to object', () => {
 describe('Argv to object, short flags', () => {
   it('bool props', async () => {
     const shortFlagMap = { s: 'secret', p: 'password' };
-    const c = argvToObj(['-s', '123', '-p', 'mypw'], shortFlagMap);
+    const c = argvTransformer(['-s', '123', '-p', 'mypw'], shortFlagMap);
     expect(c).toStrictEqual({
       secret: 123,
       password: 'mypw',

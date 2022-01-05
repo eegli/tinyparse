@@ -1,1 +1,1 @@
-export { configFactory } from './parse';
+export { parserFactory } from './factory';

@@ -1,4 +1,4 @@
-import { configFactory } from '../src/parse';
+import { parserFactory } from '../src/factory';
 
 const warner = jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
@@ -19,7 +19,7 @@ describe('Parsing', () => {
     boolProp: false,
     numProp: 999,
   };
-  const createConfig = configFactory(defaultConfig);
+  const createConfig = parserFactory(defaultConfig);
 
   it('returns default config if no args 1', async () => {
     const c = await createConfig();
@@ -91,11 +91,11 @@ describe('Parsing with required args', () => {
     undefinedProp: undefined,
   };
 
-  const createConfigOne = configFactory(defaultConfig, {
+  const createConfigOne = parserFactory(defaultConfig, {
     required: ['stringProp'],
   });
 
-  const createConfigTwo = configFactory(defaultConfig, {
+  const createConfigTwo = parserFactory(defaultConfig, {
     required: ['stringProp', 'numProp'],
   });
 

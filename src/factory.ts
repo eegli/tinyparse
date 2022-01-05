@@ -1,41 +1,17 @@
-type ObjectValue = string | number | boolean;
+import { argvTransformer } from './transformer';
 
-type Options<T extends string> = {
+export type ObjectValues = string | number | boolean;
+
+type Options<T> = {
   required?: T[];
   shortFlags?: Record<string, T>;
 };
 
-export function argvToObj(
-  args: string[],
-  shortFlagMap?: Record<string, string>
-): Record<string, ObjectValue> {
-  return args.reduce((acc, curr, idx, orig) => {
-    if (shortFlagMap && curr.startsWith('-')) {
-      curr = '--' + shortFlagMap[curr.slice(1)];
-    }
-    if (curr.startsWith('--')) {
-      const arg = curr.slice(2);
-      const argVal: string | number | boolean = orig[idx + 1];
-      // Assume boolean flag
-      if (!argVal || argVal.startsWith('--')) {
-        acc[arg] = true;
-        // Assume number
-      } else if (/^\d+$/.test(argVal)) {
-        acc[arg] = +argVal;
-        // Assume string
-      } else {
-        acc[arg] = argVal;
-      }
-    }
-    return acc;
-  }, {} as Record<string, ObjectValue>);
-}
-
-export function configFactory<
-  T extends Record<string, ObjectValue>,
-  R extends keyof T = string
->(baseConfig: T, opts?: Options<R extends string ? R : never>) {
-  return function (args?: Partial<T> | Array<string>): Promise<T> {
+export function parserFactory<T extends Record<string, ObjectValues>>(
+  baseConfig: T,
+  opts?: Options<keyof T extends string ? keyof T : never>
+) {
+  return function (args?: Partial<T> | string[]): Promise<T> {
     return new Promise((resolve, reject) => {
       const requiredProps = opts?.required;
       const shortFlags = opts?.shortFlags;
@@ -52,7 +28,7 @@ export function configFactory<
           );
         }
       }
-      const cfmap = new Map<string, ObjectValue | null>(
+      const cfmap = new Map<string, ObjectValues | null>(
         Object.entries(baseConfig)
       );
 
@@ -65,7 +41,7 @@ export function configFactory<
       }
 
       if (Array.isArray(args)) {
-        args = argvToObj(args, shortFlags) as Partial<T>;
+        args = argvTransformer(args, shortFlags) as Partial<T>;
       }
 
       Object.entries(args).forEach(([arg, argVal]) => {
