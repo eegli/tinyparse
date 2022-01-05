@@ -44,3 +44,14 @@ describe('Argv to object', () => {
     });
   });
 });
+
+describe('Argv to object, short flags', () => {
+  it('bool props', async () => {
+    const shortFlagMap = { s: 'secret', p: 'password' };
+    const c = argvToObj(['-s', '123', '-p', 'mypw'], shortFlagMap);
+    expect(c).toStrictEqual({
+      secret: 123,
+      password: 'mypw',
+    });
+  });
+});

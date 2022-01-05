@@ -5,8 +5,14 @@ type Options<T extends string> = {
   shortFlags?: Record<string, T>;
 };
 
-export function argvToObj(args: string[]): Record<string, ObjectValue> {
+export function argvToObj(
+  args: string[],
+  shortFlagMap?: Record<string, string>
+): Record<string, ObjectValue> {
   return args.reduce((acc, curr, idx, orig) => {
+    if (shortFlagMap && curr.startsWith('-')) {
+      curr = '--' + shortFlagMap[curr.slice(1)];
+    }
     if (curr.startsWith('--')) {
       const arg = curr.slice(2);
       const argVal: string | number | boolean = orig[idx + 1];
@@ -32,6 +38,7 @@ export function configFactory<
   return function (args?: Partial<T> | Array<string>): Promise<T> {
     return new Promise((resolve, reject) => {
       const requiredProps = opts?.required;
+      const shortFlags = opts?.shortFlags;
 
       if (!args) {
         if (!requiredProps?.length) {
@@ -57,7 +64,7 @@ export function configFactory<
       }
 
       if (Array.isArray(args)) {
-        args = argvToObj(args) as Partial<T>;
+        args = argvToObj(args, shortFlags) as Partial<T>;
       }
 
       Object.entries(args).forEach(([arg, argVal]) => {
