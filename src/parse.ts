@@ -1,5 +1,9 @@
 type ObjVal = string | number | boolean;
 
+type Options<T> = {
+  required?: T[];
+};
+
 export function argvToObj(args: string[]): Record<string, ObjVal> {
   return args.reduce((acc, curr, idx, orig) => {
     if (curr.startsWith('--')) {
@@ -23,18 +27,20 @@ export function argvToObj(args: string[]): Record<string, ObjVal> {
 export function configFactory<
   T extends Record<string, ObjVal>,
   R extends keyof T = string
->(baseConfig: T, ...required: Array<R extends string ? R : never>) {
+>(baseConfig: T, opts?: Options<R extends string ? R : never>) {
   return function (args?: Partial<T> | Array<string>): Promise<T> {
     return new Promise((resolve, reject) => {
+      const requiredProps = opts?.required;
+
       if (!args) {
-        if (!required.length) {
+        if (!requiredProps?.length) {
           // No required arguments, return base config
           return resolve(baseConfig);
         } else {
           return reject(
             `Missing required config ${
-              required.length > 1 ? 'properties' : 'property'
-            } "${required.join(', ')}"`
+              requiredProps.length > 1 ? 'properties' : 'property'
+            } "${requiredProps.join(', ')}"`
           );
         }
       }
@@ -43,8 +49,8 @@ export function configFactory<
       );
 
       // Delete required properties - they will need to be added again later
-      if (required) {
-        required.forEach((r) => {
+      if (requiredProps?.length) {
+        requiredProps.forEach((r) => {
           cfmap.set(r, undefined);
         });
       }
@@ -70,14 +76,16 @@ export function configFactory<
         }
       });
 
-      // Check for required args after parsing
-      required.forEach((prop) => {
-        // Required args are still undefined if they werent included.
-        // Other falsy values are allowed
-        if (cfmap.get(prop) === undefined) {
-          reject(`Missing required config property "${prop}"`);
-        }
-      });
+      if (requiredProps) {
+        // Check for required args after parsing
+        requiredProps.forEach((prop) => {
+          // Required args are still undefined if they werent included.
+          // Other falsy values are allowed
+          if (cfmap.get(prop) === undefined) {
+            reject(`Missing required config property "${prop}"`);
+          }
+        });
+      }
 
       return resolve(Object.fromEntries(cfmap) as T);
     });

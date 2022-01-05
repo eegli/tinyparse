@@ -88,8 +88,12 @@ describe('Parsing with required args', () => {
     boolProp: true,
     numProp: 999,
   };
-  const createConfig = configFactory(defaultConfig, 'stringProp', 'boolProp');
-  const createConfig2 = configFactory(defaultConfig, 'stringProp');
+  const createConfig = configFactory(defaultConfig, {
+    required: ['stringProp', 'boolProp'],
+  });
+  const createConfig2 = configFactory(defaultConfig, {
+    required: ['stringProp'],
+  });
 
   it('resolves if all required args are present', async () => {
     await expect(
