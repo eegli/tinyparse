@@ -4,7 +4,6 @@ export function argvTransformer(
   args: string[],
   shortFlagMap?: Record<string, ObjectValues>
 ): Record<string, ObjectValues> {
-  // Hi
   return args.reduce((acc, curr, idx, orig) => {
     if (shortFlagMap && curr.startsWith('-') && shortFlagMap[curr.slice(1)]) {
       curr = '--' + shortFlagMap[curr.slice(1)];
