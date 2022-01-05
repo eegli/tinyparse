@@ -4,7 +4,15 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": [],
+  "keywords": [
+    "cli",
+    "node",
+    "parse",
+    "argument",
+    "config",
+    "utility",
+    "typescript"
+  ],
   "homepage": "https://github.com/eegli/tinyparse",
   "author": {
     "name": "Eric Egli",
