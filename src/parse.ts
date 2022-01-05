@@ -52,14 +52,14 @@ export function configFactory<
           );
         }
       }
-      const cfmap = new Map<string, ObjectValue | undefined>(
+      const cfmap = new Map<string, ObjectValue | null>(
         Object.entries(baseConfig)
       );
 
       // Delete required properties - they will need to be added again later
       if (requiredProps?.length) {
         requiredProps.forEach((r) => {
-          cfmap.set(r, undefined);
+          cfmap.set(r, null);
         });
       }
 
@@ -89,7 +89,7 @@ export function configFactory<
         requiredProps.forEach((prop) => {
           // Required args are still undefined if they werent included.
           // Other falsy values are allowed
-          if (cfmap.get(prop) === undefined) {
+          if (cfmap.get(prop) === null) {
             reject(`Missing required config property "${prop}"`);
           }
         });

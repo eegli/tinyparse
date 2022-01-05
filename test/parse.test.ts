@@ -10,6 +10,7 @@ type Config = {
   stringProp: string;
   boolProp: boolean;
   numProp: number;
+  undefinedProp?: string;
 };
 
 describe('Parsing', () => {
@@ -87,35 +88,43 @@ describe('Parsing with required args', () => {
     stringProp: 'overwrite me',
     boolProp: true,
     numProp: 999,
+    undefinedProp: undefined,
   };
-  const createConfig = configFactory(defaultConfig, {
-    required: ['stringProp', 'boolProp'],
-  });
-  const createConfig2 = configFactory(defaultConfig, {
+
+  const createConfigOne = configFactory(defaultConfig, {
     required: ['stringProp'],
   });
 
+  const createConfigTwo = configFactory(defaultConfig, {
+    required: ['stringProp', 'numProp'],
+  });
+
   it('resolves if all required args are present', async () => {
-    await expect(
-      createConfig({ stringProp: 'hello', boolProp: false })
-    ).resolves.toBeTruthy();
+    const config = { stringProp: 'hello', boolProp: false };
+    await expect(createConfigOne(config)).resolves.toStrictEqual({
+      stringProp: 'hello',
+      boolProp: false,
+      numProp: 999,
+      undefinedProp: undefined,
+    });
   });
 
   it('rejects for all missing required args 1', async () => {
-    await expect(createConfig()).rejects.toBe(
-      'Missing required config properties "stringProp, boolProp"'
-    );
-  });
-
-  it('rejects for all missing required args 2', async () => {
-    await expect(createConfig2()).rejects.toBe(
+    await expect(createConfigOne()).rejects.toBe(
       'Missing required config property "stringProp"'
     );
   });
 
+  it('rejects for all missing required args 2', async () => {
+    await expect(createConfigTwo()).rejects.toBe(
+      'Missing required config properties "stringProp, numProp"'
+    );
+  });
+
   it('rejects for partially missing required args', async () => {
-    await expect(createConfig({ stringProp: 'new' })).rejects.toBe(
-      'Missing required config property "boolProp"'
+    const config = { stringProp: 'new' };
+    await expect(createConfigTwo(config)).rejects.toBe(
+      'Missing required config property "numProp"'
     );
   });
 });
