@@ -1,6 +1,9 @@
 {
-  "name": "tinyparse",
+  "name": "@eegli/tinyparse",
   "description": "A tiny utility for parsing process.argv and config objects",
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [],
   "homepage": "https://github.com/eegli/tinyparse",
   "author": {
