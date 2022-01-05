@@ -1,11 +1,11 @@
 import { ObjectValues } from './factory';
 
-export function argvTransformer<T>(
+export function argvTransformer(
   args: string[],
-  shortFlagMap?: Record<string, T>
+  shortFlagMap?: Record<string, ObjectValues>
 ): Record<string, ObjectValues> {
   return args.reduce((acc, curr, idx, orig) => {
-    if (shortFlagMap && curr.startsWith('-')) {
+    if (shortFlagMap && curr.startsWith('-') && shortFlagMap[curr.slice(1)]) {
       curr = '--' + shortFlagMap[curr.slice(1)];
     }
     if (curr.startsWith('--')) {
