@@ -1,4 +1,4 @@
-import { argvToObj } from '../src/creator';
+import { argvToObj } from '../src/parse';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -16,17 +16,31 @@ describe('Argv to object', () => {
     });
   });
   it('string props', async () => {
-    const c = argvToObj([
-      '--stringProp',
-      'str',
-      '--boolProp',
-      '--numProp',
-      '123',
-    ]);
+    const c = argvToObj(['--stringProp', 'str']);
     expect(c).toStrictEqual({
       stringProp: 'str',
-      boolProp: true,
+    });
+  });
+  it('number props (converts to number)', async () => {
+    const c = argvToObj(['--numProp', '123']);
+    expect(c).toStrictEqual({
       numProp: 123,
+    });
+  });
+  it('all props', async () => {
+    const c = argvToObj([
+      '--boolProp1',
+      '--stringProp',
+      'str',
+      '--numProp',
+      '123',
+      '--boolProp2',
+    ]);
+    expect(c).toStrictEqual({
+      boolProp1: true,
+      stringProp: 'str',
+      numProp: 123,
+      boolProp2: true,
     });
   });
 });

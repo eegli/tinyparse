@@ -1,10 +1,4 @@
-import { configFactory } from '../src/creator';
-
-type Config = {
-  stringProp: string;
-  boolProp: boolean;
-  numProp: number;
-};
+import { configFactory } from '../src/parse';
 
 const warner = jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
@@ -12,13 +6,18 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-const defaultConfig: Config = {
-  stringProp: 'string',
-  boolProp: false,
-  numProp: 999,
+type Config = {
+  stringProp: string;
+  boolProp: boolean;
+  numProp: number;
 };
 
-describe('Programmatic creation', () => {
+describe('Parsing', () => {
+  const defaultConfig: Config = {
+    stringProp: 'string',
+    boolProp: false,
+    numProp: 999,
+  };
   const createConfig = configFactory(defaultConfig);
 
   it('returns default config if no args 1', async () => {
@@ -28,6 +27,11 @@ describe('Programmatic creation', () => {
 
   it('returns default config if no args 2', async () => {
     const c = await createConfig({});
+    expect(c).toStrictEqual(defaultConfig);
+  });
+
+  it('returns default config if no args 3', async () => {
+    const c = await createConfig([]);
     expect(c).toStrictEqual(defaultConfig);
   });
 
@@ -51,22 +55,13 @@ describe('Programmatic creation', () => {
     });
   });
 
-  it(`converts string to num if valid`, async () => {
-    const c = await createConfig({
-      stringProp: 'string',
-      boolProp: false,
-      numProp: '1',
-    } as unknown as Config); // TS would complain for invalid input
-    expect(c).toHaveProperty('numProp', 1);
-  });
-
-  it(`warns for invalid options`, async () => {
+  it('warns for invalid options', async () => {
     // @ts-expect-error - test input
     await createConfig({ foo: true });
     expect(warner).toHaveBeenCalledTimes(1);
     expect(warner).toHaveBeenCalledWith('Ignoring unknown option "foo"');
   });
-  it(`reject for for invalid types`, async () => {
+  it('reject for for invalid types 1', async () => {
     await expect(
       // @ts-expect-error - test input
       createConfig({ boolProp: {} })
@@ -74,31 +69,41 @@ describe('Programmatic creation', () => {
       'Invalid type for option "boolProp". Expected boolean, got object'
     );
   });
+  it('reject for for invalid types 2', async () => {
+    await expect(
+      createConfig({
+        stringProp: 'string',
+        boolProp: false,
+        numProp: '1',
+      } as unknown as Config) // TS would complain for invalid input
+    ).rejects.toEqual(
+      'Invalid type for option "numProp". Expected number, got string'
+    );
+  });
 });
 
-describe('Argv parsing', () => {
-  const createConfig = configFactory(defaultConfig);
-  it('returns default config if no args', async () => {
-    const c = await createConfig([]);
-    expect(c).toStrictEqual(defaultConfig);
+describe('Parsing with required string args 1', () => {
+  const defaultConfig: Config = {
+    stringProp: 'overwrite me',
+    boolProp: true,
+    numProp: 999,
+  };
+  const createConfig1 = configFactory(defaultConfig, 'stringProp');
+  const createConfig2 = configFactory(defaultConfig, 'stringProp', 'boolProp');
+
+  it('resolves if all required args are present', async () => {
+    await expect(createConfig1({ stringProp: 'hello' })).resolves.toBeTruthy();
   });
 
-  it('overwrites all default values 1', async () => {
-    const c = await createConfig([
-      '--stringProp',
-      'str',
-      '--boolProp',
-      '--numProp',
-      '123',
-    ]);
-    expect(c).toStrictEqual<Config>({
-      stringProp: 'str',
-      boolProp: true,
-      numProp: 123,
-    });
+  it('rejects for missing required args 1', async () => {
+    await expect(createConfig1()).rejects.toEqual(
+      'Missing required config property "stringProp"'
+    );
   });
-  it('spreads in default config opts', async () => {
-    const c = await createConfig(['--stringProp', 'str']);
-    expect(c).toStrictEqual<Config>({ ...defaultConfig, stringProp: 'str' });
+
+  it('rejects for missing required args 2', async () => {
+    await expect(createConfig2()).rejects.toEqual(
+      'Missing required config properties "stringProp, boolProp"'
+    );
   });
 });

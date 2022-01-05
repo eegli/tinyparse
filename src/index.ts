@@ -1,1 +1,1 @@
-export const hello = 'whatsup';
+export { configFactory } from './parse';
