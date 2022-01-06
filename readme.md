@@ -23,6 +23,8 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 yarn add @eegli/tinyparse
 ```
 
+or
+
 ```bash
 npm i @eegli/tinyparse
 ```
