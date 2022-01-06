@@ -13,9 +13,9 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 - Tinyparse is fast and lightweight. It's made for parsing simple user inputs.
 
-- It **exports a single parser factory function** that accepts either an object literal or array of strings (usually, `process.argv.slice(2)`).
+- It **exports a single parser factory function** from which a type-aware parser can be created. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`).
 
-- The argument to the factory is a "base" or default configuration object. The factory returns a typed parser function. All **matching keys of the same type as the default config are updated**, the rest is taken from the base.
+- The parser checks the input and returns the base with updated matching property values.
 
 ## Installation
 
@@ -37,13 +37,13 @@ The default object needs to specify the **exact types** that are desired for the
 import { parserFactory } from '@eegli/tinyparse';
 
 const defaultConfig = {
-  name: '', // Want string
-  age: 0, // Want number
-  hasDog: true, // Want boolean
+  name: '', // want string
+  age: 0, // want number
+  hasDog: true, // want boolean
 };
 
 const parse = parserFactory(defaultConfig, {
-  required: ['name'], // A valid key of defaultConfig
+  required: ['name'], // a valid key of defaultConfig
 });
 
 const p1 = await parse({
@@ -59,11 +59,10 @@ const p1 = await parse({
 }
 */
 
-// Ignores "iShouldNotExist"
 const p2 = await parse({
   name: 'eeeeeric',
   age: 12,
-  iShouldNotExist: true,
+  iShouldNotExist: true, // is ignored
 });
 
 /* -- Resolves to
@@ -83,9 +82,9 @@ This works for object literals as well as string array arguments.
 
 ```ts
 const defaultConfig = {
-  name: '', // Want string
-  age: 0, // Want number
-  hasDog: true, // Want boolean
+  name: '',
+  age: 0,
+  hasDog: true,
 };
 
 const parse = parserFactory(defaultConfig, {
@@ -104,9 +103,9 @@ Invalid types are also rejected.
 
 ```ts
 const defaultConfig = {
-  name: '', // Want string
-  age: 0, // Want number
-  hasDog: true, // Want boolean
+  name: '',
+  age: 0,
+  hasDog: true,
 };
 
 const parse = parserFactory(defaultConfig, {
@@ -192,13 +191,13 @@ Notice how:
 
 Only applies to string parsing. The factory's optional config parameter accepts an object that maps [short flag](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag) keys to their long siblings.
 
-- Short flags are expected to start with "-"
+- Short flags are expected to start with "`-`"
 
 ```ts
 const defaultConfig = {
-  firstName: '', // Want string
-  age: 0, // Want number
-  hasDog: true, // Want boolean
+  name: '',
+  age: 0,
+  hasDog: true,
 };
 
 const parse = parserFactory(defaultConfig, {
@@ -212,6 +211,42 @@ const parsedInput = await parse(['-fn', 'eric', '--age', '12']);
   firstName: 'eric',
   age: 12,
   hasDog: true
+}
+*/
+```
+
+## TypeScript
+
+In some rare cases, one might have a config type with optional properties. They are allowed to be undefined. In order to preserve these types for later use, the factory accepts a generic.
+
+```ts
+type Config = {
+  name: string;
+  age: number;
+  hasDog?: boolean; // Optional - should be preserved
+};
+
+const defaultConfig: Config = {
+  name: '',
+  age: 0,
+  hasDog: true,
+};
+
+// Preserve optional types
+const parse = parserFactory<Config>(defaultConfig, {
+  required: ['name', 'age'],
+});
+
+const parsedInput = await parse({
+  name: 'eric',
+  age: 12,
+});
+
+/* -- type of parsedInput 
+{
+  firstName: string,
+  age: number,
+  hasDog: boolean | undefined
 }
 */
 ```
