@@ -13,7 +13,17 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 - It **exports a single parser factory function** that accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
 
-- The argument to the factory is a "base" or default configuration object. It returns a typed parser function. All **matching keys of the same type as the default config are updated**, the rest is taken from the base.
+- The argument to the factory is a "base" or default configuration object. The factory returns a typed parser function. All **matching keys of the same type as the default config are updated**, the rest is taken from the base.
+
+## Installation
+
+```bash
+yarn add @eegli/tinyparse
+```
+
+```bash
+npm i @eegli/tinyparse
+```
 
 ## Usage
 
@@ -33,16 +43,27 @@ const createConfig = parserFactory(defaultConfig, {
   required: ['name'],
 });
 
-// Parse arbitrary input
-const parsedInput = await parse({
+// Parse matching keys and values from arbitrary input
+const p1 = await parse({
   name: 'eric',
-  age: 12,
-  location: 'World', // Does not exist on config!
 });
-
-/* -- parsedInput 
+/* -- Resolves to
 {
   name: 'eric',
+  age: 0,
+  hasDog: true
+}
+*/
+
+// Ignores "iShouldNotExist"
+const p2 = await parse({
+  name: 'eeeeeric',
+  age: 12,
+  iShouldNotExist: true,
+});
+/* -- Resolves to
+{
+  name: 'eeeeeric',
   age: 12,
   hasDog: true
 }
@@ -72,9 +93,75 @@ const parsedInput = await parse({
 // 'Missing required config property "age"'
 ```
 
+Parsing also rejects invalid types.
+
+```ts
+const defaultConfig = {
+  name: '', // Want string
+  age: 0, // Want number
+  hasDog: true, // Want boolean
+};
+
+const parse = parserFactory(defaultConfig, {
+  required: ['name', 'age'],
+});
+
+const parsedInput = await parse({
+  name: 'eric',
+  age: '12',
+});
+
+// --> Rejects :(
+// Invalid type for option "age". Expected number, got string
+```
+
+Unknown properties are skipped.
+
+### String/argument parsing
+
+The parser also accepts an array of strings and parses long flags (e.g. `--name`) if they are valid.
+
+- Long flags that are **not** followed by a non-flag are considered booleans. If they are encountered, their value will be set to `true`.
+
+```ts
+const defaultConfig = {
+  name: '',
+  age: 0,
+  hasDog: true,
+  hasCat: false,
+};
+
+const createConfig = parserFactory(defaultConfig);
+
+const parsedInput = await parse([
+  '--name',
+  'eric',
+  '--age',
+  '12',
+  '--hasCat',
+  '--hasDog',
+]);
+
+/* -- parsedInput 
+{
+  name: 'eric',
+  age: 12,
+  hasDog: true,
+  hasCat: true,
+}
+*/
+```
+
+Notice how:
+
+1. Since `hasDog` was already true, the boolean flag did not change that.
+2. Strings that are valid numbers are automagically converted to a number (`--age`)
+
 ### Short flag options
 
-This only affects string parsing for CLI apps. The factory may accept an object literal that maps [short flag](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag) keys to their long siblings.
+This only affects string parsing. The factory's optional config object accepts an object that maps [short flag](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag) keys to their long siblings.
+
+- Short flags are expected to start with "-"
 
 ```ts
 const defaultConfig = {
@@ -83,7 +170,7 @@ const defaultConfig = {
   hasDog: true, // Want boolean
 };
 
-const createConfigTwo = parserFactory(defaultConfig, {
+const createConfig = parserFactory(defaultConfig, {
   shortFlags: { fn: 'firstName' },
 });
 
@@ -98,9 +185,12 @@ const parsedInput = await parse(['-fn', 'eric', '--age', '12']);
 */
 ```
 
-For more examples, [check the extensive test suites](./src/test).
+## More examples
 
-## Limitations
+For more examples, [check the extensive test suites](test/parse.test.ts) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
 
-1. The object literal argument can only have strings, numbers and booleans as object keys
-2. Invalid keys are ignored, invalid value types are rejected
+## Limitations/Opinions
+
+1. Objects to be parsed cannot be nested and need to have string keys
+2. Objects to be parsed can only have values that are of type string, number or boolean
+3. Invalid keys are ignored, invalid value types are rejected

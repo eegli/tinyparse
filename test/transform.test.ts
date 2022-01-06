@@ -9,10 +9,17 @@ describe('Argv to object transformer', () => {
     const c = argvTransformer([]);
     expect(c).toStrictEqual({});
   });
-  it('bool props', async () => {
+  it('bool props 1', async () => {
     const c = argvTransformer(['--boolProp']);
     expect(c).toStrictEqual({
       boolProp: true,
+    });
+  });
+  it('bool props 2', async () => {
+    const c = argvTransformer(['--boolProp', '--secondBoolProp']);
+    expect(c).toStrictEqual({
+      boolProp: true,
+      secondBoolProp: true,
     });
   });
   it('string props', async () => {
