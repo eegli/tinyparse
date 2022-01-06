@@ -2,20 +2,20 @@ import { argvTransformer } from './transformer';
 
 export type ObjectValues = string | number | boolean;
 
-type Options<T> =
-  | {
-      required?: T[];
-      shortFlags: Record<string, T>;
-    }
-  | {
-      required: T[];
-      shortFlags?: Record<string, T>;
-    };
+type RequireAtLeastOne<T> = {
+  [K in keyof T]-?: Required<Pick<T, K>> &
+    Partial<Pick<T, Exclude<keyof T, K>>>;
+}[keyof T];
 
-export function parserFactory<T extends Record<string, ObjectValues>>(
-  baseConfig: T,
-  opts?: Options<keyof T extends string ? keyof T : never>
-) {
+type Options<T> = RequireAtLeastOne<{
+  required: T[];
+  shortFlags: Record<string, T>;
+}>;
+
+export function parserFactory<
+  T extends Record<string, ObjectValues>,
+  K extends keyof T = keyof T
+>(baseConfig: T, opts?: Options<K extends string ? K : never>) {
   return function (args?: Partial<T> | string[]): Promise<T> {
     return new Promise((resolve, reject) => {
       const requiredProps = opts?.required;
