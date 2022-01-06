@@ -1,17 +1,17 @@
 # Tinyparse
 
-### Highly opiniated, type-safe parsing module for object literals and Node's `process.argv`.
+### Opiniated, type-safe parsing module for object literals and Node's `process.argv`.
 
 _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but it's not as capable as its parents._
 
 - TypeScript first
 - Promise-based
-- Fast, zero dependencies
+- Zero dependencies
 - Supports object literals and arrays of strings
 
 **I use this mostly for other pet projects of mine, so it comes with some opinions.**
 
-- Tinyparse has zero dependencies and is very leightweight. It's made for simple input.
+- Tinyparse is fast and lightweight. It's made for simple input.
 
 - It **exports a single parser factory function** that accepts either an object literal or array of strings (usually, `process.argv.slice(2)`).
 
@@ -163,7 +163,7 @@ Notice how:
 
 ### Short flag options
 
-This only affects string parsing. The factory's optional config object accepts an object that maps [short flag](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag) keys to their long siblings.
+This only affects string parsing. The factory's optional config parameter accepts an object that maps [short flag](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag) keys to their long siblings.
 
 - Short flags are expected to start with "-"
 
