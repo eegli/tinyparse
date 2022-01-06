@@ -2,10 +2,15 @@ import { argvTransformer } from './transformer';
 
 export type ObjectValues = string | number | boolean;
 
-type Options<T> = {
-  required?: T[];
-  shortFlags?: Record<string, T>;
-};
+type Options<T> =
+  | {
+      required?: T[];
+      shortFlags: Record<string, T>;
+    }
+  | {
+      required: T[];
+      shortFlags?: Record<string, T>;
+    };
 
 export function parserFactory<T extends Record<string, ObjectValues>>(
   baseConfig: T,
