@@ -242,6 +242,14 @@ const parsedInput = await parse({
   age: 12,
 });
 
+/* -- value of parsedInput 
+{
+  firstName: 'eric',
+  age: 12,
+  hasDog: true
+}
+*/
+
 /* -- type of parsedInput 
 {
   firstName: string,
