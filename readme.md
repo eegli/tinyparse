@@ -11,7 +11,9 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **I use this mostly for other pet projects of mine, so it comes with some opinions.**
 
-- It **exports a single parser factory function** that accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
+- Tinyparse has zero dependencies and is very leightweight. It's made for simple input.
+
+- It **exports a single parser factory function** that accepts either an object literal or array of strings (usually, `process.argv.slice(2)`).
 
 - The argument to the factory is a "base" or default configuration object. The factory returns a typed parser function. All **matching keys of the same type as the default config are updated**, the rest is taken from the base.
 
@@ -93,7 +95,7 @@ const parsedInput = await parse({
 // 'Missing required config property "age"'
 ```
 
-Parsing also rejects invalid types.
+Invalid types are also rejected.
 
 ```ts
 const defaultConfig = {
