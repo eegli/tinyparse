@@ -53,7 +53,7 @@ describe('Argv to object transformer', () => {
 });
 
 describe('Argv to object, short flags', () => {
-  it('ignored short flags that are not present', async () => {
+  it('ignores short flags that are not present', async () => {
     const c = argvTransformer(
       ['-s', '123', '--input', '123s', '-p', 'mypw', '-x', 'donotparse'],
       { s: 'secret', p: 'password' }
@@ -64,7 +64,7 @@ describe('Argv to object, short flags', () => {
       input: '123s',
     });
   });
-  it('transforms mixed', async () => {
+  it('can have both long and short flags', async () => {
     const c = argvTransformer(
       ['-s', '123', '--input', 'this is a string', '-p', 'mypw'],
       { s: 'secret', p: 'password' }
@@ -75,7 +75,13 @@ describe('Argv to object, short flags', () => {
       input: 'this is a string',
     });
   });
-
+  it('transforms boolean short flags', async () => {
+    const c = argvTransformer(['-v', '--normal', 'value'], { v: 'verbose' });
+    expect(c).toStrictEqual({
+      verbose: true,
+      normal: 'value',
+    });
+  });
   it('transforms empty', async () => {
     const c = argvTransformer(['-s', '123'], {});
     expect(c).toStrictEqual({});

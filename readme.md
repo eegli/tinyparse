@@ -11,7 +11,7 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **I use this mostly for other pet projects of mine, so it comes with some opinions.**
 
-- Tinyparse is fast and lightweight. It's made for simple input.
+- Tinyparse is fast and lightweight. It's made for parsing simple user inputs.
 
 - It **exports a single parser factory function** that accepts either an object literal or array of strings (usually, `process.argv.slice(2)`).
 
@@ -29,7 +29,7 @@ or
 npm i @eegli/tinyparse
 ```
 
-## Usage
+## Usage with object literals
 
 The default object needs to specify the **exact types** that are desired for the parsed arguments. The exact values of `defaultInput` don't matter as long as the types are correct.
 
@@ -42,20 +42,20 @@ const defaultConfig = {
   hasDog: true, // Want boolean
 };
 
-// Specify required object keys
-const createConfig = parserFactory(defaultConfig, {
-  required: ['name'],
+const parse = parserFactory(defaultConfig, {
+  required: ['name'], // A valid key of defaultConfig
 });
 
-// Parse matching keys and values from arbitrary input
 const p1 = await parse({
   name: 'eric',
+  hasDog: false,
 });
+
 /* -- Resolves to
 {
   name: 'eric',
   age: 0,
-  hasDog: true
+  hasDog: false
 }
 */
 
@@ -65,6 +65,7 @@ const p2 = await parse({
   age: 12,
   iShouldNotExist: true,
 });
+
 /* -- Resolves to
 {
   name: 'eeeeeric',
@@ -78,6 +79,8 @@ const p2 = await parse({
 
 The factory may accept an optional array of required keys from the default configuration. If they are not provided in the user input, the promise is rejected.
 
+This works for object literals as well as string array arguments.
+
 ```ts
 const defaultConfig = {
   name: '', // Want string
@@ -85,7 +88,7 @@ const defaultConfig = {
   hasDog: true, // Want boolean
 };
 
-const createConfig = parserFactory(defaultConfig, {
+const parse = parserFactory(defaultConfig, {
   required: ['name', 'age'],
 });
 
@@ -121,11 +124,35 @@ const parsedInput = await parse({
 
 Unknown properties are skipped.
 
-### String/argument parsing
+## Usage with string arrays (e.g. process.argv)
 
-The parser also accepts an array of strings and parses long flags (e.g. `--name`) if they are valid.
+### Glossary and support
 
-- Long flags that are **not** followed by a non-flag are considered booleans. If they are encountered, their value will be set to `true`.
+Definitions from [CLI Flags Explained](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag).
+
+Tinyparse expects that **every** CLI argument is specified with a flag. It ignores standalone arguments. A valid key-value pair consists of a flag followed by the flag argument. The order of flag + arg pairs does not matter.
+
+```bash
+run-cli src/app 👉 [command] [arg] | ❌
+```
+
+```bash
+run-cli --directory src/app 👉 [command] [long flag] [flag arg] | ✅
+```
+
+```bash
+run-cli -d src/app 👉 [command] [short flag] [flag arg] | ✅
+```
+
+```bash
+run-cli --verbose 👉 [command] [boolean long flag] | ✅
+```
+
+```bash
+run-cli -v 👉 [command] [boolean short flag] | ✅
+```
+
+**Flags that are followed by a flag** are considered booleans flags. If they are encountered, their value will be set to `true`.
 
 ```ts
 const defaultConfig = {
@@ -135,7 +162,7 @@ const defaultConfig = {
   hasCat: false,
 };
 
-const createConfig = parserFactory(defaultConfig);
+const parse = parserFactory(defaultConfig);
 
 const parsedInput = await parse([
   '--name',
@@ -163,7 +190,7 @@ Notice how:
 
 ### Short flag options
 
-This only affects string parsing. The factory's optional config parameter accepts an object that maps [short flag](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag) keys to their long siblings.
+Only applies to string parsing. The factory's optional config parameter accepts an object that maps [short flag](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag) keys to their long siblings.
 
 - Short flags are expected to start with "-"
 
@@ -174,7 +201,7 @@ const defaultConfig = {
   hasDog: true, // Want boolean
 };
 
-const createConfig = parserFactory(defaultConfig, {
+const parse = parserFactory(defaultConfig, {
   shortFlags: { fn: 'firstName' },
 });
 
