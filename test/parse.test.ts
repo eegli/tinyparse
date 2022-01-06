@@ -83,6 +83,27 @@ describe('Parsing', () => {
   });
 });
 
+describe('Parsing with string args', () => {
+  const defaultConfig = {
+    stringProp: 'overwrite me',
+    boolProp: false,
+    numProp: 999,
+  };
+
+  const createConfig = parserFactory<Config>(defaultConfig, {
+    required: ['stringProp'],
+  });
+
+  it('works', async () => {
+    const c = await createConfig(['--stringProp', 'some stuff', '--boolProp']);
+    expect(c).toStrictEqual({
+      stringProp: 'some stuff',
+      boolProp: true,
+      numProp: 999,
+    });
+  });
+});
+
 describe('Parsing with required args', () => {
   const defaultConfig: Config = {
     stringProp: 'overwrite me',
@@ -97,6 +118,7 @@ describe('Parsing with required args', () => {
 
   const createConfigTwo = parserFactory(defaultConfig, {
     required: ['stringProp', 'numProp'],
+    shortFlags: { n: 'numProp' },
   });
 
   it('resolves if all required args are present', async () => {
