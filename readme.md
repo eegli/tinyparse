@@ -1,6 +1,6 @@
 # Tinyparse
 
-### Opiniated, type-safe parsing module for object literals and Node's `process.argv`.
+### Opiniated, type-safe parsing module for CLI arguments and object literals.
 
 _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but it's not as capable as its parents._
 
@@ -84,7 +84,6 @@ This works for object literals as well as string array arguments.
 const defaultConfig = {
   name: '',
   age: 0,
-  hasDog: true,
 };
 
 const parse = parserFactory(defaultConfig, {
@@ -105,7 +104,6 @@ Invalid types are also rejected.
 const defaultConfig = {
   name: '',
   age: 0,
-  hasDog: true,
 };
 
 const parse = parserFactory(defaultConfig, {
@@ -155,8 +153,7 @@ run-cli -v 👉 [command] [boolean short flag] | ✅
 
 ```ts
 const defaultConfig = {
-  name: '',
-  age: 0,
+  age: 0
   hasDog: true,
   hasCat: false,
 };
@@ -164,17 +161,14 @@ const defaultConfig = {
 const parse = parserFactory(defaultConfig);
 
 const parsedInput = await parse([
-  '--name',
-  'eric',
-  '--age',
-  '12',
+  "--age",
+  "12",
   '--hasCat',
   '--hasDog',
 ]);
 
-/* -- parsedInput 
+/* -- parsedInput
 {
-  name: 'eric',
   age: 12,
   hasDog: true,
   hasCat: true,
@@ -185,7 +179,7 @@ const parsedInput = await parse([
 Notice how:
 
 1. Since `hasDog` was already true, the boolean flag did not change that.
-2. Strings that are valid numbers are automagically converted to a number (`--age`)
+2. Strings that are valid numbers are automagically converted to a number (see `--age`). This only applies if the object to be parsed is an array of strings.
 
 ### Short flag options
 
@@ -197,7 +191,6 @@ Only applies to string parsing. The factory's optional config parameter accepts 
 const defaultConfig = {
   name: '',
   age: 0,
-  hasDog: true,
 };
 
 const parse = parserFactory(defaultConfig, {
@@ -210,7 +203,6 @@ const parsedInput = await parse(['-fn', 'eric', '--age', '12']);
 {
   firstName: 'eric',
   age: 12,
-  hasDog: true
 }
 */
 ```
@@ -222,30 +214,26 @@ In some rare cases, one might have a config type with optional properties. They 
 ```ts
 type Config = {
   name: string;
-  age: number;
   hasDog?: boolean; // Optional - should be preserved
 };
 
 const defaultConfig: Config = {
   name: '',
-  age: 0,
   hasDog: true,
 };
 
 // Preserve optional types
 const parse = parserFactory<Config>(defaultConfig, {
-  required: ['name', 'age'],
+  required: ['name'],
 });
 
 const parsedInput = await parse({
   name: 'eric',
-  age: 12,
 });
 
 /* -- value of parsedInput 
 {
   firstName: 'eric',
-  age: 12,
   hasDog: true
 }
 */
@@ -253,7 +241,6 @@ const parsedInput = await parse({
 /* -- type of parsedInput 
 {
   firstName: string,
-  age: number,
   hasDog: boolean | undefined
 }
 */
