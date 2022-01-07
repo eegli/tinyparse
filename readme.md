@@ -259,6 +259,35 @@ const parsedInput = await parse({
 */
 ```
 
+## Error handling
+
+Tinyparse exports a `ValidationError` class. You can use it to check if, in a large try-catch block, the error originated from parsing something.
+
+```ts
+import { parserFactory, ValidationError } from '@eegli/tinyparse';
+
+const defaultConfig = {
+  name: '',
+};
+
+const parse = parserFactory(defaultConfig, {
+  required: ['name'],
+});
+
+try {
+  const parsed = await parse({
+    notNameProperty: 'eric',
+  });
+} catch (e) {
+  if (e instanceof ValidationError) {
+    // Do whatever.
+
+    console.error(e.message);
+    // -->'Missing required property "name"
+  }
+}
+```
+
 ## More examples
 
 For more examples, [check the extensive test suites](test/parse.test.ts) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
