@@ -34,15 +34,15 @@ export function parserFactory<
           );
         }
       }
-      const cfmap = new Map<string, ObjectValues | null>(
+      const config = new Map<string, ObjectValues | null>(
         Object.entries(baseConfig)
       );
 
-      // Delete required properties - they will need to be added again
-      // later
+      // Set required properties to null - they will need to be
+      // defined from the input
       if (requiredProps?.length) {
         requiredProps.forEach((r) => {
-          cfmap.set(r, null);
+          config.set(r, null);
         });
       }
 
@@ -51,12 +51,12 @@ export function parserFactory<
       }
 
       Object.entries(args).forEach(([arg, argVal]) => {
-        if (cfmap.has(arg)) {
+        if (config.has(arg)) {
           // Get the type of the argument from the default config -
           // not via the config map, since they are set to null
           // if they are required
           if (typeof baseConfig[arg] === typeof argVal) {
-            cfmap.set(arg, argVal);
+            config.set(arg, argVal);
           } else {
             throw new ValidationError(
               `Invalid type for "${arg}". Expected ${typeof baseConfig[
@@ -69,15 +69,17 @@ export function parserFactory<
         }
       });
 
+      // Check if all required properties have been defined by the
+      // input
       if (requiredProps?.length) {
         const missing = requiredProps.reduce((acc, prop) => {
-          if (cfmap.get(prop) === null) {
+          if (config.get(prop) === null) {
             acc.push(prop);
           }
           return acc;
         }, <string[]>[]);
 
-        if (missing?.length) {
+        if (missing.length) {
           throw new ValidationError(
             `Missing required propert${
               missing.length > 1 ? 'ies' : 'y'
@@ -86,7 +88,7 @@ export function parserFactory<
         }
       }
 
-      return resolve(Object.fromEntries(cfmap) as T);
+      return resolve(Object.fromEntries(config) as T);
     });
   };
 }
