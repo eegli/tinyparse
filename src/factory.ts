@@ -1,5 +1,5 @@
 import { ValidationError } from './error';
-import { argvTransformer } from './transformer';
+import { argvTransformer } from './transform';
 
 export type ObjectValues = string | number | boolean;
 
