@@ -1,3 +1,4 @@
+import { ValidationError } from '../src/error';
 import { parserFactory } from '../src/factory';
 
 const warner = jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
@@ -48,6 +49,7 @@ describe('Parsing', () => {
       numProp: 69,
     });
   });
+
   it('spreads in default config opts', async () => {
     const c = await createConfig({ stringProp: 'hello' });
     expect(c).toStrictEqual({
@@ -60,26 +62,38 @@ describe('Parsing', () => {
     // @ts-expect-error - test input
     await createConfig({ foo: true });
     expect(warner).toHaveBeenCalledTimes(1);
-    expect(warner).toHaveBeenCalledWith('Ignoring unknown option "foo"');
+    expect(warner).toHaveBeenCalledWith('Ignoring unknown argument "foo"');
   });
+
   it('reject for for invalid types 1', async () => {
-    await expect(
+    expect.assertions(2);
+    try {
       // @ts-expect-error - test input
-      createConfig({ boolProp: {} })
-    ).rejects.toBe(
-      'Invalid type for option "boolProp". Expected boolean, got object'
-    );
+      await createConfig({ boolProp: {} });
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e).toHaveProperty(
+        'message',
+        'Invalid type for "boolProp". Expected boolean, got object'
+      );
+    }
   });
+
   it('reject for for invalid types 2', async () => {
-    await expect(
-      createConfig({
+    expect.assertions(2);
+    try {
+      await createConfig({
         stringProp: 'string',
         boolProp: false,
         numProp: '1',
-      } as unknown as Config) // TS would complain for invalid input
-    ).rejects.toBe(
-      'Invalid type for option "numProp". Expected number, got string'
-    );
+      } as unknown as Config);
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e).toHaveProperty(
+        'message',
+        'Invalid type for "numProp". Expected number, got string'
+      );
+    }
   });
 });
 
@@ -131,22 +145,55 @@ describe('Parsing with required args', () => {
     });
   });
 
-  it('rejects for all missing required args 1', async () => {
-    await expect(createConfigOne()).rejects.toBe(
-      'Missing required config property "stringProp"'
-    );
+  it('rejects early for partially missing required args', async () => {
+    expect.assertions(2);
+    try {
+      await createConfigOne();
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e).toHaveProperty(
+        'message',
+        'Missing required property "stringProp"'
+      );
+    }
   });
 
-  it('rejects for all missing required args 2', async () => {
-    await expect(createConfigTwo()).rejects.toBe(
-      'Missing required config properties "stringProp, numProp"'
-    );
+  it('rejects early for all missing required args', async () => {
+    expect.assertions(2);
+    try {
+      await createConfigTwo();
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e).toHaveProperty(
+        'message',
+        'Missing required properties "stringProp", "numProp"'
+      );
+    }
   });
 
-  it('rejects for partially missing required args', async () => {
-    const config = { stringProp: 'new' };
-    await expect(createConfigTwo(config)).rejects.toBe(
-      'Missing required config property "numProp"'
-    );
+  it('rejects late for partially missing required args', async () => {
+    expect.assertions(2);
+    try {
+      await createConfigTwo({ stringProp: 'new' });
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e).toHaveProperty(
+        'message',
+        'Missing required property "numProp"'
+      );
+    }
+  });
+
+  it('rejects late for all missing required args', async () => {
+    expect.assertions(2);
+    try {
+      await createConfigTwo({ boolProp: true });
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e).toHaveProperty(
+        'message',
+        'Missing required properties "stringProp", "numProp"'
+      );
+    }
   });
 });

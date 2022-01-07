@@ -1,3 +1,4 @@
+import { ValidationError } from './error';
 import { argvTransformer } from './transformer';
 
 export type ObjectValues = string | number | boolean;
@@ -14,10 +15,10 @@ type Options<T> = RequireAtLeastOne<{
 
 export function parserFactory<
   T extends Record<string, ObjectValues>,
-  K extends keyof T = keyof T
+  K = keyof T
 >(baseConfig: T, opts?: Options<K extends string ? K : never>) {
   return function (args?: Partial<T> | string[]): Promise<T> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const requiredProps = opts?.required;
       const shortFlags = opts?.shortFlags;
 
@@ -26,10 +27,10 @@ export function parserFactory<
           // No required arguments, return base config
           return resolve(baseConfig);
         } else {
-          return reject(
-            `Missing required config ${
-              requiredProps.length > 1 ? 'properties' : 'property'
-            } "${requiredProps.join(', ')}"`
+          throw new ValidationError(
+            `Missing required propert${
+              requiredProps.length > 1 ? 'ies' : 'y'
+            } "${requiredProps.join('", "')}"`
           );
         }
       }
@@ -57,26 +58,32 @@ export function parserFactory<
           if (typeof baseConfig[arg] === typeof argVal) {
             cfmap.set(arg, argVal);
           } else {
-            reject(
-              `Invalid type for option "${arg}". Expected ${typeof baseConfig[
+            throw new ValidationError(
+              `Invalid type for "${arg}". Expected ${typeof baseConfig[
                 arg
               ]}, got ${typeof argVal}`
             );
           }
         } else {
-          console.warn(`Ignoring unknown option "${arg}"`);
+          console.warn(`Ignoring unknown argument "${arg}"`);
         }
       });
 
-      if (requiredProps) {
-        // Check for required args after parsing
-        requiredProps.forEach((prop) => {
-          // Required args are still null if they werent included.
-          // Other falsy values are allowed
+      if (requiredProps?.length) {
+        const missing = requiredProps.reduce((acc, prop) => {
           if (cfmap.get(prop) === null) {
-            reject(`Missing required config property "${prop}"`);
+            acc.push(prop);
           }
-        });
+          return acc;
+        }, <string[]>[]);
+
+        if (missing?.length) {
+          throw new ValidationError(
+            `Missing required propert${
+              missing.length > 1 ? 'ies' : 'y'
+            } "${missing.join('", "')}"`
+          );
+        }
       }
 
       return resolve(Object.fromEntries(cfmap) as T);
