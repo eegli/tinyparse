@@ -1,6 +1,6 @@
 {
   "name": "@eegli/tinyparse",
-  "description": "A tiny utility for parsing process.argv and config objects",
+  "description": "A tiny utility for parsing & validating Node CLI args and object literals",
   "publishConfig": {
     "access": "public"
   },
@@ -8,8 +8,9 @@
     "cli",
     "node",
     "parse",
+    "argv",
+    "validate",
     "argument",
-    "config",
     "utility",
     "typescript"
   ],
