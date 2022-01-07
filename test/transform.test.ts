@@ -1,4 +1,4 @@
-import { argvTransformer } from '../src/transformer';
+import { argvTransformer } from '../src/transform';
 
 beforeEach(() => {
   jest.clearAllMocks();
