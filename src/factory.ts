@@ -13,10 +13,10 @@ type Options<T> = RequireAtLeastOne<{
   shortFlags: Record<string, T>;
 }>;
 
-export function parserFactory<
-  T extends Record<string, ObjectValues>,
-  K = keyof T
->(baseConfig: T, opts?: Options<K extends string ? K : never>) {
+export function parserFactory<T extends Record<string, ObjectValues>>(
+  baseConfig: T,
+  opts?: Options<keyof T extends string ? keyof T : never>
+) {
   return function (args?: Partial<T> | string[]): Promise<T> {
     return new Promise((resolve) => {
       const requiredProps = opts?.required;
