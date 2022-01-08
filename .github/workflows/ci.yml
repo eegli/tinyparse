@@ -28,6 +28,7 @@ jobs:
         run: yarn test --coverage --verbose
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
+        if: matrix.node == '17'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
