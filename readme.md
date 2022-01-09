@@ -191,7 +191,7 @@ Only applies to string parsing. The factory's optional config parameter accepts 
 
 ```ts
 const defaultConfig = {
-  name: '',
+  firstName: '',
   age: 0,
 };
 
