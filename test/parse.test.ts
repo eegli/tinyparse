@@ -97,27 +97,6 @@ describe('Parsing', () => {
   });
 });
 
-describe('Parsing with string args', () => {
-  const defaultConfig = {
-    stringProp: 'overwrite me',
-    boolProp: false,
-    numProp: 999,
-  };
-
-  const createConfig = parserFactory<Config>(defaultConfig, {
-    required: ['stringProp'],
-  });
-
-  it('works', async () => {
-    const c = await createConfig(['--stringProp', 'some stuff', '--boolProp']);
-    expect(c).toStrictEqual({
-      stringProp: 'some stuff',
-      boolProp: true,
-      numProp: 999,
-    });
-  });
-});
-
 describe('Parsing with required args', () => {
   const defaultConfig: Config = {
     stringProp: 'overwrite me',
@@ -132,7 +111,6 @@ describe('Parsing with required args', () => {
 
   const createConfigTwo = parserFactory(defaultConfig, {
     required: ['stringProp', 'numProp'],
-    shortFlags: { n: 'numProp' },
   });
 
   it('resolves if all required args are present', async () => {
@@ -195,5 +173,35 @@ describe('Parsing with required args', () => {
         'Missing required properties "stringProp", "numProp"'
       );
     }
+  });
+});
+
+describe('Parsing with string args', () => {
+  const defaultConfig = {
+    stringProp: 'overwrite me',
+    boolProp: false,
+    numProp: 999,
+  };
+  it('works with required', async () => {
+    const createConfig = parserFactory<Config>(defaultConfig, {
+      required: ['stringProp'],
+    });
+    const c = await createConfig(['--stringProp', 'new value!', '--boolProp']);
+    expect(c).toStrictEqual({
+      stringProp: 'new value!',
+      boolProp: true,
+      numProp: 999,
+    });
+  });
+  it('works with shortmap', async () => {
+    const createConfig = parserFactory<Config>(defaultConfig, {
+      shortFlags: { '-s': 'stringProp', '-b': 'boolProp' },
+    });
+    const c = await createConfig(['-s', 'new value!', '-b']);
+    expect(c).toStrictEqual({
+      stringProp: 'new value!',
+      boolProp: true,
+      numProp: 999,
+    });
   });
 });

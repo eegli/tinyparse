@@ -8,9 +8,11 @@ type RequireAtLeastOne<T> = {
     Partial<Pick<T, Exclude<keyof T, K>>>;
 }[keyof T];
 
-type Options<T> = RequireAtLeastOne<{
+type Options<T extends string> = RequireAtLeastOne<{
   required: T[];
-  shortFlags: Record<string, T>;
+  shortFlags: {
+    [P in `-${string}`]: T;
+  };
 }>;
 
 export function parserFactory<T extends Record<string, ObjectValues>>(
