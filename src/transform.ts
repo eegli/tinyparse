@@ -2,7 +2,7 @@ import { ObjectValues } from './factory';
 
 export function argvTransformer(
   args: string[],
-  shortFlagMap?: Partial<Record<string, ObjectValues>>
+  shortFlagMap?: Record<string, ObjectValues>
 ): Record<string, ObjectValues> {
   return args.reduce((acc, curr, idx, orig) => {
     if (
