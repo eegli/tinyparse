@@ -2,11 +2,15 @@ import { ObjectValues } from './factory';
 
 export function argvTransformer(
   args: string[],
-  shortFlagMap?: Record<string, ObjectValues>
+  shortFlagMap?: Partial<Record<string, ObjectValues>>
 ): Record<string, ObjectValues> {
   return args.reduce((acc, curr, idx, orig) => {
-    if (shortFlagMap && curr.startsWith('-') && shortFlagMap[curr.slice(1)]) {
-      curr = '--' + shortFlagMap[curr.slice(1)];
+    if (
+      shortFlagMap &&
+      curr.startsWith('-') &&
+      Object.prototype.hasOwnProperty.call(shortFlagMap, curr)
+    ) {
+      curr = '--' + shortFlagMap[curr];
     }
     if (curr.startsWith('--')) {
       const arg = curr.slice(2);

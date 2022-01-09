@@ -196,7 +196,7 @@ const defaultConfig = {
 };
 
 const parse = parserFactory(defaultConfig, {
-  shortFlags: { fn: 'firstName' },
+  shortFlags: { '-fn': 'firstName' },
 });
 
 const parsedInput = await parse(['-fn', 'eric', '--age', '12']);
