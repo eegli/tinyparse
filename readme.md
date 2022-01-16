@@ -33,7 +33,7 @@ npm i @eegli/tinyparse
 
 ## Usage with object literals
 
-The default object needs to specify the **exact types** that are desired for the parsed arguments. The exact values of `defaultInput` don't matter as long as the types are correct.
+The object that is passed to the factory needs to specify the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
 
 ```ts
 import { parserFactory } from '@eegli/tinyparse';
@@ -55,9 +55,9 @@ const p1 = await parse({
 
 /* -- Resolves to
 {
-  name: 'eric',
-  age: 0,
-  hasDog: false
+  name: 'eric', --> user input
+  age: 0, --> default value
+  hasDog: false --> user input
 }
 */
 
@@ -77,6 +77,8 @@ const p2 = await parse({
 ```
 
 ### Required options
+
+In many scenarios, at least some user input is required.
 
 The factory may accept an optional array of required keys from the default configuration. If they are not provided in the user input, the promise is rejected.
 
