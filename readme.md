@@ -6,14 +6,14 @@
 
 _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but it's not as capable as its parents._
 
-- TypeScript first
 - Promise-based
+- TypeScript first
 - Zero dependencies
 - Supports object literals and arrays of strings
 
-**I use this mostly for other pet projects of mine, so it comes with some opinions.**
+**I use this mostly for other pet projects of mine so it comes with some opinions.**
 
-- Tinyparse is fast and lightweight. It's made for parsing simple user inputs.
+- Tinyparse is fast and lightweight. It's made for parsing simple user input.
 
 - It **exports a single parser factory function** from which a type-aware parser can be created. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`).
 
