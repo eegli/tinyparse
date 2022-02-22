@@ -44,7 +44,7 @@ The object that is passed to the factory needs to specify the **exact types** th
 import { parserFactory } from '@eegli/tinyparse';
 
 const defaultConfig = {
-  name: 'defaultName', // string
+  name: '', // string
   age: 0, // number
   hasDog: true, // boolean
 };
@@ -54,8 +54,8 @@ const parse = parserFactory(defaultConfig);
 // Resolves to a full user configuration
 const p1 = await parse({
   name: 'eric',
-  hasDog: false,
   age: 12,
+  hasDog: false,
 });
 
 expect(p1).toStrictEqual({
@@ -126,27 +126,15 @@ await parse({ accessToken: 12 });
 
 Definitions from [CLI Flags Explained](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag).
 
-Tinyparse expects that **every** CLI argument is specified with a flag. It ignores standalone arguments. A valid key-value pair consists of a flag followed by the flag argument. The order of flag + arg pairs does not matter.
+Tinyparse expects that **every** CLI argument is specified with a long or short flag. It ignores standalone arguments. A valid key-value pair consists of a flag followed by the flag argument. The order of flag + arg pairs does not matter.
 
-```bash
-run-cli src/app 👉 [command] [arg] | ❌
-```
-
-```bash
-run-cli --directory src/app 👉 [command] [long flag] [flag arg] | ✅
-```
-
-```bash
-run-cli -d src/app 👉 [command] [short flag] [flag arg] | ✅
-```
-
-```bash
-run-cli --verbose 👉 [command] [boolean long flag] | ✅
-```
-
-```bash
-run-cli -v 👉 [command] [boolean short flag] | ✅
-```
+| Example                       | Abstract format                     | Support |
+| ----------------------------- | ----------------------------------- | ------- |
+| `run-cli src/app`             | `[command] [arg]`                   | ❌      |
+| `run-cli --directory src/app` | `[command] [long flag] [flag arg]`  | ✅      |
+| `run-cli -d src/app`          | `[command] [short flag] [flag arg]` | ✅      |
+| `run-cli --verbose`           | `[command] [boolean long flag]`     | ✅      |
+| `run-cli -v `                 | `[command] [boolean short flag]`    | ✅      |
 
 **Standalone flags** are considered booleans flags. If they are encountered, their value will be set to `true`. This means that it is not possible to specify a "falsy" flag. Tinyparse assumes that any option that can be enabled by a flag is `false` by default but can be set to true.
 
