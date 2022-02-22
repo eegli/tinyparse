@@ -37,7 +37,7 @@ describe('Parsing', () => {
     expect(c).toStrictEqual(defaultConfig);
   });
 
-  it('overwrites all default values 1', async () => {
+  it('overwrites all default values', async () => {
     const c = await createConfig({
       stringProp: 'hello',
       boolProp: true,
@@ -58,15 +58,15 @@ describe('Parsing', () => {
     });
   });
 
-  it('warns for invalid options', async () => {
+  it('warns with invalid options', async () => {
     // @ts-expect-error - test input
     await createConfig({ foo: true });
     expect(warner).toHaveBeenCalledTimes(1);
     expect(warner).toHaveBeenCalledWith('Ignoring unknown argument "foo"');
   });
 
-  it('reject for for invalid types 1', async () => {
-    expect.assertions(2);
+  it('rejects invalid types', async () => {
+    expect.assertions(4);
     try {
       // @ts-expect-error - test input
       await createConfig({ boolProp: {} });
@@ -77,10 +77,6 @@ describe('Parsing', () => {
         'Invalid type for "boolProp". Expected boolean, got object'
       );
     }
-  });
-
-  it('reject for for invalid types 2', async () => {
-    expect.assertions(2);
     try {
       await createConfig({
         stringProp: 'string',
@@ -104,74 +100,66 @@ describe('Parsing with required args', () => {
     numProp: 999,
     undefinedProp: undefined,
   };
-
-  const createConfigOne = parserFactory(defaultConfig, {
-    required: ['stringProp'],
+  // Pre-made helpers
+  const parseWithStringRequired = parserFactory(defaultConfig, {
+    required: [
+      {
+        argName: 'stringProp',
+        errorMessage: 'argument "stringProp" is required',
+      },
+    ],
   });
 
-  const createConfigTwo = parserFactory(defaultConfig, {
-    required: ['stringProp', 'numProp'],
+  const parseWithStringAndNumRequired = parserFactory(defaultConfig, {
+    required: [
+      {
+        argName: 'stringProp',
+        errorMessage: 'argument "stringProp" is required',
+      },
+      {
+        argName: 'numProp',
+        errorMessage: 'please specify "numProp"',
+      },
+    ],
   });
 
   it('resolves if all required args are present', async () => {
-    const config = { stringProp: 'hello', boolProp: false };
-    await expect(createConfigOne(config)).resolves.toStrictEqual({
-      stringProp: 'hello',
-      boolProp: false,
-      numProp: 999,
-      undefinedProp: undefined,
+    const input = { stringProp: 'goodbye' };
+    await expect(parseWithStringRequired(input)).resolves.toStrictEqual({
+      ...defaultConfig,
+      stringProp: 'goodbye',
     });
   });
 
-  it('rejects early for partially missing required args', async () => {
-    expect.assertions(2);
+  it('rejects early missing required args', async () => {
+    expect.assertions(4);
     try {
-      await createConfigOne();
+      await parseWithStringRequired();
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        'Missing required property "stringProp"'
-      );
+      expect(e).toHaveProperty('message', 'argument "stringProp" is required');
+    }
+    try {
+      await parseWithStringAndNumRequired();
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e).toHaveProperty('message', 'argument "stringProp" is required');
     }
   });
 
-  it('rejects early for all missing required args', async () => {
-    expect.assertions(2);
+  it('rejects late for missing required args', async () => {
+    expect.assertions(4);
     try {
-      await createConfigTwo();
+      await parseWithStringRequired({});
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        'Missing required properties "stringProp", "numProp"'
-      );
+      expect(e).toHaveProperty('message', 'argument "stringProp" is required');
     }
-  });
-
-  it('rejects late for partially missing required args', async () => {
-    expect.assertions(2);
     try {
-      await createConfigTwo({ stringProp: 'new' });
+      await parseWithStringAndNumRequired({ stringProp: 'bonjour' });
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        'Missing required property "numProp"'
-      );
-    }
-  });
-
-  it('rejects late for all missing required args', async () => {
-    expect.assertions(2);
-    try {
-      await createConfigTwo({ boolProp: true });
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        'Missing required properties "stringProp", "numProp"'
-      );
+      expect(e).toHaveProperty('message', 'please specify "numProp"');
     }
   });
 });
@@ -184,7 +172,12 @@ describe('Parsing with string args', () => {
   };
   it('works with required', async () => {
     const createConfig = parserFactory<Config>(defaultConfig, {
-      required: ['stringProp'],
+      required: [
+        {
+          argName: 'stringProp',
+          errorMessage: 'please make sure "stringProp" is set',
+        },
+      ],
     });
     const c = await createConfig(['--stringProp', 'new value!', '--boolProp']);
     expect(c).toStrictEqual({

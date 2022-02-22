@@ -39,91 +39,81 @@ The object that is passed to the factory needs to specify the **exact types** th
 import { parserFactory } from '@eegli/tinyparse';
 
 const defaultConfig = {
-  name: '', // want string
-  age: 0, // want number
-  hasDog: true, // want boolean
+  name: 'defaultName', // string
+  age: 0, // number
+  hasDog: true, // boolean
 };
 
-const parse = parserFactory(defaultConfig, {
-  required: ['name'], // a valid key of defaultConfig
-});
+const parse = parserFactory(defaultConfig);
 
+// Resolves to a full user configuration
 const p1 = await parse({
   name: 'eric',
   hasDog: false,
+  age: 12,
 });
 
-/* -- Resolves to
-{
-  name: 'eric', --> user input
-  age: 0, --> default value
-  hasDog: false --> user input
-}
-*/
+expect(p1).toStrictEqual({
+  name: 'eric',
+  age: 12,
+  hasDog: false,
+});
 
+// Unknown properties are ignored
 const p2 = await parse({
-  name: 'eeeeeric',
-  age: 12,
-  iShouldNotExist: true, // is ignored
+  name: 'again, eric',
+  unknownProperty: 'blablabla',
 });
 
-/* -- Resolves to
-{
-  name: 'eeeeeric',
-  age: 12,
-  hasDog: true
-}
-*/
+expect(p2).toStrictEqual({
+  name: 'again, eric',
+  age: 0,
+  hasDog: true,
+});
 ```
 
 ### Required options
 
 In many scenarios, at least some user input is required.
 
-The factory may accept an optional array of required keys from the default configuration. If they are not provided in the user input, the promise is rejected.
+The factory may accept an optional array of object literals that specify **required keys** from the default configuration. Each required property **must** specify a custom error message.
 
 This works for object literals as well as string array arguments.
 
 ```ts
 const defaultConfig = {
-  name: '',
-  age: 0,
+  accessToken: '',
 };
 
 const parse = parserFactory(defaultConfig, {
-  required: ['name', 'age'],
+  required: [
+    {
+      argName: 'accessToken',
+      errorMessage: 'Please specify an access token to be used',
+    },
+  ],
 });
 
-const parsedInput = await parse({
-  name: 'eric',
-});
+await parse();
 
 // --> Rejects :(
-// 'Missing required config property "age"'
+//  'Please specify an access token to be used'
 ```
 
 Invalid types are also rejected.
 
 ```ts
 const defaultConfig = {
-  name: '',
-  age: 0,
+  accessToken: '',
 };
 
-const parse = parserFactory(defaultConfig, {
-  required: ['name', 'age'],
-});
+const parse = parserFactory(defaultConfig);
 
-const parsedInput = await parse({
-  name: 'eric',
-  age: '12',
-});
+await parse({ accessToken: 12 });
 
 // --> Rejects :(
-// Invalid type for option "age". Expected number, got string
+// 'Invalid type for "accessToken". Expected string, got number'
 ```
-
-Unknown properties are skipped.
 
 ## Usage with string arrays (e.g. process.argv)
 
@@ -153,36 +143,27 @@ run-cli --verbose 👉 [command] [boolean long flag] | ✅
 run-cli -v 👉 [command] [boolean short flag] | ✅
 ```
 
-**Flags that are followed by a flag** are considered booleans flags. If they are encountered, their value will be set to `true`.
+**Standalone flags** are considered booleans flags. If they are encountered, their value will be set to `true`. This means that it is not possible to specify a "falsy" flag. Tinyparse assumes that any option that can be enabled by a flag is `false` by default but can be set to true.
 
 ```ts
-const defaultConfig = {
-  age: 0
+const parse = parserFactory({
+  age: 0,
   hasDog: true,
   hasCat: false,
-};
+});
 
-const parse = parserFactory(defaultConfig);
+const parsedInput = await parse(['--hasCat', '--hasDog', '--age', '12']);
 
-const parsedInput = await parse([
-  "--age",
-  "12",
-  '--hasCat',
-  '--hasDog',
-]);
-
-/* -- parsedInput
-{
+expect(parsedInput).toStrictEqual({
   age: 12,
   hasDog: true,
   hasCat: true,
-}
-*/
+});
 ```
 
 Notice how:
 
-1. Since `hasDog` was already true, the boolean flag did not change that.
+1. Since `hasDog` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
 2. Strings that are valid numbers are automagically converted to a number (see `--age`). This only applies if the object to be parsed is an array of strings.
 
 ### Short flag options
@@ -203,12 +184,10 @@ const parse = parserFactory(defaultConfig, {
 
 const parsedInput = await parse(['-fn', 'eric', '--age', '12']);
 
-/* -- parsedInput 
-{
+expect(parsedInput).toStrictEqual({
   firstName: 'eric',
   age: 12,
-}
-*/
+});
 ```
 
 ## TypeScript
@@ -217,36 +196,20 @@ In some rare cases, one might have a config type with optional properties. They 
 
 ```ts
 type Config = {
-  name: string;
-  hasDog?: boolean; // Optional - should be preserved
+  age?: number; // Optional - should be preserved
 };
 
-const defaultConfig: Config = {
-  name: '',
-  hasDog: true,
-};
+const defaultConfig: Config = {};
 
-// Preserve optional types
-const parse = parserFactory<Config>(defaultConfig, {
-  required: ['name'],
-});
+const parse = parserFactory<Config>(defaultConfig);
 
-const parsedInput = await parse({
-  name: 'eric',
-});
+const parsedInput = await parse();
+expect(parsedInput).toStrictEqual({});
 
-/* -- value of parsedInput 
-{
-  firstName: 'eric',
-  hasDog: true
-}
-*/
-
-/* -- type of parsedInput 
-{
-  firstName: string,
-  hasDog: boolean | undefined
-}
+/* -- type of parsedInput: 
+      {
+        age: string | undefined
+      }
 */
 ```
 
@@ -262,19 +225,15 @@ const defaultConfig = {
 };
 
 const parse = parserFactory(defaultConfig, {
-  required: ['name'],
+  required: [{ argName: 'name', errorMessage: 'Please specify a name' }],
 });
 
 try {
-  const parsed = await parse({
-    notNameProperty: 'eric',
-  });
+  await parse();
 } catch (e) {
   if (e instanceof ValidationError) {
-    // Do whatever.
-
     console.error(e.message);
-    // -->'Missing required property "name"
+    // -->'Please specify a "name"
   }
 }
 ```

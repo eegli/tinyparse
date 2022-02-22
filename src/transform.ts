@@ -1,4 +1,4 @@
-import { ObjectValues } from './factory';
+import { ObjectValues } from './types';
 
 export function argvTransformer(
   args: string[],
