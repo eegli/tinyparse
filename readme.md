@@ -13,11 +13,16 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **I use this mostly for other pet projects of mine so it comes with some opinions.**
 
-- Tinyparse is fast and lightweight. It's made for parsing simple user input.
+- Tinyparse is made for parsing simple user input
+- Tinyparse enforces verbose/user-friendly error messagess
+- Objects to be parsed cannot be nested and need to have string keys
+- Objects to be parsed can only have values that are of type string, number or boolean
 
-- It **exports a single parser factory function** from which a type-aware parser can be created. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`).
+**How it works**
 
-- The parser checks the input and returns the base with updated matching property values.
+- The package **exports a single parser factory function** from which a type-aware parser can be created. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
+
+- The parser checks the input and returns the base with updated matching property values
 
 ## Installation
 
@@ -241,9 +246,3 @@ try {
 ## More examples
 
 For more examples, [check the extensive test suites](test/parse.test.ts) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
-
-## Limitations/Opinions
-
-1. Objects to be parsed cannot be nested and need to have string keys
-2. Objects to be parsed can only have values that are of type string, number or boolean
-3. Invalid keys are ignored, invalid value types are rejected
