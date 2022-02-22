@@ -1,50 +1,33 @@
-import { ValidationError } from './error';
+import { throwErr, ValidationError } from './error';
 import { argvTransformer } from './transform';
+import { ObjectValues, Options, StringOrNever } from './types';
 
-export type ObjectValues = string | number | boolean;
-
-type RequireAtLeastOne<T> = {
-  [K in keyof T]-?: Required<Pick<T, K>> &
-    Partial<Pick<T, Exclude<keyof T, K>>>;
-}[keyof T];
-
-type Options<T extends string> = RequireAtLeastOne<{
-  required: T[];
-  shortFlags: {
-    [P in `-${string}`]: T;
-  };
-}>;
-
-export function parserFactory<T extends Record<string, ObjectValues>>(
-  baseConfig: T,
-  opts?: Options<keyof T extends string ? keyof T : never>
-) {
+export function parserFactory<
+  T extends Record<string, ObjectValues>,
+  K extends keyof T = keyof T
+>(baseConfig: T, opts?: Options<StringOrNever<K>>) {
   return function (args?: Partial<T> | string[]): Promise<T> {
     return new Promise((resolve) => {
-      const requiredProps = opts?.required;
+      const requiredArgs = opts?.required;
       const shortFlags = opts?.shortFlags;
 
       if (!args) {
-        if (!requiredProps?.length) {
+        if (!requiredArgs?.length) {
           // No required arguments, return base config
           return resolve(baseConfig);
         } else {
-          throw new ValidationError(
-            `Missing required propert${
-              requiredProps.length > 1 ? 'ies' : 'y'
-            } "${requiredProps.join('", "')}"`
-          );
+          throwErr(requiredArgs[0].errorMessage);
         }
       }
       const config = new Map<string, ObjectValues | null>(
         Object.entries(baseConfig)
       );
 
-      // Set required properties to null - they will need to be
+      // Set required arguments to null - they will need to be
       // defined from the input
-      if (requiredProps?.length) {
-        requiredProps.forEach((r) => {
-          config.set(r, null);
+      if (requiredArgs?.length) {
+        requiredArgs.forEach((r) => {
+          config.set(r.argName, null);
         });
       }
 
@@ -71,23 +54,14 @@ export function parserFactory<T extends Record<string, ObjectValues>>(
         }
       });
 
-      // Check if all required properties have been defined by the
+      // Check if all required arguments have been defined by the
       // input
-      if (requiredProps?.length) {
-        const missing = requiredProps.reduce((acc, prop) => {
-          if (config.get(prop) === null) {
-            acc.push(prop);
+      if (requiredArgs?.length) {
+        requiredArgs.forEach((arg) => {
+          if (config.get(arg.argName) === null) {
+            throwErr(arg.errorMessage);
           }
-          return acc;
         }, <string[]>[]);
-
-        if (missing.length) {
-          throw new ValidationError(
-            `Missing required propert${
-              missing.length > 1 ? 'ies' : 'y'
-            } "${missing.join('", "')}"`
-          );
-        }
       }
 
       return resolve(Object.fromEntries(config) as T);
