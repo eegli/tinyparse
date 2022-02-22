@@ -14,7 +14,7 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 **I use this mostly for other pet projects of mine so it comes with some opinions.**
 
 - Tinyparse is made for parsing simple user input
-- Tinyparse enforces verbose/user-friendly error messagess
+- Tinyparse enforces verbose error messages
 - Objects to be parsed cannot be nested and need to have string keys
 - Objects to be parsed can only have values that are of type string, number or boolean
 
