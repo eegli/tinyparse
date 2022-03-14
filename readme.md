@@ -51,10 +51,10 @@ const { parse, help } = createParser(defaultConfig, [
     name: 'clientId', // Name of the property
     required: true, // Fail if not present
     description: 'The client id', // For the help printer
-    shortFlag: '-cid', // Short flag alias
   },
   {
     name: 'outputDirectory',
+    shortFlag: '-o', // Short flag alias
   },
 ]);
 
@@ -72,11 +72,11 @@ help('CLI Usage Example');
   CLI Usage Example
 
   Required
-      -cid, --clientId <clientId> [string]
+      --clientId <clientId> [string]
       The client id
 
   Optional
-      --outputDirectory <outputDirectory> [string]
+      -o, --outputDirectory <outputDirectory> [string]
       
 `;
 ```

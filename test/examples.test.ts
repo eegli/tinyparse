@@ -14,10 +14,10 @@ describe('Readme examples', () => {
         name: 'clientId', // Name of the property
         required: true, // Fail if not present
         description: 'The client id', // For the help printer
-        shortFlag: '-cid', // Short flag alias
       },
       {
         name: 'outputDirectory',
+        shortFlag: '-o', // Short flag alias
       },
     ]);
 
@@ -25,11 +25,11 @@ describe('Readme examples', () => {
       "CLI Usage Example
 
       Required
-         -cid, --clientId <clientId> [string]
+         --clientId <clientId> [string]
          The client id
 
       Optional
-         --outputDirectory <outputDirectory> [string]"
+         -o, --outputDirectory <outputDirectory> [string]"
     `);
   });
   test('default example', async () => {
