@@ -133,13 +133,13 @@ describe('Parsing with required args', () => {
       await parseWithStringRequired();
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'stringProp is required');
+      expect(e).toHaveProperty('message', '"stringProp" is required');
     }
     try {
       await parseWithStringAndNumRequired();
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'stringProp is required');
+      expect(e).toHaveProperty('message', '"stringProp" is required');
     }
   });
 
@@ -149,13 +149,13 @@ describe('Parsing with required args', () => {
       await parseWithStringRequired({});
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'stringProp is required');
+      expect(e).toHaveProperty('message', '"stringProp" is required');
     }
     try {
       await parseWithStringAndNumRequired({ stringProp: 'bonjour' });
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'numProp is required');
+      expect(e).toHaveProperty('message', '"numProp" is required');
     }
   });
 });

@@ -68,7 +68,7 @@ describe('Readme examples', () => {
     try {
       await parse();
     } catch (e) {
-      expect(e).toHaveProperty('message', 'accessToken is required');
+      expect(e).toHaveProperty('message', '"accessToken" is required');
     }
   });
   test('example, invalid type', async () => {
@@ -88,51 +88,27 @@ describe('Readme examples', () => {
       );
     }
   });
-  test('example, process argv 1', async () => {
+  test('example, process argv', async () => {
     const defaultConfig = {
-      otherPets: '',
+      numberOfPets: 0,
       hasDog: true,
       hasCat: false,
     };
 
     const { parse } = createParser(defaultConfig, [
       {
-        name: 'otherPets',
-        shortFlag: '-op',
+        name: 'numberOfPets',
+        shortFlag: '-n',
       },
     ]);
 
-    const parsedInput = await parse([
-      '-op',
-      'A bird ayy',
-      '--hasDog',
-      '--hasCat',
-    ]);
+    const parsedInput = await parse(['-n', '6', '--hasDog', '--hasCat']);
 
     expect(parsedInput).toStrictEqual({
-      otherPets: 'A bird ayy',
+      numberOfPets: 6,
       hasDog: true,
       hasCat: true,
     });
-  });
-  test('example, typescript', async () => {
-    type Config = {
-      age?: number; // Optional - should be preserved
-    };
-
-    const defaultConfig: Config = {};
-
-    const { parse } = createParser<Config>(defaultConfig);
-
-    const parsedInput = await parse();
-
-    expect(parsedInput).toStrictEqual({});
-
-    /* 
-      {
-        age: string | undefined
-      }
-     */
   });
   test('example, error', async () => {
     const defaultConfig = {
@@ -148,7 +124,7 @@ describe('Readme examples', () => {
     try {
       await parse();
     } catch (e) {
-      expect(e).toHaveProperty('message', 'name is required');
+      expect(e).toHaveProperty('message', '"name" is required');
     }
   });
 });

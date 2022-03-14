@@ -132,7 +132,7 @@ const { parse } = createParser(defaultConfig, [
 await parse();
 
 // --> Rejects :(
-//  'accessToken is required'
+//  "accessToken" is required
 ```
 
 Invalid types are also rejected.
@@ -149,7 +149,7 @@ const { parse } = createParser(defaultConfig);
 await parse({ accessToken: 12 });
 
 // --> Rejects :(
-// 'Invalid type for "accessToken". Expected string, got number'
+// Invalid type for "accessToken". Expected string, got number
 ```
 
 ## Usage with string arrays (e.g. process.argv)
@@ -176,22 +176,22 @@ Optionalls, **short flags** can be specified for each argument. Short flags are 
 import { createParser } from '@eegli/tinyparse';
 
 const defaultConfig = {
-  otherPets: '',
+  numberOfPets: 0,
   hasDog: true,
   hasCat: false,
 };
 
 const { parse } = createParser(defaultConfig, [
   {
-    name: 'otherPets',
-    shortFlag: '-op',
+    name: 'numberOfPets',
+    shortFlag: '-n',
   },
 ]);
 
-const parsedInput = await parse(['-op', 'A bird ayy', '--hasDog', '--hasCat']);
+const parsedInput = await parse(['-n', '6', '--hasDog', '--hasCat']);
 
 expect(parsedInput).toStrictEqual({
-  otherPets: 'A bird ayy',
+  numberOfPets: 6,
   hasDog: true,
   hasCat: true,
 });
@@ -200,7 +200,7 @@ expect(parsedInput).toStrictEqual({
 Notice how:
 
 1. Since `hasDog` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
-2. Strings that are valid numbers are automagically converted to a number (see `--age`). This only applies if the object to be parsed is an array of strings.
+2. Strings that are valid numbers are automagically converted to a number (see `--numberOfPets`). This only applies if the object to be parsed is an array of strings.
 
 ## TypeScript
 
@@ -215,17 +215,9 @@ type Config = {
 
 const defaultConfig: Config = {};
 
-const { parse } = createParser<Config>(defaultConfig);
-
-const parsedInput = await parse();
-
-expect(parsedInput).toStrictEqual({});
-
-/* -- type of parsedInput: 
-      {
-        age: string | undefined
-      }
-*/
+const { parse } = createParser<Config>({
+  /* Input */
+});
 ```
 
 ## Error handling
@@ -251,7 +243,7 @@ try {
 } catch (e) {
   if (e instanceof ValidationError) {
     console.error(e.message);
-    // --> "name is required"
+    // --> "name" is required
   }
 }
 ```

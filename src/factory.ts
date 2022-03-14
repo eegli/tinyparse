@@ -18,7 +18,7 @@ export function createParser<C extends Record<string, ObjectValues>>(
             // No required arguments, return base config
             return resolve(baseConfig);
           } else {
-            throwErr(requiredArgs[0].name + ' is required');
+            throwErr(`"${requiredArgs[0].name}" is required`);
           }
         }
         const config = new Map<string, ObjectValues | null>(
@@ -66,7 +66,7 @@ export function createParser<C extends Record<string, ObjectValues>>(
         if (requiredArgs?.length) {
           requiredArgs.forEach((arg) => {
             if (config.get(arg.name) === null) {
-              throwErr(arg.name + ' is required');
+              throwErr(`"${arg.name}" is required`);
             }
           }, <string[]>[]);
         }
