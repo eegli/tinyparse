@@ -22,7 +22,7 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 - The parser checks the input and returns the base with updated matching property values
 
-- Additionally, a `help()` function is returned from the factory that can be used to print all available options, sorted by `required`
+- Additionally, a `help()` function is returned from the factory that can be used to print all available options, sorted by `required`. This is most useful for CLI apps
 
 ## Installation
 
@@ -50,8 +50,7 @@ const { parse, help } = createParser(
     {
       name: 'clientId', // Name of the property
       required: true, // Fail if not present
-      description: 'The client id', // Display in the helper
-      shortFlag: '-cid', // Short flag alias
+      description: 'The client id', // For the help printer
     },
     {
       name: 'outputDirectory',
