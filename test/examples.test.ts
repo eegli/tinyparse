@@ -1,62 +1,83 @@
-import { parserFactory } from '../src/factory';
+import { createParser } from '../src/factory';
 
 jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
 describe('Readme examples', () => {
+  test('general usage', async () => {
+    const defaultConfig = {
+      clientId: '',
+      outputDirectory: '',
+    };
+
+    const { parse, help } = createParser(defaultConfig, [
+      {
+        name: 'clientId', // Name of the property
+        required: true, // Fail if not present
+        description: 'The client id', // For the help printer
+      },
+      {
+        name: 'outputDirectory',
+        shortFlag: '-o', // Short flag alias
+      },
+    ]);
+
+    expect(help('CLI Usage Example')).toMatchInlineSnapshot(`
+      "CLI Usage Example
+
+      Required
+         --clientId <clientId> [string]
+         The client id
+
+      Optional
+         -o, --outputDirectory <outputDirectory> [string]"
+    `);
+  });
   test('default example', async () => {
     const defaultConfig = {
-      name: 'defaultName',
-      age: 0,
-      hasDog: true,
+      name: 'defaultName', // string
+      age: 0, // number
+      hasDog: true, // boolean
     };
-    const parse = parserFactory(defaultConfig);
-    const p1 = await parse({
+
+    const { parse } = createParser(defaultConfig);
+
+    // Resolves to a full user configuration
+    const parsed = await parse({
       name: 'eric',
       hasDog: false,
-      age: 12,
     });
-    expect(p1).toStrictEqual({
+
+    expect(parsed).toStrictEqual({
       name: 'eric',
-      age: 12,
-      hasDog: false,
-    });
-    const p2 = await parse({
-      name: 'again, eric',
-      // @ts-expect-error test input
-      unknownProperty: 'blablabla',
-    });
-    expect(p2).toStrictEqual({
-      name: 'again, eric',
       age: 0,
-      hasDog: true,
+      hasDog: false,
     });
   });
   test('example, required args', async () => {
     const defaultConfig = {
       accessToken: '',
     };
-    const parse = parserFactory(defaultConfig, {
-      required: [
-        {
-          argName: 'accessToken',
-          errorMessage: 'Please specify an access token to be used',
-        },
-      ],
-    });
+
+    const { parse } = createParser(defaultConfig, [
+      {
+        name: 'accessToken',
+        required: true,
+      },
+    ]);
+
     try {
       await parse();
     } catch (e) {
-      expect(e).toHaveProperty(
-        'message',
-        'Please specify an access token to be used'
-      );
+      expect(e).toHaveProperty('message', 'accessToken is required');
     }
   });
   test('example, invalid type', async () => {
     const defaultConfig = {
       accessToken: '',
     };
-    const parse = parserFactory(defaultConfig);
+
+    const { parse } = createParser(defaultConfig);
+
     try {
       // @ts-expect-error test input
       await parse({ accessToken: 12 });
@@ -68,30 +89,30 @@ describe('Readme examples', () => {
     }
   });
   test('example, process argv 1', async () => {
-    const parse = parserFactory({
-      age: 0,
+    const defaultConfig = {
+      otherPets: '',
       hasDog: true,
       hasCat: false,
-    });
-    const parsedInput = await parse(['--hasCat', '--hasDog', '--age', '12']);
+    };
+
+    const { parse } = createParser(defaultConfig, [
+      {
+        name: 'otherPets',
+        shortFlag: '-op',
+      },
+    ]);
+
+    const parsedInput = await parse([
+      '-op',
+      'A bird ayy',
+      '--hasDog',
+      '--hasCat',
+    ]);
+
     expect(parsedInput).toStrictEqual({
-      age: 12,
+      otherPets: 'A bird ayy',
       hasDog: true,
       hasCat: true,
-    });
-  });
-  test('example, process argv 2', async () => {
-    const defaultConfig = {
-      firstName: '',
-      age: 0,
-    };
-    const parse = parserFactory(defaultConfig, {
-      shortFlags: { '-fn': 'firstName' },
-    });
-    const parsedInput = await parse(['-fn', 'eric', '--age', '12']);
-    expect(parsedInput).toStrictEqual({
-      firstName: 'eric',
-      age: 12,
     });
   });
   test('example, typescript', async () => {
@@ -101,9 +122,10 @@ describe('Readme examples', () => {
 
     const defaultConfig: Config = {};
 
-    const parse = parserFactory<Config>(defaultConfig);
+    const { parse } = createParser<Config>(defaultConfig);
 
     const parsedInput = await parse();
+
     expect(parsedInput).toStrictEqual({});
 
     /* 
@@ -117,13 +139,16 @@ describe('Readme examples', () => {
       name: '',
     };
 
-    const parse = parserFactory(defaultConfig, {
-      required: [{ argName: 'name', errorMessage: 'Please specify a "name"' }],
-    });
+    const { parse } = createParser(defaultConfig, [
+      {
+        name: 'name',
+        required: true,
+      },
+    ]);
     try {
       await parse();
     } catch (e) {
-      expect(e).toHaveProperty('message', 'Please specify a "name"');
+      expect(e).toHaveProperty('message', 'name is required');
     }
   });
 });

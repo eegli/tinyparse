@@ -1,5 +1,5 @@
 import { ValidationError } from '../src/error';
-import { parserFactory } from '../src/factory';
+import { createParser } from '../src/factory';
 
 const warner = jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
@@ -20,25 +20,25 @@ describe('Parsing', () => {
     boolProp: false,
     numProp: 999,
   };
-  const createConfig = parserFactory(defaultConfig);
+  const { parse } = createParser(defaultConfig);
 
   it('returns default config if no args 1', async () => {
-    const c = await createConfig();
+    const c = await parse();
     expect(c).toStrictEqual(defaultConfig);
   });
 
   it('returns default config if no args 2', async () => {
-    const c = await createConfig({});
+    const c = await parse({});
     expect(c).toStrictEqual(defaultConfig);
   });
 
   it('returns default config if no args 3', async () => {
-    const c = await createConfig([]);
+    const c = await parse([]);
     expect(c).toStrictEqual(defaultConfig);
   });
 
   it('overwrites all default values', async () => {
-    const c = await createConfig({
+    const c = await parse({
       stringProp: 'hello',
       boolProp: true,
       numProp: 69,
@@ -51,7 +51,7 @@ describe('Parsing', () => {
   });
 
   it('spreads in default config opts', async () => {
-    const c = await createConfig({ stringProp: 'hello' });
+    const c = await parse({ stringProp: 'hello' });
     expect(c).toStrictEqual({
       ...defaultConfig,
       stringProp: 'hello',
@@ -60,7 +60,7 @@ describe('Parsing', () => {
 
   it('warns with invalid options', async () => {
     // @ts-expect-error - test input
-    await createConfig({ foo: true });
+    await parse({ foo: true });
     expect(warner).toHaveBeenCalledTimes(1);
     expect(warner).toHaveBeenCalledWith('Ignoring unknown argument "foo"');
   });
@@ -69,7 +69,7 @@ describe('Parsing', () => {
     expect.assertions(4);
     try {
       // @ts-expect-error - test input
-      await createConfig({ boolProp: {} });
+      await parse({ boolProp: {} });
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
       expect(e).toHaveProperty(
@@ -78,7 +78,7 @@ describe('Parsing', () => {
       );
     }
     try {
-      await createConfig({
+      await parse({
         stringProp: 'string',
         boolProp: false,
         numProp: '1',
@@ -101,27 +101,23 @@ describe('Parsing with required args', () => {
     undefinedProp: undefined,
   };
   // Pre-made helpers
-  const parseWithStringRequired = parserFactory(defaultConfig, {
-    required: [
-      {
-        argName: 'stringProp',
-        errorMessage: 'argument "stringProp" is required',
-      },
-    ],
-  });
+  const { parse: parseWithStringRequired } = createParser(defaultConfig, [
+    {
+      name: 'stringProp',
+      required: true,
+    },
+  ]);
 
-  const parseWithStringAndNumRequired = parserFactory(defaultConfig, {
-    required: [
-      {
-        argName: 'stringProp',
-        errorMessage: 'argument "stringProp" is required',
-      },
-      {
-        argName: 'numProp',
-        errorMessage: 'please specify "numProp"',
-      },
-    ],
-  });
+  const { parse: parseWithStringAndNumRequired } = createParser(defaultConfig, [
+    {
+      name: 'stringProp',
+      required: true,
+    },
+    {
+      name: 'numProp',
+      required: true,
+    },
+  ]);
 
   it('resolves if all required args are present', async () => {
     const input = { stringProp: 'goodbye' };
@@ -137,13 +133,13 @@ describe('Parsing with required args', () => {
       await parseWithStringRequired();
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'argument "stringProp" is required');
+      expect(e).toHaveProperty('message', 'stringProp is required');
     }
     try {
       await parseWithStringAndNumRequired();
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'argument "stringProp" is required');
+      expect(e).toHaveProperty('message', 'stringProp is required');
     }
   });
 
@@ -153,13 +149,13 @@ describe('Parsing with required args', () => {
       await parseWithStringRequired({});
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'argument "stringProp" is required');
+      expect(e).toHaveProperty('message', 'stringProp is required');
     }
     try {
       await parseWithStringAndNumRequired({ stringProp: 'bonjour' });
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'please specify "numProp"');
+      expect(e).toHaveProperty('message', 'numProp is required');
     }
   });
 });
@@ -171,15 +167,13 @@ describe('Parsing with string args', () => {
     numProp: 999,
   };
   it('works with required', async () => {
-    const createConfig = parserFactory<Config>(defaultConfig, {
-      required: [
-        {
-          argName: 'stringProp',
-          errorMessage: 'please make sure "stringProp" is set',
-        },
-      ],
-    });
-    const c = await createConfig(['--stringProp', 'new value!', '--boolProp']);
+    const { parse } = createParser<Config>(defaultConfig, [
+      {
+        name: 'stringProp',
+        required: true,
+      },
+    ]);
+    const c = await parse(['--stringProp', 'new value!', '--boolProp']);
     expect(c).toStrictEqual({
       stringProp: 'new value!',
       boolProp: true,
@@ -187,10 +181,15 @@ describe('Parsing with string args', () => {
     });
   });
   it('works with shortmap', async () => {
-    const createConfig = parserFactory<Config>(defaultConfig, {
-      shortFlags: { '-s': 'stringProp', '-b': 'boolProp' },
-    });
-    const c = await createConfig(['-s', 'new value!', '-b']);
+    const { parse } = createParser<Config>(defaultConfig, [
+      { name: 'stringProp', shortFlag: '-s' },
+      {
+        name: 'boolProp',
+        shortFlag: '-b',
+      },
+    ]);
+
+    const c = await parse(['-s', 'new value!', '-b']);
     expect(c).toStrictEqual({
       stringProp: 'new value!',
       boolProp: true,
