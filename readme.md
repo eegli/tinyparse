@@ -51,6 +51,7 @@ const { parse, help } = createParser(
       name: 'clientId', // Name of the property
       required: true, // Fail if not present
       description: 'The client id', // For the help printer
+      shortFlag: '-cid', // Short flag alias
     },
     {
       name: 'outputDirectory',
