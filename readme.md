@@ -117,6 +117,8 @@ The factory accepts an optional array of option objects for each config key. If 
 This works for object literals as well as string array arguments.
 
 ```ts
+import { createParser } from '@eegli/tinyparse';
+
 const defaultConfig = {
   accessToken: '',
 };
@@ -137,6 +139,8 @@ await parse();
 Invalid types are also rejected.
 
 ```ts
+import { createParser } from '@eegli/tinyparse';
+
 const defaultConfig = {
   accessToken: '',
 };
@@ -170,19 +174,20 @@ Tinyparse expects that **every** CLI argument is specified with a long or short 
 Optionalls, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
 
 ```ts
-const { parse } = createParser(
+import { createParser } from '@eegli/tinyparse';
+
+const defaultConfig = {
+  otherPets: '',
+  hasDog: true,
+  hasCat: false,
+};
+
+const { parse } = createParser(defaultConfig, [
   {
-    otherPets: '',
-    hasDog: true,
-    hasCat: false,
+    name: 'otherPets',
+    shortFlag: '-op',
   },
-  [
-    {
-      name: 'otherPets',
-      shortFlag: '-op',
-    },
-  ]
-);
+]);
 
 const parsedInput = await parse(['-op', 'A bird ayy', '--hasDog', '--hasCat']);
 
@@ -203,6 +208,8 @@ Notice how:
 In some rare cases, one might have a config type with optional properties. They are allowed to be undefined. In order to preserve these types for later use, the factory accepts a generic.
 
 ```ts
+import { createParser } from '@eegli/tinyparse';
+
 type Config = {
   age?: number; // Optional - should be preserved
 };

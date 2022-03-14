@@ -90,19 +90,18 @@ describe('Readme examples', () => {
     }
   });
   test('example, process argv 1', async () => {
-    const { parse } = createParser(
+    const defaultConfig = {
+      otherPets: '',
+      hasDog: true,
+      hasCat: false,
+    };
+
+    const { parse } = createParser(defaultConfig, [
       {
-        otherPets: '',
-        hasDog: true,
-        hasCat: false,
+        name: 'otherPets',
+        shortFlag: '-op',
       },
-      [
-        {
-          name: 'otherPets',
-          shortFlag: '-op',
-        },
-      ]
-    );
+    ]);
 
     const parsedInput = await parse([
       '-op',
