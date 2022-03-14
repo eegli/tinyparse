@@ -60,10 +60,10 @@ const { parse, help } = createParser(defaultConfig, [
 
 await parse(process.argv.slice(2)); // Process args
 
-/* or */
+// Or
 
 await parse({
-  /* Any user input */
+  clientId: 'abc', // Object literal
 });
 
 // A helper command to print all available options
