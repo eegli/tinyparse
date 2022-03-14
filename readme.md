@@ -39,7 +39,9 @@ npm i @eegli/tinyparse
 ## General usage
 
 ```ts
-const { parse, help } = parserFactory(
+import { createParser } from '@eegli/tinyparse';
+
+const { parse, help } = createParser(
   {
     clientId: '',
     outputDirectory: '',
@@ -78,7 +80,7 @@ help();
 The object that is passed to the factory needs to specify the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
 
 ```ts
-import { parserFactory } from '@eegli/tinyparse';
+import { createParser } from '@eegli/tinyparse';
 
 const defaultConfig = {
   name: 'defaultName', // string
@@ -86,7 +88,7 @@ const defaultConfig = {
   hasDog: true, // boolean
 };
 
-const { parse } = parserFactory(defaultConfig);
+const { parse } = createParser(defaultConfig);
 
 // Resolves to a full user configuration
 const p1 = await parse({
@@ -128,7 +130,7 @@ const defaultConfig = {
   accessToken: '',
 };
 
-const { parse } = parserFactory(defaultConfig, [
+const { parse } = createParser(defaultConfig, [
   {
     name: 'accessToken',
     required: true,
@@ -148,7 +150,7 @@ const defaultConfig = {
   accessToken: '',
 };
 
-const { parse } = parserFactory(defaultConfig);
+const { parse } = createParser(defaultConfig);
 
 await parse({ accessToken: 12 });
 
@@ -177,7 +179,7 @@ Tinyparse expects that **every** CLI argument is specified with a long or short 
 Optionalls, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
 
 ```ts
-const { parse } = parserFactory(
+const { parse } = createParser(
   {
     otherPets: '',
     hasDog: true,
@@ -216,7 +218,7 @@ type Config = {
 
 const defaultConfig: Config = {};
 
-const { parse } = parserFactory<Config>(defaultConfig);
+const { parse } = createParser<Config>(defaultConfig);
 
 const parsedInput = await parse();
 
@@ -234,13 +236,13 @@ expect(parsedInput).toStrictEqual({});
 Tinyparse exports a `ValidationError` class. You can use it to check if, in a large try-catch block, the error originated from parsing something.
 
 ```ts
-import { parserFactory, ValidationError } from '@eegli/tinyparse';
+import { createParser, ValidationError } from '@eegli/tinyparse';
 
 const defaultConfig = {
   name: '',
 };
 
-const { parse } = parserFactory(defaultConfig, [
+const { parse } = createParser(defaultConfig, [
   {
     name: 'name',
     required: true,

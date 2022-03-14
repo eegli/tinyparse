@@ -1,2 +1,2 @@
 export { ValidationError } from './error';
-export { parserFactory } from './factory';
+export { createParser } from './factory';

@@ -1,5 +1,5 @@
 import { ValidationError } from '../src/error';
-import { parserFactory } from '../src/factory';
+import { createParser } from '../src/factory';
 
 const warner = jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
@@ -20,7 +20,7 @@ describe('Parsing', () => {
     boolProp: false,
     numProp: 999,
   };
-  const { parse } = parserFactory(defaultConfig);
+  const { parse } = createParser(defaultConfig);
 
   it('returns default config if no args 1', async () => {
     const c = await parse();
@@ -101,26 +101,23 @@ describe('Parsing with required args', () => {
     undefinedProp: undefined,
   };
   // Pre-made helpers
-  const { parse: parseWithStringRequired } = parserFactory(defaultConfig, [
+  const { parse: parseWithStringRequired } = createParser(defaultConfig, [
     {
       name: 'stringProp',
       required: true,
     },
   ]);
 
-  const { parse: parseWithStringAndNumRequired } = parserFactory(
-    defaultConfig,
-    [
-      {
-        name: 'stringProp',
-        required: true,
-      },
-      {
-        name: 'numProp',
-        required: true,
-      },
-    ]
-  );
+  const { parse: parseWithStringAndNumRequired } = createParser(defaultConfig, [
+    {
+      name: 'stringProp',
+      required: true,
+    },
+    {
+      name: 'numProp',
+      required: true,
+    },
+  ]);
 
   it('resolves if all required args are present', async () => {
     const input = { stringProp: 'goodbye' };
@@ -170,7 +167,7 @@ describe('Parsing with string args', () => {
     numProp: 999,
   };
   it('works with required', async () => {
-    const { parse } = parserFactory<Config>(defaultConfig, [
+    const { parse } = createParser<Config>(defaultConfig, [
       {
         name: 'stringProp',
         required: true,
@@ -184,7 +181,7 @@ describe('Parsing with string args', () => {
     });
   });
   it('works with shortmap', async () => {
-    const { parse } = parserFactory<Config>(defaultConfig, [
+    const { parse } = createParser<Config>(defaultConfig, [
       { name: 'stringProp', shortFlag: '-s' },
       {
         name: 'boolProp',

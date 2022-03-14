@@ -3,7 +3,7 @@ import { displayHelp } from './help';
 import { argvTransformer } from './transform';
 import { ObjectValues, Options, StringOrNever } from './types';
 
-export function parserFactory<C extends Record<string, ObjectValues>>(
+export function createParser<C extends Record<string, ObjectValues>>(
   baseConfig: C,
   options?: Options<StringOrNever<keyof C>>
 ) {

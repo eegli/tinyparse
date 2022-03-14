@@ -1,4 +1,4 @@
-import { parserFactory } from '../src/factory';
+import { createParser } from '../src/factory';
 
 describe('Helper text', () => {
   it('creates helper text with descriptions', () => {
@@ -8,7 +8,7 @@ describe('Helper text', () => {
       withAuth: false,
       port: 999,
     };
-    const { help } = parserFactory(defaultConfig, [
+    const { help } = createParser(defaultConfig, [
       {
         name: 'id',
       },
@@ -54,7 +54,7 @@ describe('Helper text', () => {
       withAuth: false,
       port: 999,
     };
-    const { help } = parserFactory(defaultConfig);
+    const { help } = createParser(defaultConfig);
 
     const helperText = help();
     expect(helperText).toMatchInlineSnapshot(`

@@ -1,10 +1,10 @@
-import { parserFactory } from '../src/factory';
+import { createParser } from '../src/factory';
 
 jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
 describe('Readme examples', () => {
   test('general usage', async () => {
-    const { help } = parserFactory(
+    const { help } = createParser(
       {
         clientId: '',
         outputDirectory: '',
@@ -40,7 +40,7 @@ describe('Readme examples', () => {
       hasDog: true, // boolean
     };
 
-    const { parse } = parserFactory(defaultConfig);
+    const { parse } = createParser(defaultConfig);
 
     // Resolves to a full user configuration
     const p1 = await parse({
@@ -73,7 +73,7 @@ describe('Readme examples', () => {
       accessToken: '',
     };
 
-    const { parse } = parserFactory(defaultConfig, [
+    const { parse } = createParser(defaultConfig, [
       {
         name: 'accessToken',
         required: true,
@@ -91,7 +91,7 @@ describe('Readme examples', () => {
       accessToken: '',
     };
 
-    const { parse } = parserFactory(defaultConfig);
+    const { parse } = createParser(defaultConfig);
 
     try {
       // @ts-expect-error test input
@@ -104,7 +104,7 @@ describe('Readme examples', () => {
     }
   });
   test('example, process argv 1', async () => {
-    const { parse } = parserFactory(
+    const { parse } = createParser(
       {
         otherPets: '',
         hasDog: true,
@@ -138,7 +138,7 @@ describe('Readme examples', () => {
 
     const defaultConfig: Config = {};
 
-    const { parse } = parserFactory<Config>(defaultConfig);
+    const { parse } = createParser<Config>(defaultConfig);
 
     const parsedInput = await parse();
 
@@ -155,7 +155,7 @@ describe('Readme examples', () => {
       name: '',
     };
 
-    const { parse } = parserFactory(defaultConfig, [
+    const { parse } = createParser(defaultConfig, [
       {
         name: 'name',
         required: true,
