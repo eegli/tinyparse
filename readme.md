@@ -9,8 +9,6 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 - Promise-based
 - TypeScript first
 - Zero dependencies
-- Includes a helper to print available options
-- Supports object literals and arrays of strings
 
 **I use this mostly for other pet projects of mine so it comes with some opinions.**
 
@@ -20,9 +18,11 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **How it works**
 
-- The package **exports a single parser factory function** from which a type-aware parser and a help printer can be created. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
+- The package **exports a single parser factory function** from which a type-aware parser can be created. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
 
 - The parser checks the input and returns the base with updated matching property values
+
+- Additionally, a `help()` function is returned from the factory that can be used to print all available options, sorted by `required`
 
 ## Installation
 
@@ -36,7 +36,7 @@ or
 npm i @eegli/tinyparse
 ```
 
-## General usage
+## Example
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -48,10 +48,10 @@ const { parse, help } = createParser(
   },
   [
     {
-      name: 'clientId',
-      required: true,
-      description: 'The client id',
-      shortFlag: '-cid',
+      name: 'clientId', // Name of the property
+      required: true, // Fail if not present
+      description: 'The client id', // Display in the helper
+      shortFlag: '-cid', // Short flag alias
     },
     {
       name: 'outputDirectory',
@@ -59,11 +59,18 @@ const { parse, help } = createParser(
   ]
 );
 
-const validated = await parse(/* Input */);
+await parse(process.argv.slice(2)); // Process args
 
-help();
+/* or */
+
+await parse({
+  /* Any user input */
+});
+
+// A helper command to print all available options
+help('CLI Usage Example');
 `
-  Usage
+  CLI Usage Example
 
   Required
       -cid, --clientId <clientId> [string]
@@ -91,37 +98,21 @@ const defaultConfig = {
 const { parse } = createParser(defaultConfig);
 
 // Resolves to a full user configuration
-const p1 = await parse({
+const parsed = await parse({
   name: 'eric',
   hasDog: false,
-  age: 12,
 });
 
-expect(p1).toStrictEqual({
+expect(parsed).toStrictEqual({
   name: 'eric',
-  age: 12,
-  hasDog: false,
-});
-
-// Unknown properties are ignored
-const p2 = await parse({
-  name: 'again, eric',
-  // @ts-expect-error test input
-  unknownProperty: 'blablabla',
-});
-
-expect(p2).toStrictEqual({
-  name: 'again, eric',
   age: 0,
-  hasDog: true,
+  hasDog: false,
 });
 ```
 
 ### Required options
 
-In many scenarios, at least some user input is required.
-
-The factory may accept an optional array of object literals that specify **required keys** from the default configuration. Each required property **must** specify a custom error message.
+The factory accepts an optional array of option objects for each config key. If a required argument is not present in the user input, a `ValidationError` is thrown.
 
 This works for object literals as well as string array arguments.
 

@@ -22,8 +22,8 @@ describe('Readme examples', () => {
       ]
     );
 
-    expect(help()).toMatchInlineSnapshot(`
-      "Usage
+    expect(help('CLI Usage Example')).toMatchInlineSnapshot(`
+      "CLI Usage Example
 
       Required
          -cid, --clientId <clientId> [string]
@@ -43,29 +43,15 @@ describe('Readme examples', () => {
     const { parse } = createParser(defaultConfig);
 
     // Resolves to a full user configuration
-    const p1 = await parse({
+    const parsed = await parse({
       name: 'eric',
       hasDog: false,
-      age: 12,
     });
 
-    expect(p1).toStrictEqual({
+    expect(parsed).toStrictEqual({
       name: 'eric',
-      age: 12,
-      hasDog: false,
-    });
-
-    // Unknown properties are ignored
-    const p2 = await parse({
-      name: 'again, eric',
-      // @ts-expect-error test input
-      unknownProperty: 'blablabla',
-    });
-
-    expect(p2).toStrictEqual({
-      name: 'again, eric',
       age: 0,
-      hasDog: true,
+      hasDog: false,
     });
   });
   test('example, required args', async () => {
