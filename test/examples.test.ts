@@ -4,7 +4,7 @@ jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
 describe('Readme examples', () => {
   test('general usage', async () => {
-    const { parse, help } = parserFactory(
+    const { help } = parserFactory(
       {
         clientId: '',
         outputDirectory: '',

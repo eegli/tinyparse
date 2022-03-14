@@ -9,18 +9,18 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 - Promise-based
 - TypeScript first
 - Zero dependencies
+- Includes a helper to print available options
 - Supports object literals and arrays of strings
 
 **I use this mostly for other pet projects of mine so it comes with some opinions.**
 
 - Tinyparse is made for parsing simple user input
-- Tinyparse enforces verbose error messages
 - Objects to be parsed cannot be nested and need to have string keys
 - Objects to be parsed can only have values that are of type string, number or boolean
 
 **How it works**
 
-- The package **exports a single parser factory function** from which a type-aware parser can be created. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
+- The package **exports a single parser factory function** from which a type-aware parser and a help printer can be created. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
 
 - The parser checks the input and returns the base with updated matching property values
 
@@ -36,6 +36,43 @@ or
 npm i @eegli/tinyparse
 ```
 
+## General usage
+
+```ts
+const { parse, help } = parserFactory(
+  {
+    clientId: '',
+    outputDirectory: '',
+  },
+  [
+    {
+      name: 'clientId',
+      required: true,
+      description: 'The client id',
+      shortFlag: '-cid',
+    },
+    {
+      name: 'outputDirectory',
+    },
+  ]
+);
+
+const validated = await parse(/* Input */);
+
+help();
+`
+  Usage
+
+  Required
+      -cid, --clientId <clientId> [string]
+      The client id
+
+  Optional
+      --outputDirectory <outputDirectory> [string]
+      
+`;
+```
+
 ## Usage with object literals
 
 The object that is passed to the factory needs to specify the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
@@ -44,18 +81,18 @@ The object that is passed to the factory needs to specify the **exact types** th
 import { parserFactory } from '@eegli/tinyparse';
 
 const defaultConfig = {
-  name: '', // string
+  name: 'defaultName', // string
   age: 0, // number
   hasDog: true, // boolean
 };
 
-const parse = parserFactory(defaultConfig);
+const { parse } = parserFactory(defaultConfig);
 
 // Resolves to a full user configuration
 const p1 = await parse({
   name: 'eric',
-  age: 12,
   hasDog: false,
+  age: 12,
 });
 
 expect(p1).toStrictEqual({
@@ -67,6 +104,7 @@ expect(p1).toStrictEqual({
 // Unknown properties are ignored
 const p2 = await parse({
   name: 'again, eric',
+  // @ts-expect-error test input
   unknownProperty: 'blablabla',
 });
 
@@ -90,19 +128,17 @@ const defaultConfig = {
   accessToken: '',
 };
 
-const parse = parserFactory(defaultConfig, {
-  required: [
-    {
-      argName: 'accessToken',
-      errorMessage: 'Please specify an access token to be used',
-    },
-  ],
-});
+const { parse } = parserFactory(defaultConfig, [
+  {
+    name: 'accessToken',
+    required: true,
+  },
+]);
 
 await parse();
 
 // --> Rejects :(
-//  'Please specify an access token to be used'
+//  'accessToken is required'
 ```
 
 Invalid types are also rejected.
@@ -112,7 +148,7 @@ const defaultConfig = {
   accessToken: '',
 };
 
-const parse = parserFactory(defaultConfig);
+const { parse } = parserFactory(defaultConfig);
 
 await parse({ accessToken: 12 });
 
@@ -138,17 +174,27 @@ Tinyparse expects that **every** CLI argument is specified with a long or short 
 
 **Standalone flags** are considered booleans flags. If they are encountered, their value will be set to `true`. This means that it is not possible to specify a "falsy" flag. Tinyparse assumes that any option that can be enabled by a flag is `false` by default but can be set to true.
 
-```ts
-const parse = parserFactory({
-  age: 0,
-  hasDog: true,
-  hasCat: false,
-});
+Optionalls, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
 
-const parsedInput = await parse(['--hasCat', '--hasDog', '--age', '12']);
+```ts
+const { parse } = parserFactory(
+  {
+    otherPets: '',
+    hasDog: true,
+    hasCat: false,
+  },
+  [
+    {
+      name: 'otherPets',
+      shortFlag: '-op',
+    },
+  ]
+);
+
+const parsedInput = await parse(['-op', 'A bird ayy', '--hasDog', '--hasCat']);
 
 expect(parsedInput).toStrictEqual({
-  age: 12,
+  otherPets: 'A bird ayy',
   hasDog: true,
   hasCat: true,
 });
@@ -158,30 +204,6 @@ Notice how:
 
 1. Since `hasDog` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
 2. Strings that are valid numbers are automagically converted to a number (see `--age`). This only applies if the object to be parsed is an array of strings.
-
-### Short flag options
-
-Only applies to string parsing. The factory's optional config parameter accepts an object that maps [short flag](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag) keys to their long siblings.
-
-- Short flags are expected to start with "`-`"
-
-```ts
-const defaultConfig = {
-  firstName: '',
-  age: 0,
-};
-
-const parse = parserFactory(defaultConfig, {
-  shortFlags: { '-fn': 'firstName' },
-});
-
-const parsedInput = await parse(['-fn', 'eric', '--age', '12']);
-
-expect(parsedInput).toStrictEqual({
-  firstName: 'eric',
-  age: 12,
-});
-```
 
 ## TypeScript
 
@@ -194,9 +216,10 @@ type Config = {
 
 const defaultConfig: Config = {};
 
-const parse = parserFactory<Config>(defaultConfig);
+const { parse } = parserFactory<Config>(defaultConfig);
 
 const parsedInput = await parse();
+
 expect(parsedInput).toStrictEqual({});
 
 /* -- type of parsedInput: 
@@ -217,16 +240,19 @@ const defaultConfig = {
   name: '',
 };
 
-const parse = parserFactory(defaultConfig, {
-  required: [{ argName: 'name', errorMessage: 'Please specify a name' }],
-});
+const { parse } = parserFactory(defaultConfig, [
+  {
+    name: 'name',
+    required: true,
+  },
+]);
 
 try {
   await parse();
 } catch (e) {
   if (e instanceof ValidationError) {
     console.error(e.message);
-    // -->'Please specify a "name"
+    // --> "name is required"
   }
 }
 ```
