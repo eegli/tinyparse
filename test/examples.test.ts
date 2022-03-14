@@ -4,23 +4,22 @@ jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
 describe('Readme examples', () => {
   test('general usage', async () => {
-    const { help } = createParser(
+    const defaultConfig = {
+      clientId: '',
+      outputDirectory: '',
+    };
+
+    const { parse, help } = createParser(defaultConfig, [
       {
-        clientId: '',
-        outputDirectory: '',
+        name: 'clientId', // Name of the property
+        required: true, // Fail if not present
+        description: 'The client id', // For the help printer
+        shortFlag: '-cid', // Short flag alias
       },
-      [
-        {
-          name: 'clientId',
-          required: true,
-          description: 'The client id',
-          shortFlag: '-cid',
-        },
-        {
-          name: 'outputDirectory',
-        },
-      ]
-    );
+      {
+        name: 'outputDirectory',
+      },
+    ]);
 
     expect(help('CLI Usage Example')).toMatchInlineSnapshot(`
       "CLI Usage Example

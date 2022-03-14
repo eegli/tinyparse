@@ -41,23 +41,22 @@ npm i @eegli/tinyparse
 ```ts
 import { createParser } from '@eegli/tinyparse';
 
-const { parse, help } = createParser(
+const defaultConfig = {
+  clientId: '',
+  outputDirectory: '',
+};
+
+const { parse, help } = createParser(defaultConfig, [
   {
-    clientId: '',
-    outputDirectory: '',
+    name: 'clientId', // Name of the property
+    required: true, // Fail if not present
+    description: 'The client id', // For the help printer
+    shortFlag: '-cid', // Short flag alias
   },
-  [
-    {
-      name: 'clientId', // Name of the property
-      required: true, // Fail if not present
-      description: 'The client id', // For the help printer
-      shortFlag: '-cid', // Short flag alias
-    },
-    {
-      name: 'outputDirectory',
-    },
-  ]
-);
+  {
+    name: 'outputDirectory',
+  },
+]);
 
 await parse(process.argv.slice(2)); // Process args
 
