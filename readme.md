@@ -202,24 +202,6 @@ Notice how:
 1. Since `hasDog` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
 2. Strings that are valid numbers are automagically converted to a number (see `--numberOfPets`). This only applies if the object to be parsed is an array of strings.
 
-## TypeScript
-
-In some rare cases, one might have a config type with optional properties. They are allowed to be undefined. In order to preserve these types for later use, the factory accepts a generic.
-
-```ts
-import { createParser } from '@eegli/tinyparse';
-
-type Config = {
-  age?: number; // Optional - should be preserved
-};
-
-const defaultConfig: Config = {};
-
-const { parse } = createParser<Config>({
-  /* Input */
-});
-```
-
 ## Error handling
 
 Tinyparse exports a `ValidationError` class. You can use it to check if, in a large try-catch block, the error originated from parsing something.
