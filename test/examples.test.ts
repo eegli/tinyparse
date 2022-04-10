@@ -9,7 +9,7 @@ describe('Readme examples', () => {
       outputDirectory: '',
     };
 
-    const { parse, help } = createParser(defaultConfig, [
+    const { help } = createParser(defaultConfig, [
       {
         name: 'clientId', // Name of the property
         required: true, // Fail if not present
