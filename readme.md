@@ -18,7 +18,7 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **How it works**
 
-- The package **exports a single parser factory function** from which a type-aware parser can be created. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
+- The package **exports a single parser factory function** that creates a type-aware parser based on a default values. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
 
 - The parser checks the input and returns the base with updated matching property values
 
@@ -41,30 +41,35 @@ npm i @eegli/tinyparse
 ```ts
 import { createParser } from '@eegli/tinyparse';
 
-const defaultConfig = {
-  clientId: '',
-  outputDirectory: '',
-};
-
-const { parse, help } = createParser(defaultConfig, [
+const { help, parse } = createParser(
+  // Default values
   {
-    name: 'clientId', // Name of the property
-    required: true, // Fail if not present
-    description: 'The client id', // For the help printer
+    clientId: '', // Expect a string
+    outputDirectory: '', // Expect a string
   },
-  {
-    name: 'outputDirectory',
-    shortFlag: '-o', // Short flag alias
-  },
-]);
+  // Options per key
+  [
+    {
+      name: 'clientId', // Name of the property
+      required: true, // Fail if not present
+      description: 'The client id', // For the help printer
+    },
+    {
+      name: 'outputDirectory', // Name of the property
+      shortFlag: '-o', // Short flag alias
+      allowNull: true, // Allow this value to be null
+    },
+  ]
+);
 
-await parse(process.argv.slice(2)); // Process args
-
-// Or
-
+// Parse user input...
 await parse({
   clientId: 'abc', // Object literal
+  outputDirectory: null,
 });
+
+// ...or process args
+await parse(process.argv.slice(2));
 
 // A helper command to print all available options
 help('CLI Usage Example');
@@ -77,7 +82,7 @@ help('CLI Usage Example');
 
   Optional
       -o, --outputDirectory <outputDirectory> [string]
-      
+
 `;
 ```
 
@@ -86,8 +91,6 @@ help('CLI Usage Example');
 The object that is passed to the factory needs to specify the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
 
 ```ts
-import { createParser } from '@eegli/tinyparse';
-
 const defaultConfig = {
   name: 'defaultName', // string
   age: 0, // number
@@ -96,7 +99,6 @@ const defaultConfig = {
 
 const { parse } = createParser(defaultConfig);
 
-// Resolves to a full user configuration
 const parsed = await parse({
   name: 'eric',
   hasDog: false,
@@ -109,15 +111,39 @@ expect(parsed).toStrictEqual({
 });
 ```
 
-### Required options
+### Explicit null values
+
+In some cases, an argument may be allowed to be null. E.g. if the user sets the argument `outputDirectory` to `null`, they do not want anything to be saved to the file system.
+
+This can be used as an alternative to providing another config field like `noEmit` for the above use case.
+
+In the below example, we'd expect a `string` for `outputDirectory` but `null` is fine as well. If a value is allowed to be null, it needs to be specified explicitly.
+
+```ts
+const defaultConfig = {
+  outputDirectory: '',
+};
+
+const { parse } = createParser(defaultConfig, [
+  {
+    name: 'outputDirectory',
+    allowNull: true,
+  },
+]);
+
+const parsed = await parse({ outputDirectory: null });
+expect(parsed).toStrictEqual({
+  outputDirectory: null,
+});
+```
+
+### Parsing required options
 
 The factory accepts an optional array of option objects for each config key. If a required argument is not present in the user input, a `ValidationError` is thrown.
 
 This works for object literals as well as string array arguments.
 
 ```ts
-import { createParser } from '@eegli/tinyparse';
-
 const defaultConfig = {
   accessToken: '',
 };
@@ -138,8 +164,6 @@ await parse();
 Invalid types are also rejected.
 
 ```ts
-import { createParser } from '@eegli/tinyparse';
-
 const defaultConfig = {
   accessToken: '',
 };
@@ -173,8 +197,6 @@ Tinyparse expects that **every** CLI argument is specified with a long or short 
 Optionalls, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
 
 ```ts
-import { createParser } from '@eegli/tinyparse';
-
 const defaultConfig = {
   numberOfPets: 0,
   hasDog: true,
