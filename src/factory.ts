@@ -18,8 +18,8 @@ export function createParser<C extends Record<string, ObjectValues>>(
           Object.entries(baseConfig)
         );
 
-        // Set required arguments to null - they will need to be
-        // defined from the input
+        // For each required argument, replace its value temporarily
+        // by a symbol
         requiredArgs.forEach((r) => {
           config.set(r.name, requiredSym);
         });
@@ -35,9 +35,9 @@ export function createParser<C extends Record<string, ObjectValues>>(
 
         Object.entries(args).forEach(([arg, argVal]) => {
           if (config.has(arg)) {
-            // Get the type of the argument from the default config -
-            // not via the config map, since they are set to null
-            // if they are required
+            // Either the received type corresponds to the original
+            // type or the received type is explicitly allowed to be
+            // null
             const isValidNull =
               getOptionByKey(arg, options)?.allowNull && argVal === null;
             const isSameType = typeof baseConfig[arg] === typeof argVal;
@@ -51,13 +51,13 @@ export function createParser<C extends Record<string, ObjectValues>>(
                 ]}, got ${typeof argVal}`
               );
             }
+          } else {
+            console.warn(`Ignoring unknown argument "${arg}"`);
           }
-          console.warn(`Ignoring unknown argument "${arg}"`);
         });
 
-        // Check if all required arguments have been defined by the
-        // input
-
+        // Check if all required arguments have been defined or if the
+        // temporary value is still there
         requiredArgs.forEach((arg) => {
           if (config.get(arg.name) === requiredSym) {
             throw new ValidationError(`"${arg.name}" is required`);

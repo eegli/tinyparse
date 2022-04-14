@@ -43,6 +43,7 @@ describe('Parsing', () => {
       boolProp: true,
       numProp: 69,
     });
+    expect(warner).not.toHaveBeenCalled();
   });
 
   it('spreads in default config opts', async () => {
