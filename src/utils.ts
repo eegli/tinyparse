@@ -1,10 +1,9 @@
-import { ObjectValues, OptionsObject } from './types';
+import { ObjectValues } from './types';
 
-export function getOptionByKey<T extends OptionsObject<string>>(
-  key: string,
-  options: T[] = []
-): T | undefined {
-  return options.find((opt) => opt.name === key);
+const allowedTypes = new Set(['string', 'number', 'boolean']);
+
+export function isSameType(type: string, reference: string): boolean {
+  return allowedTypes.has(type) && type === reference;
 }
 
 export function argvTransformer(

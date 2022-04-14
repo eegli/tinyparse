@@ -4,22 +4,30 @@ jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
 describe('Readme examples', () => {
   test('general usage', async () => {
-    const defaultConfig = {
-      clientId: '',
-      outputDirectory: '',
-    };
+    const { help, parse } = createParser(
+      // Default values
+      {
+        clientId: '', // Expect a string
+        outputDirectory: 'data', // Expect a string
+      },
+      // Options per key
+      [
+        {
+          name: 'clientId', // Name of the property
+          required: true, // Fail if not present
+          description: 'The client id', // For the help printer
+        },
+        {
+          name: 'outputDirectory', // Name of the property
+          shortFlag: '-o', // Short flag alias
+        },
+      ]
+    );
 
-    const { help } = createParser(defaultConfig, [
-      {
-        name: 'clientId', // Name of the property
-        required: true, // Fail if not present
-        description: 'The client id', // For the help printer
-      },
-      {
-        name: 'outputDirectory',
-        shortFlag: '-o', // Short flag alias
-      },
-    ]);
+    expect(await parse({ clientId: '123' })).toEqual({
+      clientId: '123',
+      outputDirectory: 'data',
+    });
 
     expect(help('CLI Usage Example')).toMatchInlineSnapshot(`
       "CLI Usage Example
@@ -41,7 +49,6 @@ describe('Readme examples', () => {
 
     const { parse } = createParser(defaultConfig);
 
-    // Resolves to a full user configuration
     const parsed = await parse({
       name: 'eric',
       hasDog: false,
@@ -53,6 +60,7 @@ describe('Readme examples', () => {
       hasDog: false,
     });
   });
+
   test('example, required args', async () => {
     const defaultConfig = {
       accessToken: '',
@@ -88,6 +96,7 @@ describe('Readme examples', () => {
       );
     }
   });
+
   test('example, process argv', async () => {
     const defaultConfig = {
       numberOfPets: 0,
