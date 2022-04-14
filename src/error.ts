@@ -5,7 +5,3 @@ export class ValidationError extends Error {
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 }
-
-export function throwErr(message: string): never {
-  throw new ValidationError(message);
-}

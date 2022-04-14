@@ -3,10 +3,13 @@ export type OptionsObject<K> = {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
+  allowNull?: boolean;
 };
 
-export type Options<K extends string = string> = OptionsObject<K>[];
+export type PartialNullable<T> = {
+  [P in keyof T]?: T[P] | null;
+};
 
-export type ObjectValues = string | number | boolean;
+export type Options<K = string> = OptionsObject<K extends string ? K : never>[];
 
-export type StringOrNever<T> = T extends string ? T : never;
+export type ObjectValues = string | number | boolean | null;

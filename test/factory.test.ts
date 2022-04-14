@@ -23,16 +23,11 @@ describe('Parsing', () => {
   const { parse } = createParser(defaultConfig);
 
   it('returns default config if no args 1', async () => {
-    const c = await parse();
-    expect(c).toStrictEqual(defaultConfig);
-  });
-
-  it('returns default config if no args 2', async () => {
     const c = await parse({});
     expect(c).toStrictEqual(defaultConfig);
   });
 
-  it('returns default config if no args 3', async () => {
+  it('returns default config if no args 2', async () => {
     const c = await parse([]);
     expect(c).toStrictEqual(defaultConfig);
   });
@@ -66,7 +61,6 @@ describe('Parsing', () => {
   });
 
   it('rejects invalid types', async () => {
-    expect.assertions(4);
     try {
       // @ts-expect-error - test input
       await parse({ boolProp: {} });
@@ -77,86 +71,62 @@ describe('Parsing', () => {
         'Invalid type for "boolProp". Expected boolean, got object'
       );
     }
-    try {
-      await parse({
-        stringProp: 'string',
-        boolProp: false,
-        numProp: '1',
-      } as unknown as Config);
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        'Invalid type for "numProp". Expected number, got string'
-      );
-    }
   });
 });
 
-describe('Parsing with required args', () => {
+describe('Parsing with options', () => {
   const defaultConfig: Config = {
     stringProp: 'overwrite me',
     boolProp: true,
     numProp: 999,
     undefinedProp: undefined,
   };
-  // Pre-made helpers
-  const { parse: parseWithStringRequired } = createParser(defaultConfig, [
-    {
-      name: 'stringProp',
-      required: true,
-    },
-  ]);
-
-  const { parse: parseWithStringAndNumRequired } = createParser(defaultConfig, [
-    {
-      name: 'stringProp',
-      required: true,
-    },
-    {
-      name: 'numProp',
-      required: true,
-    },
-  ]);
 
   it('resolves if all required args are present', async () => {
-    const input = { stringProp: 'goodbye' };
-    await expect(parseWithStringRequired(input)).resolves.toStrictEqual({
+    const { parse } = createParser(defaultConfig, [
+      {
+        name: 'stringProp',
+        required: true,
+      },
+    ]);
+    await expect(parse({ stringProp: 'goodbye' })).resolves.toStrictEqual({
       ...defaultConfig,
       stringProp: 'goodbye',
     });
   });
 
-  it('rejects early missing required args', async () => {
-    expect.assertions(4);
-    try {
-      await parseWithStringRequired();
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', '"stringProp" is required');
-    }
-    try {
-      await parseWithStringAndNumRequired();
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', '"stringProp" is required');
-    }
+  it('rejects for missing required args', async () => {
+    const { parse } = createParser(defaultConfig, [
+      {
+        name: 'stringProp',
+        required: true,
+      },
+    ]);
+    await expect(parse()).rejects.toThrow('"stringProp" is required');
   });
 
-  it('rejects late for missing required args', async () => {
-    expect.assertions(4);
-    try {
-      await parseWithStringRequired({});
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', '"stringProp" is required');
-    }
-    try {
-      await parseWithStringAndNumRequired({ stringProp: 'bonjour' });
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', '"numProp" is required');
-    }
+  it('allows null values if specified', async () => {
+    const { parse } = createParser(defaultConfig, [
+      {
+        name: 'stringProp',
+        allowNull: true,
+      },
+    ]);
+    const input = { stringProp: null };
+    await expect(parse(input)).resolves.toStrictEqual({
+      ...defaultConfig,
+      stringProp: null,
+    });
+  });
+
+  it('rejects null values if not specified', async () => {
+    const { parse } = createParser(defaultConfig, [
+      {
+        name: 'stringProp',
+      },
+    ]);
+    const input = { stringProp: null };
+    await expect(parse(input)).rejects.toThrow();
   });
 });
 

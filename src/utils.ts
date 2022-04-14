@@ -1,4 +1,11 @@
-import { ObjectValues } from './types';
+import { ObjectValues, OptionsObject } from './types';
+
+export function getOptionByKey<T extends OptionsObject<string>>(
+  key: string,
+  options: T[] = []
+): T | undefined {
+  return options.find((opt) => opt.name === key);
+}
 
 export function argvTransformer(
   args: string[],
