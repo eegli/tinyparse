@@ -117,7 +117,7 @@ In some cases, an argument may be allowed to be `null`. E.g. if a user sets the 
 
 This can be used as an alternative to providing another config field like `noEmit` for the above use case.
 
-In the below example, we'd expect a `string` for `outputDirectory` but `null` is fine as well. Allowing a value to be null must be specified explicitly.
+In the below example, we'd expect a `string` for `outputDirectory` but `null` is fine as well. Allowing a value to be `null` must be specified explicitly.
 
 ```ts
 const defaultConfig = {
@@ -138,7 +138,7 @@ expect(parsed).toStrictEqual({
 });
 ```
 
-Note that, in such a case, it's impossible for TypeScript to infer that this value might be null. It's best to make use of the factory's generic signature.
+Note that, in such a case, it's impossible for TypeScript to infer that this value might be `null`. It's best to make use of the factory's generic signature.
 
 ```ts
 type Config = {
@@ -153,7 +153,7 @@ const { parse } = createParser<Config>(config);
 
 ### Parsing required options
 
-The factory accepts an optional array of option objects for each config key. If a required argument is not present in the user input, a `ValidationError` is thrown.
+The factory accepts an optional array of option objects for each config key. If a required key is not present in the user input, a `ValidationError` is thrown.
 
 This works for object literals as well as string array arguments.
 

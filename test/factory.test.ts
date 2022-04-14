@@ -1,15 +1,8 @@
 import { ValidationError } from '../src/error';
 import { createParser } from '../src/factory';
 
-type Config = {
-  stringProp: string;
-  boolProp: boolean;
-  numProp: number;
-  undefinedProp?: string;
-};
-
 describe('Parsing', () => {
-  const defaultConfig: Config = {
+  const defaultConfig = {
     stringProp: 'string',
     boolProp: false,
     numProp: 999,
@@ -70,11 +63,10 @@ describe('Parsing', () => {
 });
 
 describe('Parsing with options', () => {
-  const defaultConfig: Config = {
+  const defaultConfig = {
     stringProp: 'overwrite me',
     boolProp: true,
     numProp: 999,
-    undefinedProp: undefined,
   };
 
   it('resolves if all required args are present', async () => {
@@ -106,11 +98,18 @@ describe('Parsing with options', () => {
         name: 'stringProp',
         allowNull: true,
       },
+      {
+        name: 'numProp',
+        allowNull: true,
+      },
     ]);
-    const input = { stringProp: null };
-    await expect(parse(input)).resolves.toStrictEqual({
+
+    await expect(
+      parse({ stringProp: null, numProp: 99 })
+    ).resolves.toStrictEqual({
       ...defaultConfig,
       stringProp: null,
+      numProp: 99,
     });
   });
 
@@ -120,12 +119,18 @@ describe('Parsing with options', () => {
         name: 'stringProp',
       },
     ]);
-    const input = { stringProp: null };
-    await expect(parse(input)).rejects.toThrow();
+
+    await expect(parse({ stringProp: null })).rejects.toThrow();
   });
 });
 
 describe('Parsing with string args', () => {
+  type Config = {
+    stringProp: string;
+    boolProp: boolean;
+    numProp: number;
+  };
+
   const defaultConfig = {
     stringProp: 'overwrite me',
     boolProp: false,

@@ -19,7 +19,7 @@ export function createParser<C extends Record<string, ObjectValues>>(
         );
 
         // For each required argument, replace its value temporarily
-        // by a symbol
+        // with a symbol
         requiredArgs.forEach((r) => {
           config.set(r.name, requiredSym);
         });
