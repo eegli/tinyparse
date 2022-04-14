@@ -63,13 +63,13 @@ const { help, parse } = createParser(
 );
 
 // Parse user input...
-await parse({
+const parsed1 = await parse({
   clientId: 'abc', // Object literal
   outputDirectory: null,
 });
 
 // ...or process args
-await parse(process.argv.slice(2));
+const parsed2 = await parse(process.argv.slice(2));
 
 // A helper command to print all available options
 help('CLI Usage Example');
@@ -113,7 +113,7 @@ expect(parsed).toStrictEqual({
 
 ### Explicit null values
 
-In some cases, an argument may be allowed to be `null`. E.g. if a user sets the argument `outputDirectory` to `null`, they do not want anything to be saved to the file system.
+In some cases, an argument may be allowed to be `null`. E.g. if a user sets the argument `outputDirectory` to `null`, they do not want anything saved to the file system.
 
 This can be used as an alternative to providing another config field like `noEmit` for the above use case.
 
@@ -136,6 +136,17 @@ const parsed = await parse({ outputDirectory: null });
 expect(parsed).toStrictEqual({
   outputDirectory: null,
 });
+```
+
+Note that, in such a case, it's impossible for TypeScript to infer that this value might be null. It's best to make use of the factory's generic function signature.
+
+```ts
+type Config = {
+  name: string;
+  address: boolean | null;
+};
+
+const { parse } = createParser<Config>({ name: 'tinyparse', address: null });
 ```
 
 ### Parsing required options
