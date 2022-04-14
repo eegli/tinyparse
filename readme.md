@@ -138,7 +138,7 @@ expect(parsed).toStrictEqual({
 });
 ```
 
-Note that, in such a case, it's impossible for TypeScript to infer that this value might be null. It's best to make use of the factory's generic function signature.
+Note that, in such a case, it's impossible for TypeScript to infer that this value might be null. It's best to make use of the factory's generic signature.
 
 ```ts
 type Config = {
@@ -146,7 +146,9 @@ type Config = {
   address: boolean | null;
 };
 
-const { parse } = createParser<Config>({ name: 'tinyparse', address: null });
+const config: Config = { name: 'tinyparse', address: null };
+
+const { parse } = createParser<Config>(config);
 ```
 
 ### Parsing required options
