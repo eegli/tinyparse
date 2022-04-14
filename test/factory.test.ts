@@ -1,12 +1,6 @@
 import { ValidationError } from '../src/error';
 import { createParser } from '../src/factory';
 
-const warner = jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
-
-beforeEach(() => {
-  jest.clearAllMocks();
-});
-
 type Config = {
   stringProp: string;
   boolProp: boolean;
@@ -43,7 +37,6 @@ describe('Parsing', () => {
       boolProp: true,
       numProp: 69,
     });
-    expect(warner).not.toHaveBeenCalled();
   });
 
   it('spreads in default config opts', async () => {
@@ -52,13 +45,6 @@ describe('Parsing', () => {
       ...defaultConfig,
       stringProp: 'hello',
     });
-  });
-
-  it('warns with invalid options', async () => {
-    // @ts-expect-error - test input
-    await parse({ foo: true });
-    expect(warner).toHaveBeenCalledTimes(1);
-    expect(warner).toHaveBeenCalledWith('Ignoring unknown argument "foo"');
   });
 
   it('rejects invalid types', async () => {

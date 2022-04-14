@@ -18,9 +18,9 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **How it works**
 
-- The package **exports a single parser factory function** that creates a type-aware parser based on a default values. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
+- The package **exports a single parser factory function** that creates a type-aware parser based on default values. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
 
-- The parser checks the input and returns the base with updated matching property values
+- The parser checks the input and returns the defaults with updated matching property values
 
 - Additionally, a `help()` function is returned from the factory that can be used to print all available options, sorted by `required`. This is most useful for CLI apps
 
@@ -113,7 +113,7 @@ expect(parsed).toStrictEqual({
 
 ### Explicit null values
 
-In some cases, an argument may be allowed to be null. E.g. if the user sets the argument `outputDirectory` to `null`, they do not want anything to be saved to the file system.
+In some cases, an argument may be allowed to be `null`. E.g. if a user sets the argument `outputDirectory` to `null`, they do not want anything to be saved to the file system.
 
 This can be used as an alternative to providing another config field like `noEmit` for the above use case.
 

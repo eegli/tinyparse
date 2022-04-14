@@ -34,25 +34,24 @@ export function createParser<C extends Record<string, ObjectValues>>(
         }
 
         Object.entries(args).forEach(([arg, argVal]) => {
-          if (config.has(arg)) {
-            // Either the received type corresponds to the original
-            // type or the received type is explicitly allowed to be
-            // null
-            const isValidNull =
-              getOptionByKey(arg, options)?.allowNull && argVal === null;
-            const isSameType = typeof baseConfig[arg] === typeof argVal;
+          if (!config.has(arg)) {
+            return;
+          }
+          // Either the received type corresponds to the original
+          // type or the received type is explicitly allowed to be
+          // null
+          const isValidNull =
+            getOptionByKey(arg, options)?.allowNull && argVal === null;
+          const isSameType = typeof baseConfig[arg] === typeof argVal;
 
-            if (isValidNull || isSameType) {
-              config.set(arg, argVal);
-            } else {
-              throw new ValidationError(
-                `Invalid type for "${arg}". Expected ${typeof baseConfig[
-                  arg
-                ]}, got ${typeof argVal}`
-              );
-            }
+          if (isValidNull || isSameType) {
+            config.set(arg, argVal);
           } else {
-            console.warn(`Ignoring unknown argument "${arg}"`);
+            throw new ValidationError(
+              `Invalid type for "${arg}". Expected ${typeof baseConfig[
+                arg
+              ]}, got ${typeof argVal}`
+            );
           }
         });
 
