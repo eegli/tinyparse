@@ -117,7 +117,7 @@ In some cases, an argument may be allowed to be null. E.g. if the user sets the 
 
 This can be used as an alternative to providing another config field like `noEmit` for the above use case.
 
-In the below example, we'd expect a `string` for `outputDirectory` but `null` is fine as well. If a value is allowed to be null, it needs to be specified explicitly.
+In the below example, we'd expect a `string` for `outputDirectory` but `null` is fine as well. Allowing a value to be null must be specified explicitly.
 
 ```ts
 const defaultConfig = {
@@ -132,6 +132,7 @@ const { parse } = createParser(defaultConfig, [
 ]);
 
 const parsed = await parse({ outputDirectory: null });
+
 expect(parsed).toStrictEqual({
   outputDirectory: null,
 });
@@ -255,3 +256,7 @@ try {
 ## More examples
 
 For more examples, [check the extensive test suites](test/parse.test.ts) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
+
+### Good to know
+
+I don't strictly follow semantic versioning so the API can change in minor releases :)
