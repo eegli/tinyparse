@@ -47,6 +47,14 @@ describe('Parsing', () => {
     });
   });
 
+  it('ignores unknown args', async () => {
+    // @ts-expect-error test input
+    const c = await parse({ unknownProp: 'hello' });
+    expect(c).toStrictEqual({
+      ...defaultConfig,
+    });
+  });
+
   it('rejects invalid types', async () => {
     try {
       // @ts-expect-error - test input
