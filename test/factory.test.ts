@@ -1,21 +1,8 @@
 import { ValidationError } from '../src/error';
 import { createParser } from '../src/factory';
 
-const warner = jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
-
-beforeEach(() => {
-  jest.clearAllMocks();
-});
-
-type Config = {
-  stringProp: string;
-  boolProp: boolean;
-  numProp: number;
-  undefinedProp?: string;
-};
-
 describe('Parsing', () => {
-  const defaultConfig: Config = {
+  const defaultConfig = {
     stringProp: 'string',
     boolProp: false,
     numProp: 999,
@@ -53,11 +40,12 @@ describe('Parsing', () => {
     });
   });
 
-  it('warns with invalid options', async () => {
-    // @ts-expect-error - test input
-    await parse({ foo: true });
-    expect(warner).toHaveBeenCalledTimes(1);
-    expect(warner).toHaveBeenCalledWith('Ignoring unknown argument "foo"');
+  it('ignores unknown args', async () => {
+    // @ts-expect-error test input
+    const c = await parse({ unknownProp: 'hello' });
+    expect(c).toStrictEqual({
+      ...defaultConfig,
+    });
   });
 
   it('rejects invalid types', async () => {
@@ -75,11 +63,10 @@ describe('Parsing', () => {
 });
 
 describe('Parsing with options', () => {
-  const defaultConfig: Config = {
+  const defaultConfig = {
     stringProp: 'overwrite me',
     boolProp: true,
     numProp: 999,
-    undefinedProp: undefined,
   };
 
   it('resolves if all required args are present', async () => {
@@ -104,33 +91,15 @@ describe('Parsing with options', () => {
     ]);
     await expect(parse()).rejects.toThrow('"stringProp" is required');
   });
-
-  it('allows null values if specified', async () => {
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'stringProp',
-        allowNull: true,
-      },
-    ]);
-    const input = { stringProp: null };
-    await expect(parse(input)).resolves.toStrictEqual({
-      ...defaultConfig,
-      stringProp: null,
-    });
-  });
-
-  it('rejects null values if not specified', async () => {
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'stringProp',
-      },
-    ]);
-    const input = { stringProp: null };
-    await expect(parse(input)).rejects.toThrow();
-  });
 });
 
 describe('Parsing with string args', () => {
+  type Config = {
+    stringProp: string;
+    boolProp: boolean;
+    numProp: number;
+  };
+
   const defaultConfig = {
     stringProp: 'overwrite me',
     boolProp: false,
