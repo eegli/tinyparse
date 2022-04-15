@@ -91,37 +91,6 @@ describe('Parsing with options', () => {
     ]);
     await expect(parse()).rejects.toThrow('"stringProp" is required');
   });
-
-  it('allows null values if specified', async () => {
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'stringProp',
-        allowNull: true,
-      },
-      {
-        name: 'numProp',
-        allowNull: true,
-      },
-    ]);
-
-    await expect(
-      parse({ stringProp: null, numProp: 99 })
-    ).resolves.toStrictEqual({
-      ...defaultConfig,
-      stringProp: null,
-      numProp: 99,
-    });
-  });
-
-  it('rejects null values if not specified', async () => {
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'stringProp',
-      },
-    ]);
-
-    await expect(parse({ stringProp: null })).rejects.toThrow();
-  });
 });
 
 describe('Parsing with string args', () => {

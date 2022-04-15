@@ -8,7 +8,7 @@ describe('Readme examples', () => {
       // Default values
       {
         clientId: '', // Expect a string
-        outputDirectory: '', // Expect a string
+        outputDirectory: 'data', // Expect a string
       },
       // Options per key
       [
@@ -20,14 +20,13 @@ describe('Readme examples', () => {
         {
           name: 'outputDirectory', // Name of the property
           shortFlag: '-o', // Short flag alias
-          allowNull: true, // Allow this value to be null
         },
       ]
     );
 
-    expect(await parse({ clientId: '123', outputDirectory: null })).toEqual({
+    expect(await parse({ clientId: '123' })).toEqual({
       clientId: '123',
-      outputDirectory: null,
+      outputDirectory: 'data',
     });
 
     expect(help('CLI Usage Example')).toMatchInlineSnapshot(`
@@ -61,23 +60,7 @@ describe('Readme examples', () => {
       hasDog: false,
     });
   });
-  test('example, explicit null value', async () => {
-    const defaultConfig = {
-      outputDirectory: '',
-    };
 
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'outputDirectory',
-        allowNull: true,
-      },
-    ]);
-
-    const parsed = await parse({ outputDirectory: null });
-    expect(parsed).toStrictEqual({
-      outputDirectory: null,
-    });
-  });
   test('example, required args', async () => {
     const defaultConfig = {
       accessToken: '',

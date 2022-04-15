@@ -45,7 +45,7 @@ const { help, parse } = createParser(
   // Default values
   {
     clientId: '', // Expect a string
-    outputDirectory: '', // Expect a string
+    outputDirectory: 'data', // Expect a string
   },
   // Options per key
   [
@@ -57,16 +57,12 @@ const { help, parse } = createParser(
     {
       name: 'outputDirectory', // Name of the property
       shortFlag: '-o', // Short flag alias
-      allowNull: true, // Allow this value to be null
     },
   ]
 );
 
 // Parse user input...
-const parsed1 = await parse({
-  clientId: 'abc', // Object literal
-  outputDirectory: null,
-});
+const parsed1 = await parse({ clientId: '123' });
 
 // ...or process args
 const parsed2 = await parse(process.argv.slice(2));
@@ -109,46 +105,6 @@ expect(parsed).toStrictEqual({
   age: 0,
   hasDog: false,
 });
-```
-
-### Explicit null values
-
-In some cases, an argument may be allowed to be `null`. E.g. if a user sets the argument `outputDirectory` to `null`, they do not want anything saved to the file system.
-
-This can be used as an alternative to providing another config field like `noEmit` for the above use case.
-
-In the below example, we'd expect a `string` for `outputDirectory` but `null` is fine as well. Allowing a value to be `null` must be specified explicitly.
-
-```ts
-const defaultConfig = {
-  outputDirectory: '',
-};
-
-const { parse } = createParser(defaultConfig, [
-  {
-    name: 'outputDirectory',
-    allowNull: true,
-  },
-]);
-
-const parsed = await parse({ outputDirectory: null });
-
-expect(parsed).toStrictEqual({
-  outputDirectory: null,
-});
-```
-
-Note that, in such a case, it's impossible for TypeScript to infer that this value might be `null`. It's best to make use of the factory's generic signature.
-
-```ts
-type Config = {
-  name: string;
-  address: boolean | null;
-};
-
-const config: Config = { name: 'tinyparse', address: null };
-
-const { parse } = createParser<Config>(config);
 ```
 
 ### Parsing required options

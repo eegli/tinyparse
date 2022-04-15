@@ -1,11 +1,6 @@
-import { ObjectValues, OptionsObject } from './types';
+import { ObjectValues } from './types';
 
-export function getOptionByKey<T extends OptionsObject<string>>(
-  key: string,
-  options: T[] = []
-): T | undefined {
-  return options.find((opt) => opt.name === key);
-}
+export const allowedTypes = new Set(['string', 'number', 'boolean']);
 
 export function argvTransformer(
   args: string[],

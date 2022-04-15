@@ -1,21 +1,21 @@
 import { ValidationError } from './error';
 import { displayHelp } from './help';
-import { ObjectValues, Options, PartialNullable } from './types';
-import { argvTransformer, getOptionByKey } from './utils';
+import { ObjectValues, Options } from './types';
+import { allowedTypes, argvTransformer } from './utils';
 
 const requiredSym = Symbol('isRequired');
 
 export function createParser<C extends Record<string, ObjectValues>>(
-  baseConfig: C,
+  defaultValues: C,
   options?: Options<keyof C>
 ) {
   return {
-    parse: function (args: PartialNullable<C> | string[] = []): Promise<C> {
+    parse: function (args: Partial<C> | string[] = []): Promise<C> {
       return new Promise((resolve) => {
         const requiredArgs = options?.filter((opt) => opt.required) || [];
 
         const config = new Map<string, ObjectValues | symbol>(
-          Object.entries(baseConfig)
+          Object.entries(defaultValues)
         );
 
         // For each required argument, replace its value temporarily
@@ -30,7 +30,7 @@ export function createParser<C extends Record<string, ObjectValues>>(
             return acc;
           }, {} as Record<string, ObjectValues>);
 
-          args = argvTransformer(args, shortFlags) as PartialNullable<C>;
+          args = argvTransformer(args, shortFlags) as Partial<C>;
         }
 
         Object.entries(args).forEach(([arg, argVal]) => {
@@ -40,15 +40,12 @@ export function createParser<C extends Record<string, ObjectValues>>(
           // Either the received type corresponds to the original
           // type or the received type is explicitly allowed to be
           // null
-          const isValidNull =
-            getOptionByKey(arg, options)?.allowNull && argVal === null;
-          const isSameType = typeof baseConfig[arg] === typeof argVal;
-
-          if (isValidNull || isSameType) {
+          const argType = typeof defaultValues[arg];
+          if (allowedTypes.has(argType) && argType === typeof argVal) {
             config.set(arg, argVal);
           } else {
             throw new ValidationError(
-              `Invalid type for "${arg}". Expected ${typeof baseConfig[
+              `Invalid type for "${arg}". Expected ${typeof defaultValues[
                 arg
               ]}, got ${typeof argVal}`
             );
@@ -67,7 +64,7 @@ export function createParser<C extends Record<string, ObjectValues>>(
       });
     },
     help: function (title?: string) {
-      return displayHelp(baseConfig, options || [], title);
+      return displayHelp(defaultValues, options || [], title);
     },
   };
 }
