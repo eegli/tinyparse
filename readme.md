@@ -225,7 +225,3 @@ try {
 ## More examples
 
 For more examples, [check the extensive test suites](test/parse.test.ts) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
-
-### Good to know
-
-I don't strictly follow semantic versioning so the API can change in minor releases :)
