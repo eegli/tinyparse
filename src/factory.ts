@@ -37,10 +37,7 @@ export function createParser<C extends Record<string, ObjectValues>>(
           if (!config.has(arg)) {
             return;
           }
-          // Either the received type corresponds to the original
-          // type or the received type is explicitly allowed to be
-          // null
-
+          // The received type must corresponds to the original type
           if (isSameType(typeof defaultValues[arg], typeof argVal)) {
             config.set(arg, argVal);
           } else {
