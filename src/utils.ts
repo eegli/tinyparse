@@ -1,6 +1,10 @@
 import { ObjectValues } from './types';
 
-export const allowedTypes = new Set(['string', 'number', 'boolean']);
+const allowedTypes = new Set(['string', 'number', 'boolean']);
+
+export function isSameType(type: string, reference: string): boolean {
+  return allowedTypes.has(type) && type === reference;
+}
 
 export function argvTransformer(
   args: string[],

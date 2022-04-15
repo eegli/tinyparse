@@ -1,7 +1,7 @@
 import { ValidationError } from './error';
 import { displayHelp } from './help';
 import { ObjectValues, Options } from './types';
-import { allowedTypes, argvTransformer } from './utils';
+import { argvTransformer, isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
 
@@ -40,8 +40,8 @@ export function createParser<C extends Record<string, ObjectValues>>(
           // Either the received type corresponds to the original
           // type or the received type is explicitly allowed to be
           // null
-          const argType = typeof defaultValues[arg];
-          if (allowedTypes.has(argType) && argType === typeof argVal) {
+
+          if (isSameType(typeof defaultValues[arg], typeof argVal)) {
             config.set(arg, argVal);
           } else {
             throw new ValidationError(
