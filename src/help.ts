@@ -17,6 +17,7 @@ export const displayHelp = (
   }
 
   let optionalFlag = true;
+  const tab = '   ';
 
   options.forEach(({ name, description, shortFlag, required }, idx) => {
     const isLast = idx === options.length - 1;
@@ -26,8 +27,6 @@ export const displayHelp = (
       str += 'Optional\n';
       optionalFlag = false;
     }
-
-    const tab = '   ';
 
     str += `${tab}${shortFlag ? `${shortFlag}, ` : ''}`;
     str += `--${name}`;
