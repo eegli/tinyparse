@@ -38,13 +38,13 @@ export function createParser<C extends Record<string, ObjectValues>>(
             return;
           }
           // The received type must corresponds to the original type
-          if (isSameType(typeof defaultValues[arg], typeof argVal)) {
+          const expected = typeof defaultValues[arg];
+          const received = typeof argVal;
+          if (isSameType(expected, received)) {
             config.set(arg, argVal);
           } else {
             throw new ValidationError(
-              `Invalid type for "${arg}". Expected ${typeof defaultValues[
-                arg
-              ]}, got ${typeof argVal}`
+              `Invalid type for "${arg}". Expected ${expected}, got ${received}`
             );
           }
         });
