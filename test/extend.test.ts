@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { extendObjectFromFiles } from '../src/extend';
+import { extendFromFiles } from '../src/extend';
 
 jest.mock('fs');
 
@@ -23,7 +23,7 @@ describe('Object extender', () => {
       other: 'bar',
     };
     const paths = ['filePath1', 'filePath2', 'notExisting'];
-    const result = await extendObjectFromFiles(existing, paths);
+    const result = await extendFromFiles(existing, paths);
     expect(result).toMatchInlineSnapshot(`
       {
         "data1": "foo1",
@@ -39,7 +39,7 @@ describe('Object extender', () => {
       other: 'bar',
     };
     const paths = ['filePath'];
-    await expect(extendObjectFromFiles(existing, paths)).rejects.toThrow(
+    await expect(extendFromFiles(existing, paths)).rejects.toThrow(
       'doesntExist.json is not a valid JSON file'
     );
   });

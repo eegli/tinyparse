@@ -1,4 +1,4 @@
-import { transformStringArgs } from '../transform';
+import { stringsToObjLiteral } from '../transform';
 import { ObjectValues, Options } from '../types';
 
 export function parseProcessArgv<T extends Record<string, ObjectValues>>(
@@ -10,7 +10,7 @@ export function parseProcessArgv<T extends Record<string, ObjectValues>>(
     return acc;
   }, {} as Record<string, ObjectValues>);
 
-  const transformed = transformStringArgs(args, shortFlags) as Partial<T>;
+  const transformed = stringsToObjLiteral(args, shortFlags) as Partial<T>;
 
   const filePathKeys = options.reduce((acc, curr) => {
     if (curr.isFilePath) acc.push(curr.name);

@@ -2,9 +2,10 @@ import { readFileSync } from 'fs';
 import { ValidationError } from './error';
 import { ObjectValues } from './types';
 
-export async function extendObjectFromFiles<
-  T extends Record<string, ObjectValues>
->(values: T, paths: string[]): Promise<T> {
+export async function extendFromFiles<T extends Record<string, ObjectValues>>(
+  values: T,
+  paths: string[]
+): Promise<T> {
   return paths.reduce(async (acc, path) => {
     const partial = await acc;
     if (

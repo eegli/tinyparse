@@ -1,4 +1,4 @@
-import { transformStringArgs } from '../src/transform';
+import { stringsToObjLiteral } from '../src/transform';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -6,36 +6,36 @@ beforeEach(() => {
 
 describe('Argv to object transformer', () => {
   it('parses empty', async () => {
-    const c = transformStringArgs([]);
+    const c = stringsToObjLiteral([]);
     expect(c).toStrictEqual({});
   });
   it('bool props 1', async () => {
-    const c = transformStringArgs(['--boolProp']);
+    const c = stringsToObjLiteral(['--boolProp']);
     expect(c).toStrictEqual({
       boolProp: true,
     });
   });
   it('bool props 2', async () => {
-    const c = transformStringArgs(['--boolProp', '--secondBoolProp']);
+    const c = stringsToObjLiteral(['--boolProp', '--secondBoolProp']);
     expect(c).toStrictEqual({
       boolProp: true,
       secondBoolProp: true,
     });
   });
   it('string props', async () => {
-    const c = transformStringArgs(['--stringProp', 'str']);
+    const c = stringsToObjLiteral(['--stringProp', 'str']);
     expect(c).toStrictEqual({
       stringProp: 'str',
     });
   });
   it('number props (converts to number)', async () => {
-    const c = transformStringArgs(['--numProp', '123']);
+    const c = stringsToObjLiteral(['--numProp', '123']);
     expect(c).toStrictEqual({
       numProp: 123,
     });
   });
   it('all props', async () => {
-    const c = transformStringArgs([
+    const c = stringsToObjLiteral([
       '--boolProp1',
       '--stringProp',
       'str',
@@ -54,7 +54,7 @@ describe('Argv to object transformer', () => {
 
 describe('Argv to object, short flags', () => {
   it('ignores short flags that are not present', async () => {
-    const c = transformStringArgs(
+    const c = stringsToObjLiteral(
       ['-s', '123', '--input', '123s', '-p', 'mypw', '-x', 'donotparse'],
       { '-s': 'secret', '-p': 'password' }
     );
@@ -65,7 +65,7 @@ describe('Argv to object, short flags', () => {
     });
   });
   it('can have both long and short flags', async () => {
-    const c = transformStringArgs(
+    const c = stringsToObjLiteral(
       ['-s', '123', '--input', 'this is a string', '-p', 'mypw'],
       { '-s': 'secret', '-p': 'password' }
     );
@@ -76,7 +76,7 @@ describe('Argv to object, short flags', () => {
     });
   });
   it('transforms boolean short flags', async () => {
-    const c = transformStringArgs(['-v', '--normal', 'value'], {
+    const c = stringsToObjLiteral(['-v', '--normal', 'value'], {
       '-v': 'verbose',
     });
     expect(c).toStrictEqual({
@@ -85,7 +85,7 @@ describe('Argv to object, short flags', () => {
     });
   });
   it('transforms empty', async () => {
-    const c = transformStringArgs(['-s', '123'], {});
+    const c = stringsToObjLiteral(['-s', '123'], {});
     expect(c).toStrictEqual({});
   });
 });

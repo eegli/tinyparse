@@ -1,7 +1,8 @@
 import { ValidationError } from '../error';
-import { requiredSym } from '../symbol';
 import { ObjectValues, Options } from '../types';
 import { isSameType } from '../utils';
+
+const requiredSym = Symbol('isRequired');
 
 export async function parseObjectLiteral<
   T extends Record<string, ObjectValues>

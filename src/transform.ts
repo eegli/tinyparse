@@ -1,6 +1,6 @@
 import { ObjectValues } from './types';
 
-export function transformStringArgs<T extends Record<string, ObjectValues>>(
+export function stringsToObjLiteral<T extends Record<string, ObjectValues>>(
   args: string[],
   shortFlagMap?: Record<string, ObjectValues>
 ): T {
