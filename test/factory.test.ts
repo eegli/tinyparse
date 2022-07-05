@@ -7,16 +7,15 @@ describe('Parsing', () => {
     boolProp: false,
     numProp: 999,
   };
-  const { parse } = createParser(defaultConfig);
+  const { parse } = createParser(defaultConfig, [
+    { name: 'numProp', isFilePath: true },
+  ]);
 
-  it('returns default config if no args 1', async () => {
-    const c = await parse({});
-    expect(c).toStrictEqual(defaultConfig);
-  });
-
-  it('returns default config if no args 2', async () => {
-    const c = await parse([]);
-    expect(c).toStrictEqual(defaultConfig);
+  it('returns default config if no args', async () => {
+    const c1 = await parse({});
+    expect(c1).toStrictEqual(defaultConfig);
+    const c2 = await parse([]);
+    expect(c2).toStrictEqual(defaultConfig);
   });
 
   it('overwrites all default values', async () => {
@@ -87,6 +86,10 @@ describe('Parsing with options', () => {
       {
         name: 'stringProp',
         required: true,
+      },
+      {
+        name: 'stringProp',
+        required: false,
       },
     ]);
     await expect(parse()).rejects.toThrow('"stringProp" is required');

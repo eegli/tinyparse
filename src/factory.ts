@@ -1,18 +1,19 @@
 import { ValidationError } from './error';
 import { displayHelp } from './help';
+import { transformStringArgs } from './transform';
 import { ObjectValues, Options } from './types';
-import { argvTransformer, isSameType } from './utils';
+import { isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
 
 export function createParser<C extends Record<string, ObjectValues>>(
   defaultValues: C,
-  options?: Options<keyof C>
+  options: Options<keyof C> = []
 ) {
   return {
     parse: function (args: Partial<C> | string[] = []): Promise<C> {
       return new Promise((resolve) => {
-        const requiredArgs = options?.filter((opt) => opt.required) || [];
+        const requiredArgs = options.filter((opt) => opt.required);
 
         const config = new Map<string, ObjectValues | symbol>(
           Object.entries(defaultValues)
@@ -30,7 +31,14 @@ export function createParser<C extends Record<string, ObjectValues>>(
             return acc;
           }, {} as Record<string, ObjectValues>);
 
-          args = argvTransformer(args, shortFlags) as Partial<C>;
+          args = transformStringArgs(args, shortFlags) as Partial<C>;
+
+          /*          const filePathKeys = options.reduce((acc, curr) => {
+            if (curr.isFilePath) acc.push(curr.name);
+            return acc;
+          }, [] as string[]);
+
+          filePathKeys.forEach((key) => {}); */
         }
 
         Object.entries(args).forEach(([arg, argVal]) => {

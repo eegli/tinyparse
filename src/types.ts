@@ -3,8 +3,9 @@ export type OptionsObject<K> = {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
+  isFilePath?: boolean;
 };
 
-export type Options<K = string> = OptionsObject<K extends string ? K : never>[];
+export type Options<K> = OptionsObject<K extends string ? K : never>[];
 
 export type ObjectValues = string | number | boolean;

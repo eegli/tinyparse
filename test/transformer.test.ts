@@ -1,4 +1,4 @@
-import { argvTransformer } from '../src/utils';
+import { transformStringArgs } from '../src/transform';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -6,36 +6,36 @@ beforeEach(() => {
 
 describe('Argv to object transformer', () => {
   it('parses empty', async () => {
-    const c = argvTransformer([]);
+    const c = transformStringArgs([]);
     expect(c).toStrictEqual({});
   });
   it('bool props 1', async () => {
-    const c = argvTransformer(['--boolProp']);
+    const c = transformStringArgs(['--boolProp']);
     expect(c).toStrictEqual({
       boolProp: true,
     });
   });
   it('bool props 2', async () => {
-    const c = argvTransformer(['--boolProp', '--secondBoolProp']);
+    const c = transformStringArgs(['--boolProp', '--secondBoolProp']);
     expect(c).toStrictEqual({
       boolProp: true,
       secondBoolProp: true,
     });
   });
   it('string props', async () => {
-    const c = argvTransformer(['--stringProp', 'str']);
+    const c = transformStringArgs(['--stringProp', 'str']);
     expect(c).toStrictEqual({
       stringProp: 'str',
     });
   });
   it('number props (converts to number)', async () => {
-    const c = argvTransformer(['--numProp', '123']);
+    const c = transformStringArgs(['--numProp', '123']);
     expect(c).toStrictEqual({
       numProp: 123,
     });
   });
   it('all props', async () => {
-    const c = argvTransformer([
+    const c = transformStringArgs([
       '--boolProp1',
       '--stringProp',
       'str',
@@ -54,7 +54,7 @@ describe('Argv to object transformer', () => {
 
 describe('Argv to object, short flags', () => {
   it('ignores short flags that are not present', async () => {
-    const c = argvTransformer(
+    const c = transformStringArgs(
       ['-s', '123', '--input', '123s', '-p', 'mypw', '-x', 'donotparse'],
       { '-s': 'secret', '-p': 'password' }
     );
@@ -65,7 +65,7 @@ describe('Argv to object, short flags', () => {
     });
   });
   it('can have both long and short flags', async () => {
-    const c = argvTransformer(
+    const c = transformStringArgs(
       ['-s', '123', '--input', 'this is a string', '-p', 'mypw'],
       { '-s': 'secret', '-p': 'password' }
     );
@@ -76,14 +76,16 @@ describe('Argv to object, short flags', () => {
     });
   });
   it('transforms boolean short flags', async () => {
-    const c = argvTransformer(['-v', '--normal', 'value'], { '-v': 'verbose' });
+    const c = transformStringArgs(['-v', '--normal', 'value'], {
+      '-v': 'verbose',
+    });
     expect(c).toStrictEqual({
       verbose: true,
       normal: 'value',
     });
   });
   it('transforms empty', async () => {
-    const c = argvTransformer(['-s', '123'], {});
+    const c = transformStringArgs(['-s', '123'], {});
     expect(c).toStrictEqual({});
   });
 });

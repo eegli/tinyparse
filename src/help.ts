@@ -2,7 +2,7 @@ import { ObjectValues, Options } from './types';
 
 export const displayHelp = (
   base: Record<string, ObjectValues>,
-  options: Options,
+  options: Options<string>,
   title?: string
 ): string => {
   options
