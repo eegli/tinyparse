@@ -1,17 +1,17 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import { extendObjectFromFiles } from '../src/extend';
 
-jest.mock('fs/promises');
+jest.mock('fs');
 
 const mockFs = fs as jest.Mocked<typeof fs>;
-mockFs.readFile.mockImplementation((path, ..._) => {
+mockFs.readFileSync.mockImplementation((path, ..._) => {
   if (path === 'test/config.json') {
-    return Promise.resolve(`{ "data1": "foo1" }`);
+    return `{ "data1": "foo1" }`;
   }
   if (path === '../config.json') {
-    return Promise.resolve(`{ "data2": "foo2" }`);
+    return `{ "data2": "foo2" }`;
   }
-  return Promise.reject();
+  throw new Error();
 });
 
 describe('Object extender', () => {

@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
-    "lib": ["ESNext"],
+    "lib": ["ES2019"],
     "sourceMap": true,
     "module": "commonjs",
     "outDir": "dist",
     "checkJs": true,
-    "target": "es2015",
+    "target": "ES2019",
     "declaration": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,

@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import { readFileSync } from 'fs';
 import { ValidationError } from './error';
 import { ObjectValues } from './types';
 
@@ -17,7 +17,7 @@ export async function extendObjectFromFiles<
     }
     const filePath = partial[path] as string;
     try {
-      const file = await fs.readFile(filePath, { encoding: 'utf8' });
+      const file = readFileSync(filePath, { encoding: 'utf8' });
       const parsed = JSON.parse(file);
       delete partial[path];
       return { ...partial, ...parsed };
