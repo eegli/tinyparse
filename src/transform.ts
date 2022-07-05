@@ -1,6 +1,14 @@
-import { InternalOptions, ObjectValues } from './types';
+import { InternalOptions, ObjectValues, Options } from './types';
 
-export function parseProcessArgv<T extends Record<string, ObjectValues>>(
+export function transformOptions(options?: Options<string>): InternalOptions {
+  if (!options?.options) return [];
+  return Object.entries(options.options).map(([name, rest]) => ({
+    name,
+    ...rest,
+  }));
+}
+
+export function transformArgv<T extends Record<string, ObjectValues>>(
   args: string[],
   options: InternalOptions = []
 ): Partial<T> {

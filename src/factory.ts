@@ -1,15 +1,7 @@
 import { displayHelp } from './help';
-import { parseProcessArgv } from './parse-argv';
-import { parseObjectLiteral } from './parse-literal';
-import { InternalOptions, ObjectValues, Options } from './types';
-
-export function transformOptions(options?: Options<string>): InternalOptions {
-  if (!options?.options) return [];
-  return Object.entries(options.options).map(([name, rest]) => ({
-    name,
-    ...rest,
-  }));
-}
+import { parseObjectLiteral } from './parse';
+import { transformArgv, transformOptions } from './transform';
+import { ObjectValues, Options } from './types';
 
 export function createParser<T extends Record<string, ObjectValues>>(
   defaultValues: T,
@@ -17,16 +9,16 @@ export function createParser<T extends Record<string, ObjectValues>>(
 ) {
   const argumentOptions = transformOptions(options);
   return {
-    help: function (title?: string) {
+    help: function (title?: string): string {
       return displayHelp(defaultValues, argumentOptions, title);
     },
     parse: function (args: Partial<T> | string[] = []): Promise<T> {
       if (Array.isArray(args)) {
-        args = parseProcessArgv(args, argumentOptions);
+        args = transformArgv(args, argumentOptions);
       }
       return parseObjectLiteral(defaultValues, args, argumentOptions);
     },
-    parseArgv: parseProcessArgv,
+    transformArgv: transformArgv,
     parseLiteral: parseObjectLiteral,
   };
 }

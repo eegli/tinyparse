@@ -1,41 +1,61 @@
-import { parseProcessArgv } from '../src/parse-argv';
+import { transformArgv, transformOptions } from '../src/transform';
 
-beforeEach(() => {
-  jest.clearAllMocks();
+describe('External options transformer', () => {
+  test('transforms options to internal structure', () => {
+    const res = transformOptions({
+      options: {
+        test: {
+          required: true,
+        },
+        test2: {
+          description: 'another property',
+        },
+      },
+    });
+    expect(res).toStrictEqual([
+      {
+        name: 'test',
+        required: true,
+      },
+      {
+        description: 'another property',
+        name: 'test2',
+      },
+    ]);
+  });
 });
 
-describe('Argv to object transformer', () => {
+describe('Argv transformer', () => {
   it('parses empty', async () => {
-    const c = parseProcessArgv([]);
+    const c = transformArgv([]);
     expect(c).toStrictEqual({});
   });
-  it('bool props 1', async () => {
-    const c = parseProcessArgv(['--boolProp']);
-    expect(c).toStrictEqual({
+  it('bool props', async () => {
+    const c1 = transformArgv(['--boolProp']);
+    expect(c1).toStrictEqual({
       boolProp: true,
     });
-  });
-  it('bool props 2', async () => {
-    const c = parseProcessArgv(['--boolProp', '--secondBoolProp']);
-    expect(c).toStrictEqual({
+    const c2 = transformArgv(['--boolProp', '--secondBoolProp']);
+    expect(c2).toStrictEqual({
       boolProp: true,
       secondBoolProp: true,
     });
   });
+
   it('string props', async () => {
-    const c = parseProcessArgv(['--stringProp', 'str']);
+    const c = transformArgv(['--stringProp', 'str']);
     expect(c).toStrictEqual({
       stringProp: 'str',
     });
   });
   it('number props (converts to number)', async () => {
-    const c = parseProcessArgv(['--numProp', '123']);
+    const c = transformArgv(['--numProp', '123']);
     expect(c).toStrictEqual({
       numProp: 123,
     });
   });
   it('all props', async () => {
-    const c = parseProcessArgv([
+    const c = transformArgv([
       '--boolProp1',
       '--stringProp',
       'str',
@@ -52,9 +72,9 @@ describe('Argv to object transformer', () => {
   });
 });
 
-describe('Argv to object, short flags', () => {
+describe('Argv transformer with short flags', () => {
   it('ignores short flags that are not present', async () => {
-    const c = parseProcessArgv(
+    const c = transformArgv(
       ['-s', '123', '--input', '123s', '-p', 'mypw', '-x', 'donotparse'],
       [
         { name: 'secret', shortFlag: '-s' },
@@ -68,7 +88,7 @@ describe('Argv to object, short flags', () => {
     });
   });
   it('can have both long and short flags', async () => {
-    const c = parseProcessArgv(
+    const c = transformArgv(
       ['-s', '123', '--input', 'this is a string', '-p', 'mypw'],
       [
         { name: 'secret', shortFlag: '-s' },
@@ -82,7 +102,7 @@ describe('Argv to object, short flags', () => {
     });
   });
   it('transforms boolean short flags', async () => {
-    const c = parseProcessArgv(
+    const c = transformArgv(
       ['-v', '--normal', 'value'],
       [{ name: 'verbose', shortFlag: '-v' }]
     );
@@ -92,7 +112,7 @@ describe('Argv to object, short flags', () => {
     });
   });
   it('transforms empty', async () => {
-    const c = parseProcessArgv(['-s', '123']);
+    const c = transformArgv(['-s', '123']);
     expect(c).toStrictEqual({});
   });
 });

@@ -7,7 +7,7 @@ const requiredSym = Symbol('isRequired');
 export async function parseObjectLiteral<
   T extends Record<string, ObjectValues>
 >(defaults: T, input: Partial<T>, options: InternalOptions): Promise<T> {
-  const requiredArgs = options.filter((opt) => opt.required);
+  const requiredArgs = options?.filter((opt) => opt.required);
 
   const config = new Map<string, ObjectValues | symbol>(
     Object.entries(defaults)
