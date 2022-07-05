@@ -1,7 +1,7 @@
-import { InternalOptions, ObjectValues } from './types';
+import { InternalOptions, SimpleRecord } from './types';
 
 export const displayHelp = (
-  base: Record<string, ObjectValues>,
+  base: SimpleRecord,
   options: InternalOptions = [],
   title?: string
 ): string => {

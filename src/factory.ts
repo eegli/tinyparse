@@ -1,9 +1,9 @@
 import { displayHelp } from './help';
 import { parseObjectLiteral } from './parse';
 import { transformArgv, transformOptions } from './transform';
-import { ObjectValues, Options } from './types';
+import { Options, SimpleRecord } from './types';
 
-export function createParser<T extends Record<string, ObjectValues>>(
+export function createParser<T extends SimpleRecord>(
   defaultValues: T,
   options?: Options<T>
 ) {

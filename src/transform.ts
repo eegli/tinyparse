@@ -1,4 +1,4 @@
-import { InternalOptions, ObjectValues, Options } from './types';
+import { InternalOptions, Options, SimpleRecord } from './types';
 
 export function transformOptions(options?: Options<string>): InternalOptions {
   if (!options?.options) return [];
@@ -8,14 +8,14 @@ export function transformOptions(options?: Options<string>): InternalOptions {
   }));
 }
 
-export function transformArgv<T extends Record<string, ObjectValues>>(
+export function transformArgv<T extends SimpleRecord>(
   args: string[],
   options: InternalOptions = []
 ): Partial<T> {
   const shortFlags = options.reduce((acc, curr) => {
     if (curr.shortFlag) acc[curr.shortFlag] = curr.name;
     return acc;
-  }, {} as Record<string, ObjectValues>);
+  }, {} as SimpleRecord);
 
   const map = args.reduce((acc, curr, idx, orig) => {
     if (

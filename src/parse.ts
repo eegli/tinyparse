@@ -1,12 +1,14 @@
 import { ValidationError } from './error';
-import { InternalOptions, ObjectValues } from './types';
+import { InternalOptions, ObjectValues, SimpleRecord } from './types';
 import { isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
 
-export async function parseObjectLiteral<
-  T extends Record<string, ObjectValues>
->(defaults: T, input: Partial<T>, options: InternalOptions): Promise<T> {
+export async function parseObjectLiteral<T extends SimpleRecord>(
+  defaults: T,
+  input: Partial<T>,
+  options: InternalOptions
+): Promise<T> {
   const requiredArgs = options?.filter((opt) => opt.required);
 
   const config = new Map<string, ObjectValues | symbol>(

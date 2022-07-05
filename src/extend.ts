@@ -1,8 +1,8 @@
 import { readFileSync } from 'fs';
 import { ValidationError } from './error';
-import { ObjectValues } from './types';
+import { SimpleRecord } from './types';
 
-export async function extendFromFiles<T extends Record<string, ObjectValues>>(
+export async function extendFromFiles<T extends SimpleRecord>(
   values: T,
   paths: string[]
 ): Promise<T> {
