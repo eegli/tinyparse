@@ -8,9 +8,9 @@ module.exports = {
   roots: ['<rootDir>/src', '<rootDir>/test'],
   collectCoverageFrom: ['<rootDir>/src/**'],
   setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
-  /* coverageThreshold: {
+  coverageThreshold: {
     global: {
       statements: 100,
     },
-  }, */
+  },
 };
