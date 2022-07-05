@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install:ci
+        run: yarn install --immutable
       - name: Run tests
         run: yarn test --coverage --verbose
       - name: Upload coverage to Codecov
