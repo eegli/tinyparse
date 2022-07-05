@@ -1,6 +1,6 @@
 import { displayHelp } from './help';
-import { parseObjectLiteral } from './parsers';
-import { parseProcessArgv } from './parsers/parseArgv';
+import { parseProcessArgv } from './parse-argv';
+import { parseObjectLiteral } from './parse-literal';
 import { ObjectValues, Options } from './types';
 
 export function createParser<T extends Record<string, ObjectValues>>(
@@ -10,9 +10,9 @@ export function createParser<T extends Record<string, ObjectValues>>(
   return {
     parse: function (args: Partial<T> | string[] = []): Promise<T> {
       if (Array.isArray(args)) {
-        args = parseProcessArgv(options, args);
+        args = parseProcessArgv(args, options);
       }
-      return parseObjectLiteral(defaultValues, options, args);
+      return parseObjectLiteral(defaultValues, args, options);
     },
     parseArgv: parseProcessArgv,
     parseLiteral: parseObjectLiteral,

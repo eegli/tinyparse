@@ -72,8 +72,5 @@
       "prettier --write"
     ]
   },
-  "packageManager": "yarn@3.2.1",
-  "resolutions": {
-    "test": "portal:/C:/github/_package-test"
-  }
+  "packageManager": "yarn@3.2.1"
 }

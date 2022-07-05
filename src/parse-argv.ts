@@ -1,16 +1,20 @@
-import { ObjectValues } from './types';
+import { ObjectValues, Options } from './types';
 
-export function stringsToObjLiteral<T extends Record<string, ObjectValues>>(
+export function parseProcessArgv<T extends Record<string, ObjectValues>>(
   args: string[],
-  shortFlagMap?: Record<string, ObjectValues>
-): T {
+  options: Options<keyof T> = []
+): Partial<T> {
+  const shortFlags = options.reduce((acc, curr) => {
+    if (curr.shortFlag) acc[curr.shortFlag] = curr.name;
+    return acc;
+  }, {} as Record<string, ObjectValues>);
+
   const map = args.reduce((acc, curr, idx, orig) => {
     if (
-      shortFlagMap &&
       curr.startsWith('-') &&
-      Object.prototype.hasOwnProperty.call(shortFlagMap, curr)
+      Object.prototype.hasOwnProperty.call(shortFlags, curr)
     ) {
-      curr = '--' + shortFlagMap[curr];
+      curr = '--' + shortFlags[curr];
     }
     if (curr.startsWith('--')) {
       const arg = curr.slice(2);
@@ -29,5 +33,5 @@ export function stringsToObjLiteral<T extends Record<string, ObjectValues>>(
     return acc;
   }, new Map<string, unknown>());
 
-  return Object.fromEntries(map) as T;
+  return Object.fromEntries(map) as Partial<T>;
 }
