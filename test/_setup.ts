@@ -1,1 +1,3 @@
 jest.mock('fs');
+
+export {};

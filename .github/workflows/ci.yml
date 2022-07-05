@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build:
+  test:
     name: ${{ matrix.os }}-node-v${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -26,6 +26,8 @@ jobs:
         run: yarn install --immutable
       - name: Run tests
         run: yarn test --coverage --verbose
+      - name: Run build
+        run: yarn build
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         if: matrix.node == '17'
