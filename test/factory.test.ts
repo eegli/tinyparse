@@ -1,5 +1,32 @@
 import { ValidationError } from '../src/error';
-import { createParser } from '../src/factory';
+import { createParser, transformOptions } from '../src/factory';
+
+describe('Transformer', () => {
+  test('transforms options to internal structure', () => {
+    const res = transformOptions({
+      options: {
+        test: {
+          required: true,
+        },
+        test2: {
+          description: 'another property',
+        },
+      },
+    });
+    expect(res).toMatchInlineSnapshot(`
+      [
+        {
+          "name": "test",
+          "required": true,
+        },
+        {
+          "description": "another property",
+          "name": "test2",
+        },
+      ]
+    `);
+  });
+});
 
 describe('Parsing', () => {
   const defaultConfig = {
@@ -7,9 +34,7 @@ describe('Parsing', () => {
     boolProp: false,
     numProp: 999,
   };
-  const { parse } = createParser(defaultConfig, [
-    { name: 'numProp', isFilePath: true },
-  ]);
+  const { parse } = createParser(defaultConfig);
 
   it('returns default config if no args', async () => {
     const c1 = await parse({});
@@ -69,12 +94,13 @@ describe('Parsing with options', () => {
   };
 
   it('resolves if all required args are present', async () => {
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'stringProp',
-        required: true,
+    const { parse } = createParser(defaultConfig, {
+      options: {
+        stringProp: {
+          required: true,
+        },
       },
-    ]);
+    });
     await expect(parse({ stringProp: 'goodbye' })).resolves.toStrictEqual({
       ...defaultConfig,
       stringProp: 'goodbye',
@@ -82,16 +108,13 @@ describe('Parsing with options', () => {
   });
 
   it('rejects for missing required args', async () => {
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'stringProp',
-        required: true,
+    const { parse } = createParser(defaultConfig, {
+      options: {
+        stringProp: {
+          required: true,
+        },
       },
-      {
-        name: 'stringProp',
-        required: false,
-      },
-    ]);
+    });
     await expect(parse()).rejects.toThrow('"stringProp" is required');
   });
 });
@@ -109,12 +132,13 @@ describe('Parsing with string args', () => {
     numProp: 999,
   };
   it('works with required', async () => {
-    const { parse } = createParser<Config>(defaultConfig, [
-      {
-        name: 'stringProp',
-        required: true,
+    const { parse } = createParser<Config>(defaultConfig, {
+      options: {
+        stringProp: {
+          required: true,
+        },
       },
-    ]);
+    });
     const c = await parse(['--stringProp', 'new value!', '--boolProp']);
     expect(c).toStrictEqual({
       stringProp: 'new value!',
@@ -123,13 +147,16 @@ describe('Parsing with string args', () => {
     });
   });
   it('works with shortmap', async () => {
-    const { parse } = createParser<Config>(defaultConfig, [
-      { name: 'stringProp', shortFlag: '-s' },
-      {
-        name: 'boolProp',
-        shortFlag: '-b',
+    const { parse } = createParser<Config>(defaultConfig, {
+      options: {
+        stringProp: {
+          shortFlag: '-s',
+        },
+        boolProp: {
+          shortFlag: '-b',
+        },
       },
-    ]);
+    });
 
     const c = await parse(['-s', 'new value!', '-b']);
     expect(c).toStrictEqual({

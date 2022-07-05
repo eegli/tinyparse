@@ -1,8 +1,8 @@
-import { ObjectValues, Options } from './types';
+import { InternalOptions, ObjectValues } from './types';
 
 export function parseProcessArgv<T extends Record<string, ObjectValues>>(
   args: string[],
-  options: Options<keyof T> = []
+  options: InternalOptions = []
 ): Partial<T> {
   const shortFlags = options.reduce((acc, curr) => {
     if (curr.shortFlag) acc[curr.shortFlag] = curr.name;

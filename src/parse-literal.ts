@@ -1,12 +1,12 @@
 import { ValidationError } from './error';
-import { ObjectValues, Options } from './types';
+import { InternalOptions, ObjectValues } from './types';
 import { isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
 
 export async function parseObjectLiteral<
   T extends Record<string, ObjectValues>
->(defaults: T, args: Partial<T>, options: Options<keyof T> = []): Promise<T> {
+>(defaults: T, input: Partial<T>, options: InternalOptions): Promise<T> {
   const requiredArgs = options.filter((opt) => opt.required);
 
   const config = new Map<string, ObjectValues | symbol>(
@@ -15,11 +15,11 @@ export async function parseObjectLiteral<
 
   // For each required argument, replace its value temporarily
   // with a symbol
-  requiredArgs.forEach((r) => {
-    config.set(r.name, requiredSym);
+  requiredArgs.forEach((arg) => {
+    config.set(arg.name, requiredSym);
   });
 
-  Object.entries(args).forEach(([arg, argVal]) => {
+  Object.entries(input).forEach(([arg, argVal]) => {
     if (!config.has(arg)) {
       return;
     }

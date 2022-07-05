@@ -1,4 +1,4 @@
-import { createParser } from '../src/factory';
+import { displayHelp } from '../src/help';
 
 describe('Helper text', () => {
   it('creates helper text with descriptions', () => {
@@ -8,29 +8,33 @@ describe('Helper text', () => {
       withAuth: false,
       port: 999,
     };
-    const { help } = createParser(defaultConfig, [
-      {
-        name: 'id',
-      },
-      {
-        name: 'color',
-        required: true,
-        description: 'A color',
-      },
-      {
-        name: 'withAuth',
-        description: 'Require authentication for this action',
-        shortFlag: '-wa',
-      },
-      {
-        name: 'port',
-        description: 'The port to listen on',
-        shortFlag: '-p',
-        required: true,
-      },
-    ]);
 
-    const helperText = help('CLI options');
+    const helperText = displayHelp(
+      defaultConfig,
+      [
+        {
+          name: 'id',
+        },
+        {
+          name: 'color',
+          required: true,
+          description: 'A color',
+        },
+        {
+          name: 'withAuth',
+          description: 'Require authentication for this action',
+          shortFlag: '-wa',
+        },
+        {
+          name: 'port',
+          description: 'The port to listen on',
+          shortFlag: '-p',
+          required: true,
+        },
+      ],
+      'CLI options'
+    );
+
     expect(helperText).toMatchInlineSnapshot(`
       "CLI options
 
@@ -54,9 +58,8 @@ describe('Helper text', () => {
       withAuth: false,
       port: 999,
     };
-    const { help } = createParser(defaultConfig);
+    const helperText = displayHelp(defaultConfig);
 
-    const helperText = help();
     expect(helperText).toMatchInlineSnapshot(`
       "Usage
 
