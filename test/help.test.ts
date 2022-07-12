@@ -2,16 +2,16 @@ import { displayHelp } from '../src/help';
 
 describe('Helper text', () => {
   it('creates helper text with descriptions', () => {
-    const defaultConfig = {
+    const defaultValues = {
       id: '',
       color: '',
       withAuth: false,
       port: 999,
     };
 
-    const helperText = displayHelp(
-      defaultConfig,
-      [
+    const helperText = displayHelp({
+      defaultValues,
+      options: [
         {
           name: 'id',
         },
@@ -32,8 +32,8 @@ describe('Helper text', () => {
           required: true,
         },
       ],
-      'CLI options'
-    );
+      title: 'CLI options',
+    });
 
     expect(helperText).toMatchInlineSnapshot(`
       "CLI options
@@ -53,12 +53,12 @@ describe('Helper text', () => {
     `);
   });
   it('creates helper text with no descriptions', () => {
-    const defaultConfig = {
+    const defaultValues = {
       id: '',
       withAuth: false,
       port: 999,
     };
-    const helperText = displayHelp(defaultConfig);
+    const helperText = displayHelp({ defaultValues, options: [] });
 
     expect(helperText).toMatchInlineSnapshot(`
       "Usage

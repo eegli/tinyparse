@@ -32,6 +32,7 @@
   ],
   "scripts": {
     "build": "preconstruct build",
+    "build:release": "yarn build && rm -rf _release && yarn pack && mkdir _release && tar zxvf package.tgz --directory _release && rm package.tgz",
     "format": "prettier --write src test",
     "postinstall": "husky install",
     "lint": "eslint src test --ext .ts",
@@ -74,5 +75,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "np": {
+    "yarn": false
   }
 }

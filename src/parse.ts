@@ -4,15 +4,21 @@ import { isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
 
-export async function parseObjectLiteral<T extends SimpleRecord>(
-  defaults: T,
-  input: Partial<T>,
-  options: InternalOptions
-): Promise<T> {
+type ParseObjLiteral<T> = {
+  defaultValues: T;
+  input: Partial<T>;
+  options: InternalOptions;
+};
+
+export async function parseObjectLiteral<T extends SimpleRecord>({
+  defaultValues,
+  input,
+  options,
+}: ParseObjLiteral<T>): Promise<T> {
   const requiredArgs = options.filter((opt) => opt.required);
 
   const config = new Map<string, ObjectValues | symbol>(
-    Object.entries(defaults)
+    Object.entries(defaultValues)
   );
 
   // For each required argument, replace its value temporarily
@@ -26,7 +32,7 @@ export async function parseObjectLiteral<T extends SimpleRecord>(
       return;
     }
     // The received type must corresponds to the original type
-    const expected = typeof defaults[arg];
+    const expected = typeof defaultValues[arg];
     const received = typeof argVal;
     if (isSameType(expected, received)) {
       config.set(arg, argVal);
