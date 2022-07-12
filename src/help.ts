@@ -1,10 +1,16 @@
 import { InternalOptions, SimpleRecord } from './types';
 
-export const displayHelp = (
-  base: SimpleRecord,
-  options: InternalOptions = [],
-  title?: string
-): string => {
+type DisplayHelp = {
+  defaultValues: SimpleRecord;
+  options: InternalOptions;
+  title?: string;
+};
+
+export const displayHelp = ({
+  defaultValues,
+  options,
+  title,
+}: DisplayHelp): string => {
   // Required properties first
   options.sort((a, b) => (a.required === b.required ? 0 : a.required ? -1 : 1));
 
@@ -20,7 +26,7 @@ export const displayHelp = (
 
   options.forEach(({ name, description, required, shortFlag }, idx) => {
     const isLast = idx === options.length - 1;
-    const isBoolean = typeof base[name] === 'boolean';
+    const isBoolean = typeof defaultValues[name] === 'boolean';
 
     if (optionalFlag && !required) {
       str += 'Optional\n';
@@ -30,7 +36,7 @@ export const displayHelp = (
     str += `${tab}${shortFlag ? `${shortFlag}, ` : ''}`;
     str += `--${name}`;
     str += isBoolean ? '' : ` <${name}>`;
-    str += ` [${typeof base[name]}]`;
+    str += ` [${typeof defaultValues[name]}]`;
     str += description ? `\n${tab}` + description : '';
     str += isLast ? '' : '\n\n';
   });

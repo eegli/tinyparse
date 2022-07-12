@@ -9,17 +9,23 @@ export function transformOptions(options?: Options<string>): InternalOptions {
   }));
 }
 
-export function transformArgv<T extends SimpleRecord>(
-  args: string[],
-  options: InternalOptions,
-  filePathFlag?: FilePath
-): Partial<T> {
+type TransFormArgV = {
+  argv: string[];
+  options: InternalOptions;
+  filePathFlag?: FilePath;
+};
+
+export function transformArgv<T extends SimpleRecord>({
+  argv,
+  options,
+  filePathFlag,
+}: TransFormArgV): Partial<T> {
   const shortFlags = options.reduce((acc, curr) => {
     if (curr.shortFlag) acc[curr.shortFlag] = curr.name;
     return acc;
   }, {} as SimpleRecord);
 
-  const map = args.reduce((acc, curr, idx, orig) => {
+  const map = argv.reduce((acc, curr, idx, orig) => {
     if (
       curr.startsWith('-') &&
       Object.prototype.hasOwnProperty.call(shortFlags, curr)

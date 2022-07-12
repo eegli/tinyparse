@@ -4,13 +4,13 @@ export type OptionsObject = {
   shortFlag?: `-${string}`;
 };
 
-export type FilePath<T extends string = string> = `--${T}`;
+export type FilePath = `--${string}`;
 
 export type Options<
   K,
   V = K extends Record<string, unknown> ? keyof K : K extends string ? K : never
 > = {
-  filePath?: FilePath<string>;
+  filePathFlag?: FilePath;
   options?: {
     [K in Extract<V, string>]?: OptionsObject;
   };
