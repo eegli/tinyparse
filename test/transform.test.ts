@@ -1,8 +1,6 @@
 import fs from 'fs';
 import { transformArgv, transformOptions } from '../src/transform';
 
-jest.mock('fs');
-
 describe('External options transformer', () => {
   test('transforms options to internal structure', () => {
     const res = transformOptions({
@@ -116,20 +114,25 @@ describe('Argv transformer with short flags', () => {
   });
 });
 
-const mockFs = fs as jest.Mocked<typeof fs>;
-mockFs.readFileSync.mockImplementation((path, ..._) => {
-  if (path === 'test/config.json') {
-    return `{ "blop": "gugus", "blap": 2 }`;
-  }
-  throw new Error();
-});
-
 describe('Argv file parsing', () => {
-  it('ignores short flags that are not present', async () => {
+  jest.unmock('fs');
+  jest.spyOn(fs, 'readFileSync').mockImplementation((path, ..._) => {
+    if (path === 'test/config.json') {
+      return `{ "blop": "gugus", "blap": 2 }`;
+    }
+    throw new Error();
+  });
+
+  it('parses from simple JSON files', async () => {
     const c = transformArgv(['--config', 'test/config.json'], [], '--config');
     expect(c).toStrictEqual({
       blop: 'gugus',
       blap: 2,
     });
+  });
+  it('throws for invalid files', async () => {
+    expect(() => {
+      transformArgv(['--config', 'config.json'], [], '--config');
+    }).toThrow('config.json is not a valid JSON file');
   });
 });
