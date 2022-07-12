@@ -8,17 +8,24 @@ export function createParser<T extends SimpleRecord>(
   options?: Options<T>
 ) {
   const argumentOptions = transformOptions(options);
+  const filePath = options?.filePath;
+
+  function parseProcessArgv(argv: string[]) {
+    const args = transformArgv(argv, argumentOptions, filePath);
+    return parseObjectLiteral(defaultValues, args, argumentOptions);
+  }
+
   return {
     help: function (title?: string): string {
       return displayHelp(defaultValues, argumentOptions, title);
     },
     parse: function (args: Partial<T> | string[] = []): Promise<T> {
       if (Array.isArray(args)) {
-        args = transformArgv(args, argumentOptions);
+        return parseProcessArgv(args) as Promise<T>;
       }
       return parseObjectLiteral(defaultValues, args, argumentOptions);
     },
-    transformArgv: transformArgv,
+    parseArgv: parseProcessArgv,
     parseLiteral: parseObjectLiteral,
   };
 }

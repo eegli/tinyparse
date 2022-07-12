@@ -1,4 +1,5 @@
-import { InternalOptions, Options, SimpleRecord } from './types';
+import { FilePath, InternalOptions, Options, SimpleRecord } from './types';
+import { parseJSONFile } from './utils';
 
 export function transformOptions(options?: Options<string>): InternalOptions {
   if (!options?.options) return [];
@@ -10,7 +11,8 @@ export function transformOptions(options?: Options<string>): InternalOptions {
 
 export function transformArgv<T extends SimpleRecord>(
   args: string[],
-  options: InternalOptions = []
+  options: InternalOptions,
+  filePathFlag?: FilePath
 ): Partial<T> {
   const shortFlags = options.reduce((acc, curr) => {
     if (curr.shortFlag) acc[curr.shortFlag] = curr.name;
@@ -27,8 +29,15 @@ export function transformArgv<T extends SimpleRecord>(
     if (curr.startsWith('--')) {
       const arg = curr.slice(2);
       const argVal = orig[idx + 1];
+
+      // Parse a file
+      if (filePathFlag === curr) {
+        parseJSONFile(argVal).forEach(([key, content]) =>
+          acc.set(key, content)
+        );
+      }
       // Assume boolean flag
-      if (!argVal || argVal.startsWith('--')) {
+      else if (!argVal || argVal.startsWith('--')) {
         acc.set(arg, true);
         // Assume number
       } else if (/^\d+$/.test(argVal)) {

@@ -1,4 +1,7 @@
+import fs from 'fs';
 import { transformArgv, transformOptions } from '../src/transform';
+
+jest.mock('fs');
 
 describe('External options transformer', () => {
   test('transforms options to internal structure', () => {
@@ -27,15 +30,15 @@ describe('External options transformer', () => {
 
 describe('Argv transformer', () => {
   it('parses empty', async () => {
-    const c = transformArgv([]);
+    const c = transformArgv([], []);
     expect(c).toStrictEqual({});
   });
   it('bool props', async () => {
-    const c1 = transformArgv(['--boolProp']);
+    const c1 = transformArgv(['--boolProp'], []);
     expect(c1).toStrictEqual({
       boolProp: true,
     });
-    const c2 = transformArgv(['--boolProp', '--secondBoolProp']);
+    const c2 = transformArgv(['--boolProp', '--secondBoolProp'], []);
     expect(c2).toStrictEqual({
       boolProp: true,
       secondBoolProp: true,
@@ -43,26 +46,22 @@ describe('Argv transformer', () => {
   });
 
   it('string props', async () => {
-    const c = transformArgv(['--stringProp', 'str']);
+    const c = transformArgv(['--stringProp', 'str'], []);
     expect(c).toStrictEqual({
       stringProp: 'str',
     });
   });
   it('number props (converts to number)', async () => {
-    const c = transformArgv(['--numProp', '123']);
+    const c = transformArgv(['--numProp', '123'], []);
     expect(c).toStrictEqual({
       numProp: 123,
     });
   });
   it('all props', async () => {
-    const c = transformArgv([
-      '--boolProp1',
-      '--stringProp',
-      'str',
-      '--numProp',
-      '123',
-      '--boolProp2',
-    ]);
+    const c = transformArgv(
+      ['--boolProp1', '--stringProp', 'str', '--numProp', '123', '--boolProp2'],
+      []
+    );
     expect(c).toStrictEqual({
       boolProp1: true,
       stringProp: 'str',
@@ -112,7 +111,25 @@ describe('Argv transformer with short flags', () => {
     });
   });
   it('transforms empty', async () => {
-    const c = transformArgv(['-s', '123']);
+    const c = transformArgv(['-s', '123'], []);
     expect(c).toStrictEqual({});
+  });
+});
+
+const mockFs = fs as jest.Mocked<typeof fs>;
+mockFs.readFileSync.mockImplementation((path, ..._) => {
+  if (path === 'test/config.json') {
+    return `{ "blop": "gugus", "blap": 2 }`;
+  }
+  throw new Error();
+});
+
+describe('Argv file parsing', () => {
+  it('ignores short flags that are not present', async () => {
+    const c = transformArgv(['--config', 'test/config.json'], [], '--config');
+    expect(c).toStrictEqual({
+      blop: 'gugus',
+      blap: 2,
+    });
   });
 });

@@ -2,13 +2,15 @@ export type OptionsObject = {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
-  isFilePath?: boolean;
 };
+
+export type FilePath<T extends string = string> = `--${T}`;
 
 export type Options<
   K,
   V = K extends Record<string, unknown> ? keyof K : K extends string ? K : never
 > = {
+  filePath?: FilePath<string>;
   options?: {
     [K in Extract<V, string>]?: OptionsObject;
   };
