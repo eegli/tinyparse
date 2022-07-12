@@ -1,20 +1,19 @@
 {
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
-    "lib": ["ESNext"],
+    "lib": ["ES2019"],
     "sourceMap": true,
     "module": "commonjs",
-    "outDir": "dist",
+    "noEmit": true,
     "checkJs": true,
-    "target": "es2015",
-    "declaration": true,
+    "target": "ES2019",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "strictNullChecks": true,
-    "skipLibCheck": true
-  },
-  "include": ["src"]
+    "skipLibCheck": true,
+    "isolatedModules": true
+  }
 }

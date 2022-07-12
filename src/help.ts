@@ -1,13 +1,12 @@
-import { ObjectValues, Options } from './types';
+import { InternalOptions, SimpleRecord } from './types';
 
 export const displayHelp = (
-  base: Record<string, ObjectValues>,
-  options: Options,
+  base: SimpleRecord,
+  options: InternalOptions = [],
   title?: string
 ): string => {
-  options
-    // Required properties first
-    .sort((a, b) => (a.required === b.required ? 0 : a.required ? -1 : 1));
+  // Required properties first
+  options.sort((a, b) => (a.required === b.required ? 0 : a.required ? -1 : 1));
 
   let str = `${title ? title : 'Usage'}\n\n`;
 
@@ -19,7 +18,7 @@ export const displayHelp = (
   let optionalFlag = true;
   const tab = '   ';
 
-  options.forEach(({ name, description, shortFlag, required }, idx) => {
+  options.forEach(({ name, description, required, shortFlag }, idx) => {
     const isLast = idx === options.length - 1;
     const isBoolean = typeof base[name] === 'boolean';
 

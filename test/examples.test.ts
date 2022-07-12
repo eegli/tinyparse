@@ -11,17 +11,12 @@ describe('Readme examples', () => {
         outputDirectory: 'data', // Expect a string
       },
       // Options per key
-      [
-        {
-          name: 'clientId', // Name of the property
-          required: true, // Fail if not present
-          description: 'The client id', // For the help printer
+      {
+        options: {
+          clientId: { required: true, description: 'The client id' },
+          outputDirectory: { shortFlag: '-o' },
         },
-        {
-          name: 'outputDirectory', // Name of the property
-          shortFlag: '-o', // Short flag alias
-        },
-      ]
+      }
     );
 
     expect(await parse({ clientId: '123' })).toEqual({
@@ -66,12 +61,9 @@ describe('Readme examples', () => {
       accessToken: '',
     };
 
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'accessToken',
-        required: true,
-      },
-    ]);
+    const { parse } = createParser(defaultConfig, {
+      options: { accessToken: { required: true } },
+    });
 
     try {
       await parse();
@@ -104,12 +96,9 @@ describe('Readme examples', () => {
       hasCat: false,
     };
 
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'numberOfPets',
-        shortFlag: '-n',
-      },
-    ]);
+    const { parse } = createParser(defaultConfig, {
+      options: { numberOfPets: { shortFlag: '-n' } },
+    });
 
     const parsedInput = await parse(['-n', '6', '--hasDog', '--hasCat']);
 
@@ -124,12 +113,9 @@ describe('Readme examples', () => {
       name: '',
     };
 
-    const { parse } = createParser(defaultConfig, [
-      {
-        name: 'name',
-        required: true,
-      },
-    ]);
+    const { parse } = createParser(defaultConfig, {
+      options: { name: { required: true } },
+    });
     try {
       await parse();
     } catch (e) {
