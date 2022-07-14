@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { transformArgv, transformOptions } from '../src/transform';
 
 describe('External options transformer', () => {
@@ -125,14 +124,6 @@ describe('Argv transformer with short flags', () => {
 });
 
 describe('Argv file parsing', () => {
-  jest.unmock('fs');
-  jest.spyOn(fs, 'readFileSync').mockImplementation((path, ..._) => {
-    if (path === 'test/config.json') {
-      return `{ "blop": "gugus", "blap": 2 }`;
-    }
-    throw new Error();
-  });
-
   it('parses from simple JSON files', async () => {
     transformArgv({ argv: [], options: [] });
     const c = transformArgv({
@@ -141,8 +132,7 @@ describe('Argv file parsing', () => {
       filePathFlag: '--config',
     });
     expect(c).toStrictEqual({
-      blop: 'gugus',
-      blap: 2,
+      username: 'eegli',
     });
   });
   it('throws for invalid files', async () => {

@@ -32,6 +32,10 @@ describe('Helper text', () => {
           required: true,
         },
       ],
+      filePathArg: {
+        longFlag: '--config',
+        description: 'The config file to use',
+      },
       title: 'CLI options',
     });
 
@@ -49,7 +53,11 @@ describe('Helper text', () => {
          --id <id> [string]
 
          -wa, --withAuth [boolean]
-         Require authentication for this action"
+         Require authentication for this action
+
+         --config [string]
+         The config file to use
+      "
     `);
   });
   it('creates helper text with no descriptions', () => {

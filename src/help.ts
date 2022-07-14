@@ -1,8 +1,9 @@
-import { InternalOptions, SimpleRecord } from './types';
+import { FilePathArg, InternalOptions, SimpleRecord } from './types';
 
 type DisplayHelp = {
   defaultValues: SimpleRecord;
   options: InternalOptions;
+  filePathArg?: FilePathArg;
   title?: string;
 };
 
@@ -10,6 +11,7 @@ export const displayHelp = ({
   defaultValues,
   options,
   title,
+  filePathArg,
 }: DisplayHelp): string => {
   // Required properties first
   options.sort((a, b) => (a.required === b.required ? 0 : a.required ? -1 : 1));
@@ -40,5 +42,11 @@ export const displayHelp = ({
     str += description ? `\n${tab}` + description : '';
     str += isLast ? '' : '\n\n';
   });
+
+  if (filePathArg) {
+    const { longFlag, description } = filePathArg;
+    str += `\n\n${tab}${longFlag} [string]\n`;
+    str += description ? `${tab}${description}\n` : '';
+  }
   return str;
 };
