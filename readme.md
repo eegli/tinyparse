@@ -20,7 +20,7 @@ Tinyparse is made for parsing simple user input. It can parse arbitrary object l
 
 ## What does it do?
 
-The package **exports a single parser factory function** that creates a type-aware parser based on default values. The parser checks/parses the input and returns the updated matching properties from the default values.
+The package **exports a single parser factory function** that creates a type-aware parser based on default values. The parser checks/parses the input and returns the default values with updated matching properties from the input.
 
 Additionally, the factory creates a `help()` function that can be used to print all available options, sorted by `required`. This is most useful for CLI apps.
 
@@ -42,7 +42,8 @@ npm i @eegli/tinyparse
 
 - Second argument: Options object. You can specify both a "file flag" (whose value will point to a file) and options per key
 
-Note that pretty much everything all arguments are optional. IntelliSense and TypeScript will show you the detailed signatures.
+Note that most arguments and options are optional. IntelliSense and
+TypeScript will show you the detailed signatures and what is required.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
