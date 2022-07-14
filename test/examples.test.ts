@@ -4,9 +4,14 @@ jest.spyOn(global.console, 'warn').mockImplementation(jest.fn());
 
 describe('Readme examples/e2e', () => {
   test('general usage', async () => {
+    // Default values. These will be used as defaults/fallback
+    const defaultValues = {
+      username: '',
+      hasGithubProfile: false,
+    };
+
     const { help, parse } = createParser(
-      // Default values. These will be used as defaults/fallback
-      { username: '', hasGithubProfile: false },
+      defaultValues,
       // More configuration
       {
         // Parse a file (for example, a config file). Only takes
@@ -96,19 +101,22 @@ describe('Readme examples/e2e', () => {
   });
 
   test('example, process argv', async () => {
-    const { parse } = createParser({
-      hasGithubProfile: false,
-      hasGithubPlus: true,
-      followerCount: 0,
-    });
+    const { parse } = createParser(
+      {
+        hasGithubProfile: false,
+        hasGithubPlus: true,
+        followerCount: 0,
+      },
+      { options: { followerCount: { shortFlag: '-fc' } } }
+    );
 
-    const r2 = await parse([
+    const res = await parse([
       '--hasGithubProfile',
       '--hasGithubPlus',
-      '--followerCount',
+      '-fc',
       '10',
     ]);
-    expect(r2).toStrictEqual({
+    expect(res).toStrictEqual({
       hasGithubPlus: true,
       hasGithubProfile: true,
       followerCount: 10,

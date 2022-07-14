@@ -13,18 +13,16 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **I use this mostly for other pet projects of mine so it comes with some opinions**
 
-Tinyparse is made for parsing simple user input.
+Tinyparse is made for parsing simple user input. It can parse arbitrary object literals and arrays of strings, usually, `process.argv.slice(2)`.
 
-- The object to parse into must have <`string`, `string` | `number` | `boolean`> key-value pairs (i.e., they must be _simple_)
-- The same restriction applies to JSON files to parse - they must be simple
+- The object to parse into must be of type `Record<string, string | number | boolean>`
+- When parsing JSON files, they must deserialized into the same simple `Record` shape
 
-**How it works**
+## What does it do?
 
-- The package **exports a single parser factory function** that creates a type-aware parser based on default values. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
+The package **exports a single parser factory function** that creates a type-aware parser based on default values. The parser checks/parses the input and returns the updated matching properties from the default values.
 
-- The parser checks the input and returns the defaults with updated matching property values
-
-- Additionally, a `help()` function is returned from the factory that can be used to print all available options, sorted by `required`. This is most useful for CLI apps
+Additionally, the factory creates a `help()` function that can be used to print all available options, sorted by `required`. This is most useful for CLI apps.
 
 ## Installation
 
@@ -38,20 +36,26 @@ or
 npm i @eegli/tinyparse
 ```
 
-## Usage Example
+## Usage example
 
-- The first argument to the parser factors - an object literal - must specify the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default
+- First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default
 
-- The second argument to the parser factory is an options object. You can specify both a "file flag" (whose value will point to a file) and options per key
-- Pretty much everything is optional
+- Second argument: Options object. You can specify both a "file flag" (whose value will point to a file) and options per key
+
+Note that pretty much everything all arguments are optional. IntelliSense and TypeScript will show you the detailed signatures.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
 
+// Default values. These will be used as defaults/fallback
+const defaultValues = {
+  username: '',
+  hasGithubProfile: false,
+};
+
 const { help, parse } = createParser(
-  // Default values. These will be used as defaults/fallback
-  { username: '', hasGithubProfile: false },
-  // More configuration
+  defaultValues,
+  // Optional configuration
   {
     // Parse a file (for example, a config file). Only takes
     // effect when parsing an array of strings
@@ -62,6 +66,7 @@ const { help, parse } = createParser(
     // Options per key
     options: {
       username: {
+        // Fail if not present
         required: true,
         // For the help() command
         description: 'Your Github username',
@@ -75,18 +80,17 @@ const { help, parse } = createParser(
     },
   }
 );
-
 await parse({ username: 'feegli' });
 /* {
-  username: 'feegli',
-  hasGithubProfile: false,
+    username: 'feegli',
+    hasGithubProfile: false,
 } */
 
 // Assuming there is a file "config.json" in directory "test"
 await parse(['-gp', '--config', 'test/config.json']);
 /* {
-  username: 'eegli',
-  hasGithubProfile: true,
+    hasGithubProfile: true,
+    username: 'eegli',
 } */
 
 help();
@@ -105,13 +109,11 @@ help();
 "`;
 ```
 
-### Parsing required options
+### Parsing required properties
 
-The factory accepts an optional array of option objects for each config key. If a required key is not present in the user input, a `ValidationError` is thrown.
+A key can be marked as required. If a required key is not present in the input, a `ValidationError` is thrown.
 
 This works for object literals as well as string array arguments.
-
-Unknown arguments are ignored.
 
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';
@@ -150,6 +152,8 @@ try {
 }
 ```
 
+**Unknown arguments are ignored.**
+
 ## Usage with string arrays (e.g. process.argv)
 
 ### Glossary and support
@@ -168,32 +172,24 @@ Tinyparse expects that **every** CLI argument is specified with a long or short 
 
 **Standalone flags** are considered booleans flags. If they are encountered, their value will be set to `true`. This means that it is not possible to specify a "falsy" flag. Tinyparse assumes that any option that can be enabled by a flag is `false` by default but can be set to true.
 
-Optionalls, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
+Optionally, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
 
 ```ts
-const { parse } = createParser({
-  hasGithubProfile: false,
-  hasGithubPlus: true,
-  followerCount: 0,
-});
-
-const r2 = await parse([
-  '--hasGithubProfile',
-  '--hasGithubPlus',
-  '--followerCount',
-  '10',
-]);
-expect(r2).toStrictEqual({
-  hasGithubPlus: true,
-  hasGithubProfile: true,
-  followerCount: 10,
-});
+const { parse } = createParser(
+  {
+    hasGithubProfile: false,
+    hasGithubPlus: true,
+    followerCount: 0,
+  },
+  { options: { followerCount: { shortFlag: '-fc' } } }
+);
+const res = await parse(['--hasGithubProfile', '--hasGithubPlus', '-fc', '10']);
 ```
 
 Notice how:
 
 1. Since `hasGithubPlus` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
-2. Strings that are valid numbers are automagically converted to a number (see `--followerCount`). This only applies if the object to be parsed is an array of strings.
+2. Strings that are valid numbers are automagically converted to a number (see `--followerCount` / `-fc`). This only applies if the object to be parsed is an array of strings.
 
 ## More examples
 
