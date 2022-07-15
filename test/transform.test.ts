@@ -36,7 +36,7 @@ describe('Argv transformer', () => {
       argv: [
         '--boolProp1',
         '--stringProp',
-        'str',
+        'hello from node',
         '--numProp',
         '123',
         '--boolProp2',
@@ -46,7 +46,7 @@ describe('Argv transformer', () => {
     {
       argv: [
         '--stringProp',
-        'str',
+        'hello from node',
         '--boolProp1',
         '--boolProp2',
         '--numProp',
@@ -60,7 +60,7 @@ describe('Argv transformer', () => {
         '--numProp',
         '123',
         '--stringProp',
-        'str',
+        'hello from node',
         '--boolProp2',
       ],
       options: [],
@@ -71,7 +71,7 @@ describe('Argv transformer', () => {
         '123',
         '--boolProp1',
         '--stringProp',
-        'str',
+        'hello from node',
         '--boolProp2',
       ],
       options: [],
@@ -87,7 +87,7 @@ describe('Argv transformer', () => {
         })
       ).toStrictEqual({
         boolProp1: true,
-        stringProp: 'str',
+        stringProp: 'hello from node',
         numProp: 123,
         boolProp2: true,
       });
@@ -95,10 +95,21 @@ describe('Argv transformer', () => {
   });
 });
 
-describe('Argv transformer with short flags', () => {
-  it('ignores short flags that are not present', async () => {
+describe('Argv transformer with options', () => {
+  it('supports long and short flags', async () => {
     const c = transformArgv({
-      argv: ['-s', '123', '--input', '123s', '-p', 'mypw', '-x', 'donotparse'],
+      argv: [
+        '-ignoreme',
+        '-s',
+        '123',
+        '--input',
+        'this is a string',
+        '--donotignore',
+        '-p',
+        'xyz123',
+        '-p',
+        'MyPassword',
+      ],
       options: [
         { name: 'secret', shortFlag: '-s' },
         { name: 'password', shortFlag: '-p' },
@@ -106,42 +117,15 @@ describe('Argv transformer with short flags', () => {
     });
     expect(c).toStrictEqual({
       secret: 123,
-      password: 'mypw',
-      input: '123s',
-    });
-  });
-  it('can have both long and short flags', async () => {
-    const c = transformArgv({
-      argv: ['-s', '123', '--input', 'this is a string', '-p', 'mypw'],
-      options: [
-        { name: 'secret', shortFlag: '-s' },
-        { name: 'password', shortFlag: '-p' },
-      ],
-    });
-    expect(c).toStrictEqual({
-      secret: 123,
-      password: 'mypw',
+      password: 'MyPassword',
+      donotignore: true,
       input: 'this is a string',
-    });
-  });
-  it('transforms boolean short flags', async () => {
-    const c = transformArgv({
-      argv: ['--long', '-v', '--normal', 'value'],
-      options: [{ name: 'verbose', shortFlag: '-v' }],
-    });
-    expect(c).toStrictEqual({
-      verbose: true,
-      long: true,
-      normal: 'value',
     });
   });
   it('transforms empty', async () => {
     const c = transformArgv({ argv: ['-s', '123'], options: [] });
     expect(c).toStrictEqual({});
   });
-});
-
-describe('Argv transformer with file parsing', () => {
   it('parses from simple JSON files', async () => {
     transformArgv({ argv: [], options: [] });
     const c = transformArgv({

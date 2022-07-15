@@ -18,12 +18,6 @@ Tinyparse is made for parsing simple user input. It can parse arbitrary object l
 - The object to parse into must be of type `Record<string, string | number | boolean>`
 - When parsing JSON files, they must deserialized into the same simple `Record` shape
 
-## What does it do?
-
-The package **exports a single parser factory function** that creates a type-aware parser based on default values. The parser checks/parses the input and returns the default values with updated matching properties from the input.
-
-Additionally, the factory creates a `help()` function that can be used to print all available options, sorted by `required`. This is most useful for CLI apps.
-
 ## Installation
 
 ```bash
@@ -44,6 +38,8 @@ npm i @eegli/tinyparse
 
 Note that most arguments and options are optional. IntelliSense and
 TypeScript will show you the detailed signatures and what is required.
+
+The factory creates a `help()` function that can be used to print all available options, sorted by `required`. This is most useful for CLI apps.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -191,6 +187,11 @@ Notice how:
 
 1. Since `hasGithubPlus` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
 2. Strings that are valid numbers are automagically converted to a number (see `--followerCount` / `-fc`). This only applies if the object to be parsed is an array of strings.
+
+### Good to know when parsing strings
+
+- `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag argument. Passing arguments such as `["--password", "-x8ap!"]` results in undefined behavior
+- Later values will overwrite earlier values. `["--password", "abc", "--password", "xyz"]` will parse to `password: "xyz"`
 
 ## More examples
 
