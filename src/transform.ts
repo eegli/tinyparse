@@ -45,7 +45,7 @@ export function transformArgv<T extends SimpleRecord>({
         );
       }
       // Assume boolean flag
-      else if (!argVal || argVal.startsWith('--')) {
+      else if (!argVal || argVal.startsWith('-')) {
         acc.set(arg, true);
         // Assume number
       } else if (/^\d+$/.test(argVal)) {

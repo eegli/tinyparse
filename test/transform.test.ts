@@ -30,35 +30,9 @@ describe('Argv transformer', () => {
     const c = transformArgv({ argv: [], options: [] });
     expect(c).toStrictEqual({});
   });
-  it('bool props', async () => {
-    const c1 = transformArgv({ argv: ['--boolProp'], options: [] });
-    expect(c1).toStrictEqual({
-      boolProp: true,
-    });
-    const c2 = transformArgv({
-      argv: ['--boolProp', '--secondBoolProp'],
-      options: [],
-    });
-    expect(c2).toStrictEqual({
-      boolProp: true,
-      secondBoolProp: true,
-    });
-  });
 
-  it('string props', async () => {
-    const c = transformArgv({ argv: ['--stringProp', 'str'], options: [] });
-    expect(c).toStrictEqual({
-      stringProp: 'str',
-    });
-  });
-  it('number props (converts to number)', async () => {
-    const c = transformArgv({ argv: ['--numProp', '123'], options: [] });
-    expect(c).toStrictEqual({
-      numProp: 123,
-    });
-  });
-  it('all props', async () => {
-    const c = transformArgv({
+  const orders: Parameters<typeof transformArgv>[0][] = [
+    {
       argv: [
         '--boolProp1',
         '--stringProp',
@@ -68,12 +42,55 @@ describe('Argv transformer', () => {
         '--boolProp2',
       ],
       options: [],
-    });
-    expect(c).toStrictEqual({
-      boolProp1: true,
-      stringProp: 'str',
-      numProp: 123,
-      boolProp2: true,
+    },
+    {
+      argv: [
+        '--stringProp',
+        'str',
+        '--boolProp1',
+        '--boolProp2',
+        '--numProp',
+        '123',
+      ],
+      options: [],
+    },
+    {
+      argv: [
+        '--boolProp1',
+        '--numProp',
+        '123',
+        '--stringProp',
+        'str',
+        '--boolProp2',
+      ],
+      options: [],
+    },
+    {
+      argv: [
+        '--numProp',
+        '123',
+        '--boolProp1',
+        '--stringProp',
+        'str',
+        '--boolProp2',
+      ],
+      options: [],
+    },
+  ];
+  orders.forEach((variant, idx) => {
+    it('works with order ' + idx, () => {
+      expect(
+        transformArgv({
+          argv: variant.argv,
+          options: variant.options,
+          filePathFlag: variant.filePathFlag,
+        })
+      ).toStrictEqual({
+        boolProp1: true,
+        stringProp: 'str',
+        numProp: 123,
+        boolProp2: true,
+      });
     });
   });
 });
@@ -109,11 +126,12 @@ describe('Argv transformer with short flags', () => {
   });
   it('transforms boolean short flags', async () => {
     const c = transformArgv({
-      argv: ['-v', '--normal', 'value'],
+      argv: ['--long', '-v', '--normal', 'value'],
       options: [{ name: 'verbose', shortFlag: '-v' }],
     });
     expect(c).toStrictEqual({
       verbose: true,
+      long: true,
       normal: 'value',
     });
   });
@@ -123,7 +141,7 @@ describe('Argv transformer with short flags', () => {
   });
 });
 
-describe('Argv file parsing', () => {
+describe('Argv transformer with file parsing', () => {
   it('parses from simple JSON files', async () => {
     transformArgv({ argv: [], options: [] });
     const c = transformArgv({
