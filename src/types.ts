@@ -1,22 +1,25 @@
-export type OptionsObject = {
+export type FlagOption = {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
 };
 
-export type FilePath = `--${string}`;
+export type FilePathArg = {
+  longFlag: `--${string}`;
+  description?: string;
+};
 
-export type Options<
-  K,
+export type ParsingOptions<
+  K = string,
   V = K extends Record<string, unknown> ? keyof K : K extends string ? K : never
 > = {
-  filePathFlag?: FilePath;
+  filePathArg?: FilePathArg;
   options?: {
-    [K in Extract<V, string>]?: OptionsObject;
+    [K in Extract<V, string>]?: FlagOption;
   };
 };
 
-export type InternalOptions = (OptionsObject & { name: string })[];
+export type InternalOptions = (FlagOption & { name: string })[];
 
 export type SimpleRecord<T extends string = string> = Record<T, ObjectValues>;
 

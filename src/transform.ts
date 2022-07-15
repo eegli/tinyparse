@@ -1,9 +1,11 @@
-import { FilePath, InternalOptions, Options, SimpleRecord } from './types';
+import { InternalOptions, ParsingOptions, SimpleRecord } from './types';
 import { parseJSONFile } from './utils';
 
-export function transformOptions(options?: Options<string>): InternalOptions {
-  if (!options?.options) return [];
-  return Object.entries(options.options).map(([name, rest]) => ({
+export function transformOptions(
+  parsingOptions?: ParsingOptions
+): InternalOptions {
+  if (!parsingOptions?.options) return [];
+  return Object.entries(parsingOptions.options).map(([name, rest]) => ({
     name,
     ...rest,
   }));
@@ -12,7 +14,7 @@ export function transformOptions(options?: Options<string>): InternalOptions {
 type TransFormArgV = {
   argv: string[];
   options: InternalOptions;
-  filePathFlag?: FilePath;
+  filePathFlag?: `--${string}`;
 };
 
 export function transformArgv<T extends SimpleRecord>({
@@ -37,13 +39,13 @@ export function transformArgv<T extends SimpleRecord>({
       const argVal = orig[idx + 1];
 
       // Parse a file
-      if (filePathFlag === curr) {
+      if (filePathFlag?.slice(2) === arg) {
         parseJSONFile(argVal).forEach(([key, content]) =>
           acc.set(key, content)
         );
       }
       // Assume boolean flag
-      else if (!argVal || argVal.startsWith('--')) {
+      else if (!argVal || argVal.startsWith('-')) {
         acc.set(arg, true);
         // Assume number
       } else if (/^\d+$/.test(argVal)) {

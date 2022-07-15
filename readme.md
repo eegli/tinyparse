@@ -8,21 +8,15 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 - Promise-based
 - TypeScript first
+- JSON file parsing support
 - Zero dependencies
 
-**I use this mostly for other pet projects of mine so it comes with some opinions.**
+**I use this mostly for other pet projects of mine so it comes with some opinions**
 
-- Tinyparse is made for parsing simple user input
-- Objects to be parsed cannot be nested and need to have string keys
-- Objects to be parsed can only have values that are of type string, number or boolean
+Tinyparse is made for parsing simple user input. It can parse arbitrary object literals and arrays of strings, usually, `process.argv.slice(2)`.
 
-**How it works**
-
-- The package **exports a single parser factory function** that creates a type-aware parser based on default values. The parser accepts either an object literal or array of strings (usually, `process.argv.slice(2)`)
-
-- The parser checks the input and returns the defaults with updated matching property values
-
-- Additionally, a `help()` function is returned from the factory that can be used to print all available options, sorted by `required`. This is most useful for CLI apps
+- The object to parse into must be of type `Record<string, string | number | boolean>`
+- When parsing JSON files, they must deserialized into the same simple `Record` shape
 
 ## Installation
 
@@ -36,115 +30,126 @@ or
 npm i @eegli/tinyparse
 ```
 
-## Example
+## Usage example
+
+- First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default
+
+- Second argument: Options object. You can specify both a "file flag" (whose value will point to a file) and options per key
+
+Note that most arguments and options are optional. IntelliSense and
+TypeScript will show you the detailed signatures and what is required.
+
+The factory creates a `help()` function that can be used to print all available options, sorted by `required`. This is most useful for CLI apps.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
 
-const { help, parse } = createParser(
-  // Default values
-  {
-    clientId: '', // Expect a string
-    outputDirectory: 'data', // Expect a string
-  },
-  // Options per key
-  [
-    {
-      name: 'clientId', // Name of the property
-      required: true, // Fail if not present
-      description: 'The client id', // For the help printer
-    },
-    {
-      name: 'outputDirectory', // Name of the property
-      shortFlag: '-o', // Short flag alias
-    },
-  ]
-);
-
-// Parse user input...
-const parsed1 = await parse({ clientId: '123' });
-
-// ...or process args
-const parsed2 = await parse(process.argv.slice(2));
-
-// A helper command to print all available options
-help('CLI Usage Example');
-`
-  CLI Usage Example
-
-  Required
-      --clientId <clientId> [string]
-      The client id
-
-  Optional
-      -o, --outputDirectory <outputDirectory> [string]
-
-`;
-```
-
-## Usage with object literals
-
-The object that is passed to the factory needs to specify the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
-
-```ts
-const defaultConfig = {
-  name: 'defaultName', // string
-  age: 0, // number
-  hasDog: true, // boolean
+// Default values. These will be used as defaults/fallback
+const defaultValues = {
+  username: '',
+  hasGithubProfile: false,
 };
 
-const { parse } = createParser(defaultConfig);
+const { help, parse } = createParser(
+  defaultValues,
+  // Optional configuration
+  {
+    // Parse a file (for example, a config file). Only takes
+    // effect when parsing an array of strings
+    filePathArg: {
+      longFlag: '--config',
+      description: 'Path to your Github config file',
+    },
+    // Options per key
+    options: {
+      username: {
+        // Fail if not present
+        required: true,
+        // For the help() command
+        description: 'Your Github username',
+      },
+      hasGithubProfile: {
+        description: 'Indicate whether you have a Github profile',
+        // Short flag alias. Only takes effect when parsing an
+        // array of strings
+        shortFlag: '-gp',
+      },
+    },
+  }
+);
+await parse({ username: 'feegli' });
+/* {
+    username: 'feegli',
+    hasGithubProfile: false,
+} */
 
-const parsed = await parse({
-  name: 'eric',
-  hasDog: false,
-});
+// Assuming there is a file "config.json" in directory "test"
+await parse(['-gp', '--config', 'test/config.json']);
+/* {
+    hasGithubProfile: true,
+    username: 'eegli',
+} */
 
-expect(parsed).toStrictEqual({
-  name: 'eric',
-  age: 0,
-  hasDog: false,
-});
+help();
+`"Usage
+
+    Required
+        --username <username> [string]
+        Your Github username
+
+    Optional
+        -gp, --hasGithubProfile [boolean]
+        Indicate whether you have a Github profile
+
+        --config [string]
+        Path to your Github config file
+"`;
 ```
 
-### Parsing required options
+### Parsing required properties
 
-The factory accepts an optional array of option objects for each config key. If a required key is not present in the user input, a `ValidationError` is thrown.
+A key can be marked as required. If a required key is not present in the input, a `ValidationError` is thrown.
 
 This works for object literals as well as string array arguments.
 
 ```ts
-const defaultConfig = {
-  accessToken: '',
-};
+import { createParser, ValidationError } from '@eegli/tinyparse';
 
-const { parse } = createParser(defaultConfig, [
+const { parse } = createParser(
+  { username: '' },
   {
-    name: 'accessToken',
-    required: true,
-  },
-]);
+    options: {
+      username: {
+        required: true,
+      },
+    },
+  }
+);
 
-await parse();
-
-// --> Rejects :(
-//  "accessToken" is required
+try {
+  await parse(); // This will throw!
+} catch (e) {
+  if (e instanceof ValidationError) {
+    console.log(e.message); // '"username" is required'
+  }
+}
 ```
 
 Invalid types are also rejected.
 
 ```ts
-const defaultConfig = {
-  accessToken: '',
-};
+const { parse } = createParser({ username: '' });
 
-const { parse } = createParser(defaultConfig);
-
-await parse({ accessToken: 12 });
-
-// --> Rejects :(
-// Invalid type for "accessToken". Expected string, got number
+try {
+  await parse({ username: ['eegli'] }); // This will throw!
+} catch (e) {
+  if (e instanceof ValidationError) {
+    console.log(e.message); // 'Invalid type for "username". Expected string, got object'
+  }
+}
 ```
+
+**Unknown arguments are ignored.**
 
 ## Usage with string arrays (e.g. process.argv)
 
@@ -164,64 +169,30 @@ Tinyparse expects that **every** CLI argument is specified with a long or short 
 
 **Standalone flags** are considered booleans flags. If they are encountered, their value will be set to `true`. This means that it is not possible to specify a "falsy" flag. Tinyparse assumes that any option that can be enabled by a flag is `false` by default but can be set to true.
 
-Optionalls, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
+Optionally, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
 
 ```ts
-const defaultConfig = {
-  numberOfPets: 0,
-  hasDog: true,
-  hasCat: false,
-};
-
-const { parse } = createParser(defaultConfig, [
+const { parse } = createParser(
   {
-    name: 'numberOfPets',
-    shortFlag: '-n',
+    hasGithubProfile: false,
+    hasGithubPlus: true,
+    followerCount: 0,
   },
-]);
-
-const parsedInput = await parse(['-n', '6', '--hasDog', '--hasCat']);
-
-expect(parsedInput).toStrictEqual({
-  numberOfPets: 6,
-  hasDog: true,
-  hasCat: true,
-});
+  { options: { followerCount: { shortFlag: '-fc' } } }
+);
+const res = await parse(['--hasGithubProfile', '--hasGithubPlus', '-fc', '10']);
 ```
 
 Notice how:
 
-1. Since `hasDog` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
-2. Strings that are valid numbers are automagically converted to a number (see `--numberOfPets`). This only applies if the object to be parsed is an array of strings.
+1. Since `hasGithubPlus` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
+2. Strings that are valid numbers are automagically converted to a number (see `--followerCount` / `-fc`). This only applies if the object to be parsed is an array of strings.
 
-## Error handling
+### Good to know when parsing strings
 
-Tinyparse exports a `ValidationError` class. You can use it to check if, in a large try-catch block, the error originated from parsing something.
-
-```ts
-import { createParser, ValidationError } from '@eegli/tinyparse';
-
-const defaultConfig = {
-  name: '',
-};
-
-const { parse } = createParser(defaultConfig, [
-  {
-    name: 'name',
-    required: true,
-  },
-]);
-
-try {
-  await parse();
-} catch (e) {
-  if (e instanceof ValidationError) {
-    console.error(e.message);
-    // --> "name" is required
-  }
-}
-```
+- `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag argument. Passing arguments such as `["--password", "-x8ap!"]` results in undefined behavior
+- Later values will overwrite earlier values. `["--password", "abc", "--password", "xyz"]` will parse to `password: "xyz"`
 
 ## More examples
 
-For more examples, [check the extensive test suites](test/factory.test.ts) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
+For more examples, [check the extensive test suites](test) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
