@@ -8,9 +8,10 @@ module.exports = {
   roots: ['<rootDir>/src', '<rootDir>/test'],
   collectCoverageFrom: ['<rootDir>/src/**'],
   setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/integration/'],
   coverageThreshold: {
     global: {
-      statements: 100,
+      statements: 90,
     },
   },
 };

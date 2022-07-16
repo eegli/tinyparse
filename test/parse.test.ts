@@ -57,6 +57,7 @@ describe('Object literal parsing', () => {
   });
 
   it('rejects invalid types', async () => {
+    expect.assertions(2);
     try {
       await parse({
         defaultValues,
@@ -93,6 +94,7 @@ describe('Parsing with options', () => {
   });
 
   it('rejects for missing required args', async () => {
+    expect.assertions(2);
     const args: Parameters<typeof parse>[0] = {
       defaultValues,
       input: {},

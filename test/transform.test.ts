@@ -22,6 +22,8 @@ describe('External options transformer', () => {
         name: 'test2',
       },
     ]);
+    expect(transformOptions({})).toStrictEqual([]);
+    expect(transformOptions()).toStrictEqual([]);
   });
 });
 
