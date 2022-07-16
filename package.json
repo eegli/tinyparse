@@ -40,7 +40,7 @@
     "postpack": "pinst --enable",
     "prepublish": "yarn build",
     "test": "jest --verbose",
-    "test:integration": "cd test/integration && node --test",
+    "test:integration": "yarn build && cd test/integration && node --test",
     "test:coverage": "jest --coverage",
     "test:watch": "jest  --verbose --watch"
   },
