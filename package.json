@@ -40,6 +40,7 @@
     "postpack": "pinst --enable",
     "prepublish": "yarn build",
     "test": "jest --verbose",
+    "test:all": "yarn test && yarn test:integration",
     "test:integration": "yarn build &&  cd test/integration && npm install -S ../../ && node --test",
     "test:coverage": "jest --coverage",
     "test:watch": "jest  --verbose --watch"
@@ -78,6 +79,8 @@
     "access": "public"
   },
   "np": {
-    "yarn": false
+    "yarn": false,
+    "branch": "main",
+    "testScript": "yarn test:all"
   }
 }
