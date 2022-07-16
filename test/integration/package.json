@@ -3,6 +3,6 @@
   "type": "module",
   "module": "esnext",
   "dependencies": {
-    "@eegli/tinyparse": "link:../../"
+    "@eegli/tinyparse": "file:../.."
   }
 }
