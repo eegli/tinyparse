@@ -1,7 +1,6 @@
 # Yarn
-**/.pnp.*
+.pnp.*
 **/.yarn/*
-install-state
 !**/.yarn/patches
 !**/.yarn/plugins
 !**/.yarn/releases
