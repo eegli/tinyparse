@@ -16,7 +16,11 @@ export const displayHelp = ({
   // Required properties first
   options.sort((a, b) => (a.required === b.required ? 0 : a.required ? -1 : 1));
 
-  let str = `${title ? title : 'Usage'}\n\n`;
+  let str = `${title ? title : 'Usage'}`;
+
+  if (options.length > 0) {
+    str += '\n\n';
+  }
 
   // Maybe no option is required
   if (options[0]?.required) {
