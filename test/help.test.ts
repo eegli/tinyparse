@@ -60,6 +60,19 @@ describe('Helper text', () => {
       "
     `);
   });
+  it('creates helper text for file flag only', () => {
+    const helperText = displayHelp({
+      defaultValues: {},
+      options: [],
+      filePathArg: { longFlag: '--config' },
+    });
+    expect(helperText).toMatchInlineSnapshot(`
+      "Usage
+
+         --config [string]
+      "
+    `);
+  });
   it('creates helper text with no descriptions', () => {
     const defaultValues = {
       id: '',
@@ -68,10 +81,6 @@ describe('Helper text', () => {
     };
     const helperText = displayHelp({ defaultValues, options: [] });
 
-    expect(helperText).toMatchInlineSnapshot(`
-      "Usage
-
-      "
-    `);
+    expect(helperText).toMatchInlineSnapshot(`"Usage"`);
   });
 });
