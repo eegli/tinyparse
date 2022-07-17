@@ -207,6 +207,7 @@ Notice how:
 ### Good to know when parsing strings
 
 - `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag argument. Passing arguments such as `["--password", "-x8ap!"]` results in undefined behavior
+- If you really need to parse a value that starts with `-`, consider reading it from a file instead. This is a little less convenient but works for any value
 - Later values will overwrite earlier values. `["--password", "abc", "--password", "xyz"]` will parse to `password: "xyz"`
 
 ## More examples
