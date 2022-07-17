@@ -2,8 +2,10 @@ import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+process.argv.push('-gp', '--config', 'github.json');
+
 test('Integration and docs', async (t) => {
-  await t.test('full example', async (t) => {
+  await t.test('full example', async () => {
     // Default values. These will be used as defaults/fallback
     const defaultValues = {
       username: '',
@@ -42,8 +44,9 @@ test('Integration and docs', async (t) => {
       hasGithubProfile: false,
     });
 
+    // process.argv = ['arg0','arg1', '-gp', '--config', 'github.json']
     // Read from file "github.json" with content {"username": "eegli"}
-    const parsedArgv = await parse(['-gp', '--config', 'github.json']);
+    const parsedArgv = await parse(process.argv);
     assert.deepStrictEqual(parsedArgv, {
       hasGithubProfile: true,
       username: 'eegli',

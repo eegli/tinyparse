@@ -84,8 +84,9 @@ assert.deepStrictEqual(parsedObj, {
   hasGithubProfile: false,
 });
 
+// process.argv = ['arg0','arg1', '-gp', '--config', 'github.json']
 // Read from file "github.json" with content {"username": "eegli"}
-const parsedArgv = await parse(['-gp', '--config', 'github.json']);
+const parsedArgv = await parse(process.argv);
 assert.deepStrictEqual(parsedArgv, {
   hasGithubProfile: true,
   username: 'eegli',
