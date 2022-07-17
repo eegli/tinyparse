@@ -42,8 +42,8 @@ test('Integration and docs', async (t) => {
       hasGithubProfile: false,
     });
 
-    // Assuming there is a file "config.json"
-    const parsedArgv = await parse(['-gp', '--config', 'file.json']);
+    // Read from file "github.json" with content {"username": "eegli"}
+    const parsedArgv = await parse(['-gp', '--config', 'github.json']);
     assert.deepStrictEqual(parsedArgv, {
       hasGithubProfile: true,
       username: 'eegli',

@@ -19,7 +19,7 @@ export type ParsingOptions<
   };
 };
 
-export type InternalOptions = (FlagOption & { name: string })[];
+export type InternalOption = FlagOption & { name: string };
 
 export type SimpleRecord<T extends string = string> = Record<T, ObjectValues>;
 

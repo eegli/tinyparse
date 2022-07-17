@@ -1,8 +1,8 @@
-import { FilePathArg, InternalOptions, SimpleRecord } from './types';
+import { FilePathArg, InternalOption, SimpleRecord } from './types';
 
 type DisplayHelp = {
   defaultValues: SimpleRecord;
-  options: InternalOptions;
+  options: InternalOption[];
   filePathArg?: FilePathArg;
   title?: string;
 };

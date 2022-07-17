@@ -1,5 +1,5 @@
 import { ValidationError } from './error';
-import { InternalOptions, ObjectValues, SimpleRecord } from './types';
+import { InternalOption, ObjectValues, SimpleRecord } from './types';
 import { isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
@@ -7,7 +7,7 @@ const requiredSym = Symbol('isRequired');
 type ParseObjLiteral<T> = {
   defaultValues: T;
   input: Partial<T>;
-  options: InternalOptions;
+  options: InternalOption[];
 };
 
 export async function parseObjectLiteral<T extends SimpleRecord>({
@@ -28,9 +28,8 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
   });
 
   Object.entries(input).forEach(([arg, argVal]) => {
-    if (!config.has(arg)) {
-      return;
-    }
+    if (!config.has(arg)) return;
+
     // The received type must corresponds to the original type
     const expected = typeof defaultValues[arg];
     const received = typeof argVal;

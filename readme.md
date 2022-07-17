@@ -1,6 +1,6 @@
 # Tinyparse
 
-![npm](https://img.shields.io/npm/v/@eegli/tinyparse) ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/eegli/tinyparse/ci-unit-tests/main) [![codecov](https://codecov.io/gh/eegli/tinyparse/branch/main/graph/badge.svg?token=8MFDR4SWYM)](https://codecov.io/gh/eegli/tinyparse)
+![npm](https://img.shields.io/npm/v/@eegli/tinyparse) ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/eegli/tinyparse/ci-unit-tests/main) [![codecov](https://codecov.io/gh/eegli/tinyparse/branch/main/graph/badge.svg?token=8MFDR4SWYM)](https://codecov.io/gh/eegli/tinyparse) ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/min/@eegli/tinyparse)
 
 ### Opiniated, type-safe parsing module for CLI arguments and object literals.
 
@@ -43,6 +43,7 @@ The factory creates a `help()` function that can be used to print all available 
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
+import assert from 'node:assert/strict';
 
 // Default values. These will be used as defaults/fallback
 const defaultValues = {
@@ -77,18 +78,18 @@ const { help, parse } = createParser(
     },
   }
 );
-await parse({ username: 'feegli' });
-/* {
-    username: 'feegli',
-    hasGithubProfile: false,
-} */
+const parsedObj = await parse({ username: 'feegli' });
+assert.deepStrictEqual(parsedObj, {
+  username: 'feegli',
+  hasGithubProfile: false,
+});
 
-// Assuming there is a file "config.json" in directory "test"
-await parse(['-gp', '--config', 'test/config.json']);
-/* {
-    hasGithubProfile: true,
-    username: 'eegli',
-} */
+// Read from file "github.json" with content {"username": "eegli"}
+const parsedArgv = await parse(['-gp', '--config', 'github.json']);
+assert.deepStrictEqual(parsedArgv, {
+  hasGithubProfile: true,
+  username: 'eegli',
+});
 
 help();
 `"Usage
@@ -167,11 +168,14 @@ Tinyparse expects that **every** CLI argument is specified with a long or short 
 | `run-cli --verbose`           | `[command] [boolean long flag]`     | ✅      |
 | `run-cli -v `                 | `[command] [boolean short flag]`    | ✅      |
 
-**Standalone flags** are considered booleans flags. If they are encountered, their value will be set to `true`. This means that it is not possible to specify a "falsy" flag. Tinyparse assumes that any option that can be enabled by a flag is `false` by default but can be set to true.
+**Standalone flags** are considered booleans flags. If they are encountered, their value will be set to `true`. This means that it is not possible to specify a "falsy" flag. Tinyparse assumes that any option that can be enabled by a flag is `false` by default but can be set to `true`.
 
 Optionally, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
 
 ```ts
+import { createParser } from '@eegli/tinyparse';
+import assert from 'node:assert/strict';
+
 const { parse } = createParser(
   {
     hasGithubProfile: false,
@@ -180,7 +184,19 @@ const { parse } = createParser(
   },
   { options: { followerCount: { shortFlag: '-fc' } } }
 );
-const res = await parse(['--hasGithubProfile', '--hasGithubPlus', '-fc', '10']);
+
+const parsed = await parse([
+  '--hasGithubProfile',
+  '--hasGithubPlus',
+  '-fc',
+  '10',
+]);
+
+assert.deepStrictEqual(parsed, {
+  hasGithubPlus: true,
+  hasGithubProfile: true,
+  followerCount: 10,
+});
 ```
 
 Notice how:

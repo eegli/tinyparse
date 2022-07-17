@@ -1,9 +1,9 @@
-import { InternalOptions, ParsingOptions, SimpleRecord } from './types';
+import { InternalOption, ParsingOptions, SimpleRecord } from './types';
 import { parseJSONFile } from './utils';
 
 export function transformOptions(
   parsingOptions?: ParsingOptions
-): InternalOptions {
+): InternalOption[] {
   if (!parsingOptions?.options) return [];
   return Object.entries(parsingOptions.options).map(([name, rest]) => ({
     name,
@@ -13,7 +13,7 @@ export function transformOptions(
 
 type TransFormArgV = {
   argv: string[];
-  options: InternalOptions;
+  options: InternalOption[];
   filePathFlag?: `--${string}`;
 };
 
