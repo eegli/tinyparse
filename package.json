@@ -41,7 +41,7 @@
     "prepublish": "preconstruct build",
     "test": "jest --verbose",
     "test:all": "yarn test && yarn test:integration",
-    "test:integration": "yarn build &&  cd test/integration && npm install -S ../../ && node --test",
+    "test:integration": "yarn build && cd test/integration && npm install -S ../../ && npm test",
     "test:coverage": "jest --coverage",
     "test:watch": "jest  --verbose --watch"
   },

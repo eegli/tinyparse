@@ -1,6 +1,6 @@
 # Tinyparse
 
-![npm](https://img.shields.io/npm/v/@eegli/tinyparse) ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/eegli/tinyparse/ci-unit-tests/main) [![codecov](https://codecov.io/gh/eegli/tinyparse/branch/main/graph/badge.svg?token=8MFDR4SWYM)](https://codecov.io/gh/eegli/tinyparse)
+![npm](https://img.shields.io/npm/v/@eegli/tinyparse) ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/eegli/tinyparse/ci-unit-tests/main) [![codecov](https://codecov.io/gh/eegli/tinyparse/branch/main/graph/badge.svg?token=8MFDR4SWYM)](https://codecov.io/gh/eegli/tinyparse) ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/min/@eegli/tinyparse)
 
 ### Opiniated, type-safe parsing module for CLI arguments and object literals.
 
@@ -13,10 +13,10 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **I use this mostly for other pet projects of mine so it comes with some opinions**
 
-Tinyparse is made for parsing simple user input. It can parse arbitrary object literals and arrays of strings, usually, `process.argv.slice(2)`.
+Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings - usually, `process.argv`.
 
-- The object to parse into must be of type `Record<string, string | number | boolean>`
-- When parsing JSON files, they must deserialized into the same simple `Record` shape
+- The object to parse _into_ must be of type `Record<string, string | number | boolean>`
+- When parsing JSON files, they must _deserialized_ into the same simple `Record` shape
 
 ## Installation
 
@@ -34,7 +34,7 @@ npm i @eegli/tinyparse
 
 - First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default
 
-- Second argument: Options object. You can specify both a "file flag" (whose value will point to a file) and options per key
+- Second argument: Options object. You can specify both a _file flag_ (whose value will point to a file) and options per key
 
 Note that most arguments and options are optional. IntelliSense and
 TypeScript will show you the detailed signatures and what is required.
@@ -43,6 +43,7 @@ The factory creates a `help()` function that can be used to print all available 
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
+import assert from 'node:assert/strict';
 
 // Default values. These will be used as defaults/fallback
 const defaultValues = {
@@ -77,18 +78,19 @@ const { help, parse } = createParser(
     },
   }
 );
-await parse({ username: 'feegli' });
-/* {
-    username: 'feegli',
-    hasGithubProfile: false,
-} */
+const parsedObj = await parse({ username: 'feegli' });
+assert.deepStrictEqual(parsedObj, {
+  username: 'feegli',
+  hasGithubProfile: false,
+});
 
-// Assuming there is a file "config.json" in directory "test"
-await parse(['-gp', '--config', 'test/config.json']);
-/* {
-    hasGithubProfile: true,
-    username: 'eegli',
-} */
+// process.argv = ['arg0','arg1', '-gp', '--config', 'github.json']
+// Read from file "github.json" with content {"username": "eegli"}
+const parsedArgv = await parse(process.argv);
+assert.deepStrictEqual(parsedArgv, {
+  username: 'eegli',
+  hasGithubProfile: true,
+});
 
 help();
 `"Usage
@@ -167,11 +169,14 @@ Tinyparse expects that **every** CLI argument is specified with a long or short 
 | `run-cli --verbose`           | `[command] [boolean long flag]`     | ✅      |
 | `run-cli -v `                 | `[command] [boolean short flag]`    | ✅      |
 
-**Standalone flags** are considered booleans flags. If they are encountered, their value will be set to `true`. This means that it is not possible to specify a "falsy" flag. Tinyparse assumes that any option that can be enabled by a flag is `false` by default but can be set to true.
+**Standalone flags** are considered booleans flags. If they are encountered, their value will be set to `true`. This means that it is not possible to specify a "falsy" flag. Tinyparse assumes that any option that can be enabled by a flag is `false` by default but can be set to `true`.
 
 Optionally, **short flags** can be specified for each argument. Short flags are expected to start with "`-`".
 
 ```ts
+import { createParser } from '@eegli/tinyparse';
+import assert from 'node:assert/strict';
+
 const { parse } = createParser(
   {
     hasGithubProfile: false,
@@ -180,7 +185,19 @@ const { parse } = createParser(
   },
   { options: { followerCount: { shortFlag: '-fc' } } }
 );
-const res = await parse(['--hasGithubProfile', '--hasGithubPlus', '-fc', '10']);
+
+const parsed = await parse([
+  '--hasGithubProfile',
+  '--hasGithubPlus',
+  '-fc',
+  '10',
+]);
+
+assert.deepStrictEqual(parsed, {
+  hasGithubPlus: true,
+  hasGithubProfile: true,
+  followerCount: 10,
+});
 ```
 
 Notice how:
@@ -191,6 +208,7 @@ Notice how:
 ### Good to know when parsing strings
 
 - `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag argument. Passing arguments such as `["--password", "-x8ap!"]` results in undefined behavior
+- If you really need to parse a value that starts with `-`, consider reading it from a file instead. This is a little less convenient but works for any value
 - Later values will overwrite earlier values. `["--password", "abc", "--password", "xyz"]` will parse to `password: "xyz"`
 
 ## More examples

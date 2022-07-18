@@ -2,6 +2,9 @@
   "name": "test-pkg",
   "type": "module",
   "module": "esnext",
+  "scripts": {
+    "test": "node --test"
+  },
   "dependencies": {
     "@eegli/tinyparse": "file:../.."
   }
