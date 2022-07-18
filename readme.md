@@ -88,8 +88,8 @@ assert.deepStrictEqual(parsedObj, {
 // Read from file "github.json" with content {"username": "eegli"}
 const parsedArgv = await parse(process.argv);
 assert.deepStrictEqual(parsedArgv, {
-  hasGithubProfile: true,
   username: 'eegli',
+  hasGithubProfile: true,
 });
 
 help();
