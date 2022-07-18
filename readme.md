@@ -13,10 +13,10 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **I use this mostly for other pet projects of mine so it comes with some opinions**
 
-Tinyparse is made for parsing simple user input. It can parse arbitrary object literals and arrays of strings, usually, `process.argv.slice(2)`.
+Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings - usually, `process.argv`.
 
-- The object to parse into must be of type `Record<string, string | number | boolean>`
-- When parsing JSON files, they must deserialized into the same simple `Record` shape
+- The object to parse _into_ must be of type `Record<string, string | number | boolean>`
+- When parsing JSON files, they must _deserialized_ into the same simple `Record` shape
 
 ## Installation
 
@@ -34,7 +34,7 @@ npm i @eegli/tinyparse
 
 - First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default
 
-- Second argument: Options object. You can specify both a "file flag" (whose value will point to a file) and options per key
+- Second argument: Options object. You can specify both a _file flag_ (whose value will point to a file) and options per key
 
 Note that most arguments and options are optional. IntelliSense and
 TypeScript will show you the detailed signatures and what is required.
