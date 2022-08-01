@@ -27,12 +27,25 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
     config.set(arg.name, requiredSym);
   });
 
-  Object.entries(input).forEach(([arg, argVal]) => {
-    if (!config.has(arg)) return;
+  for (const [arg, argVal] of Object.entries(input)) {
+    if (!config.has(arg)) continue;
 
-    // The received type must corresponds to the original type
+    const customValidator = options.find(
+      (v) => v.name === arg && v.customValidator
+    )?.customValidator;
+
     const expected = typeof defaultValues[arg];
     const received = typeof argVal;
+
+    if (customValidator) {
+      if (customValidator.validate(argVal)) {
+        config.set(arg, argVal);
+      } else {
+        throw new ValidationError(customValidator.reason(argVal));
+      }
+    }
+
+    // The received type must corresponds to the original type
     if (isSameType(expected, received)) {
       config.set(arg, argVal);
     } else {
@@ -40,7 +53,7 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
         `Invalid type for "${arg}". Expected ${expected}, got ${received}`
       );
     }
-  });
+  }
 
   // Check if all required arguments have been defined or if the
   // temporary value is still there

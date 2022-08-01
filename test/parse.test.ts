@@ -85,7 +85,16 @@ describe('Parsing with options', () => {
     const args: Parameters<typeof parse>[0] = {
       defaultValues,
       input: { stringProp: 'goodbye' },
-      options: [{ name: 'stringProp', required: true }],
+      options: [
+        {
+          name: 'stringProp',
+          required: true,
+          customValidator: {
+            validate: (v) => v === 'goodbye',
+            reason: () => "whoops this shouldn't happen",
+          },
+        },
+      ],
     };
     await expect(parse(args)).resolves.toStrictEqual({
       ...defaultValues,
@@ -105,6 +114,30 @@ describe('Parsing with options', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
       expect(e).toHaveProperty('message', '"stringProp" is required');
+    }
+  });
+
+  it('rejects for failed custom validation', async () => {
+    expect.assertions(2);
+    const args: Parameters<typeof parse>[0] = {
+      defaultValues,
+      input: { stringProp: 'goodbye' },
+      options: [
+        {
+          name: 'stringProp',
+          required: true,
+          customValidator: {
+            validate: (v) => v === 'hello',
+            reason: (v) => `did get "${v}", expected hello`,
+          },
+        },
+      ],
+    };
+    try {
+      await parse(args);
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e).toHaveProperty('message', 'did get "goodbye", expected hello');
     }
   });
 });

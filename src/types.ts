@@ -2,6 +2,14 @@ export type FlagOption = {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
+  customValidator?: {
+    validate: (value: any) => boolean;
+    reason: (value: any) => string;
+  };
+  strictCustomValidator?: {
+    value: (value: unknown) => boolean;
+    reason: (value: unknown) => string;
+  };
 };
 
 export type FilePathArg = {
