@@ -34,9 +34,6 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
       (v) => v.name === arg && v.customValidator
     )?.customValidator;
 
-    const expected = typeof defaultValues[arg];
-    const received = typeof argVal;
-
     if (customValidator) {
       if (customValidator.validate(argVal)) {
         config.set(arg, argVal);
@@ -44,6 +41,9 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
         throw new ValidationError(customValidator.reason(argVal));
       }
     }
+
+    const expected = typeof defaultValues[arg];
+    const received = typeof argVal;
 
     // The received type must corresponds to the original type
     if (isSameType(expected, received)) {
