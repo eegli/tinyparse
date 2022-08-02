@@ -90,7 +90,7 @@ describe('Parsing with options', () => {
           name: 'stringProp',
           required: true,
           customValidator: {
-            validate: (v) => v === 'goodbye',
+            validate: (v) => typeof v === 'string',
             reason: () => "whoops this shouldn't happen",
           },
         },
