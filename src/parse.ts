@@ -1,5 +1,5 @@
 import { ValidationError } from './error';
-import { InternalOption, ObjectValues, SimpleRecord } from './types';
+import { InternalOptions, ObjectValues, SimpleRecord } from './types';
 import { isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
@@ -7,15 +7,15 @@ const requiredSym = Symbol('isRequired');
 type ParseObjLiteral<T> = {
   defaultValues: T;
   input: Partial<T>;
-  options: InternalOption[];
+  options?: InternalOptions;
 };
 
 export async function parseObjectLiteral<T extends SimpleRecord>({
   defaultValues,
   input,
-  options,
+  options = new Map(),
 }: ParseObjLiteral<T>): Promise<T> {
-  const requiredArgs = options.filter((opt) => opt.required);
+  const requiredArgs = [...options.values()].filter((opts) => opts.required);
 
   const config = new Map<string, ObjectValues | symbol>(
     Object.entries(defaultValues)
@@ -30,12 +30,11 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
   for (const [arg, argVal] of Object.entries(input)) {
     if (!config.has(arg)) continue;
 
-    const customValidator = options.find(
-      (v) => v.name === arg && v.customValidator
-    )?.customValidator;
+    const customValidator = options.get(arg)?.customValidator;
 
     if (customValidator) {
-      if (customValidator.validate(argVal)) {
+      // Coerced truthy values are ignored
+      if (customValidator.validate(argVal) === true) {
         config.set(arg, argVal);
       } else {
         throw new ValidationError(customValidator.reason(argVal));

@@ -1,29 +1,32 @@
-import { InternalOption, ParsingOptions, SimpleRecord } from './types';
+import { InternalOptions, ParsingOptions, SimpleRecord } from './types';
 import { parseJSONFile } from './utils';
 
 export function transformOptions(
   parsingOptions?: ParsingOptions
-): InternalOption[] {
-  if (!parsingOptions?.options) return [];
-  return Object.entries(parsingOptions.options).map(([name, rest]) => ({
-    name,
-    ...rest,
-  }));
+): InternalOptions {
+  if (!parsingOptions?.options) return new Map();
+  return new Map(
+    Object.entries(parsingOptions.options).reduce((acc, [name, opts]) => {
+      if (!opts) return acc;
+      acc.set(name, { ...opts, name });
+      return acc;
+    }, new Map())
+  );
 }
 
 type TransFormArgV = {
   argv: string[];
-  options: InternalOption[];
+  options?: InternalOptions;
   filePathFlag?: `--${string}`;
 };
 
 export function transformArgv<T extends SimpleRecord>({
   argv,
-  options,
+  options = new Map(),
   filePathFlag,
 }: TransFormArgV): Partial<T> {
-  const shortFlags = options.reduce((acc, curr) => {
-    if (curr.shortFlag) acc[curr.shortFlag] = curr.name;
+  const shortFlags = [...options.entries()].reduce((acc, [name, opts]) => {
+    if (opts.shortFlag) acc[opts.shortFlag] = name;
     return acc;
   }, {} as SimpleRecord);
 

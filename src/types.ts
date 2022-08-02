@@ -23,7 +23,7 @@ export type ParsingOptions<
   };
 };
 
-export type InternalOption = FlagOption & { name: string };
+export type InternalOptions = Map<string, FlagOption & { name: string }>;
 
 export type SimpleRecord<T extends string = string> = Record<T, ObjectValues>;
 

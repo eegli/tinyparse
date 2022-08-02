@@ -1,37 +1,39 @@
-import { FilePathArg, InternalOption, SimpleRecord } from './types';
+import { FilePathArg, InternalOptions, SimpleRecord } from './types';
 
 type DisplayHelp = {
   defaultValues: SimpleRecord;
-  options: InternalOption[];
+  options?: InternalOptions;
   filePathArg?: FilePathArg;
   title?: string;
 };
 
 export const displayHelp = ({
   defaultValues,
-  options,
-  title,
+  options = new Map(),
+  title = 'Usage',
   filePathArg,
 }: DisplayHelp): string => {
   // Required properties first
-  options.sort((a, b) => (a.required === b.required ? 0 : a.required ? -1 : 1));
+  const opts = [...options.values()].sort((a, b) =>
+    a.required === b.required ? 0 : a.required ? -1 : 1
+  );
 
-  let str = `${title ? title : 'Usage'}`;
+  let str = title;
 
-  if (options.length > 0) {
+  if (opts.length > 0) {
     str += '\n\n';
   }
 
   // Maybe no option is required
-  if (options[0]?.required) {
+  if (opts[0]?.required) {
     str += 'Required\n';
   }
 
   let optionalFlag = true;
   const tab = '   ';
 
-  options.forEach(({ name, description, required, shortFlag }, idx) => {
-    const isLast = idx === options.length - 1;
+  opts.forEach(({ name, description, required, shortFlag }, idx) => {
+    const isLast = idx === opts.length - 1;
     const isBoolean = typeof defaultValues[name] === 'boolean';
 
     if (optionalFlag && !required) {
