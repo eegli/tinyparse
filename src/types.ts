@@ -2,6 +2,10 @@ export type FlagOption = {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
+  customValidator?: {
+    isValid: (value: unknown) => boolean;
+    errorMessage: (value: unknown) => string;
+  };
 };
 
 export type FilePathArg = {
@@ -19,7 +23,7 @@ export type ParsingOptions<
   };
 };
 
-export type InternalOption = FlagOption & { name: string };
+export type InternalOptions = Map<string, FlagOption & { name: string }>;
 
 export type SimpleRecord<T extends string = string> = Record<T, ObjectValues>;
 

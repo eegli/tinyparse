@@ -12,24 +12,32 @@ describe('External options transformer', () => {
         },
       },
     });
-    expect(res).toStrictEqual([
-      {
-        name: 'test',
-        required: true,
-      },
-      {
-        description: 'another property',
-        name: 'test2',
-      },
-    ]);
-    expect(transformOptions({})).toStrictEqual([]);
-    expect(transformOptions()).toStrictEqual([]);
+    expect(res).toStrictEqual(
+      new Map([
+        [
+          'test',
+          {
+            name: 'test',
+            required: true,
+          },
+        ],
+        [
+          'test2',
+          {
+            description: 'another property',
+            name: 'test2',
+          },
+        ],
+      ])
+    );
+    expect(transformOptions({})).toStrictEqual(new Map());
+    expect(transformOptions()).toStrictEqual(new Map());
   });
 });
 
 describe('Argv transformer', () => {
   it('parses empty', async () => {
-    const c = transformArgv({ argv: [], options: [] });
+    const c = transformArgv({ argv: [] });
     expect(c).toStrictEqual({});
   });
 
@@ -43,7 +51,6 @@ describe('Argv transformer', () => {
         '123',
         '--boolProp2',
       ],
-      options: [],
     },
     {
       argv: [
@@ -54,7 +61,6 @@ describe('Argv transformer', () => {
         '--numProp',
         '123',
       ],
-      options: [],
     },
     {
       argv: [
@@ -65,7 +71,6 @@ describe('Argv transformer', () => {
         'hello from node',
         '--boolProp2',
       ],
-      options: [],
     },
     {
       argv: [
@@ -76,7 +81,6 @@ describe('Argv transformer', () => {
         'hello from node',
         '--boolProp2',
       ],
-      options: [],
     },
   ];
   orders.forEach((variant, idx) => {
@@ -112,10 +116,10 @@ describe('Argv transformer with options', () => {
         '-p',
         'MyPassword',
       ],
-      options: [
-        { name: 'secret', shortFlag: '-s' },
-        { name: 'password', shortFlag: '-p' },
-      ],
+      options: new Map([
+        ['secret', { name: 'secret', shortFlag: '-s' }],
+        ['password', { name: 'password', shortFlag: '-p' }],
+      ]),
     });
     expect(c).toStrictEqual({
       secret: 123,
@@ -125,14 +129,13 @@ describe('Argv transformer with options', () => {
     });
   });
   it('transforms empty', async () => {
-    const c = transformArgv({ argv: ['-s', '123'], options: [] });
+    const c = transformArgv({ argv: ['-s', '123'] });
     expect(c).toStrictEqual({});
   });
   it('parses from simple JSON files', async () => {
-    transformArgv({ argv: [], options: [] });
+    transformArgv({ argv: [] });
     const c = transformArgv({
       argv: ['--config', 'test/config.json'],
-      options: [],
       filePathFlag: '--config',
     });
     expect(c).toStrictEqual({
@@ -140,11 +143,10 @@ describe('Argv transformer with options', () => {
     });
   });
   it('throws for invalid files', async () => {
-    transformArgv({ argv: [], options: [] });
+    transformArgv({ argv: [] });
     expect(() => {
       transformArgv({
         argv: ['--config', 'config.json'],
-        options: [],
         filePathFlag: '--config',
       });
     }).toThrow('config.json is not a valid JSON file');

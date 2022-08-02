@@ -45,7 +45,7 @@ The factory creates a `help()` function that can be used to print all available 
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 
-// Default values. These will be used as defaults/fallback
+// Default values. They will be used as defaults/fallbak
 const defaultValues = {
   username: '',
   hasGithubProfile: false,
@@ -64,10 +64,16 @@ const { help, parse } = createParser(
     // Options per key
     options: {
       username: {
-        // Fail if not present
         required: true,
         // For the help() command
         description: 'Your Github username',
+        // A custom validator that will receive the value for
+        // "username" and returns a boolean
+        customValidator: {
+          isValid: (value) => typeof value === 'string' && /\w+/.test(value),
+          // The error message for when validation fails
+          errorMessage: (value) => `${value} is not a valid GitHub username`,
+        },
       },
       hasGithubProfile: {
         description: 'Indicate whether you have a Github profile',

@@ -1,4 +1,4 @@
-name: ci-unit-tests
+name: CI
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
         run: yarn build
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
-        if: matrix.node == '17'
+        if: matrix.node == '18'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true

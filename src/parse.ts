@@ -1,5 +1,5 @@
 import { ValidationError } from './error';
-import { InternalOption, ObjectValues, SimpleRecord } from './types';
+import { InternalOptions, ObjectValues, SimpleRecord } from './types';
 import { isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
@@ -7,15 +7,15 @@ const requiredSym = Symbol('isRequired');
 type ParseObjLiteral<T> = {
   defaultValues: T;
   input: Partial<T>;
-  options: InternalOption[];
+  options?: InternalOptions;
 };
 
 export async function parseObjectLiteral<T extends SimpleRecord>({
   defaultValues,
   input,
-  options,
+  options = new Map(),
 }: ParseObjLiteral<T>): Promise<T> {
-  const requiredArgs = options.filter((opt) => opt.required);
+  const requiredArgs = [...options.values()].filter((opts) => opts.required);
 
   const config = new Map<string, ObjectValues | symbol>(
     Object.entries(defaultValues)
@@ -27,12 +27,24 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
     config.set(arg.name, requiredSym);
   });
 
-  Object.entries(input).forEach(([arg, argVal]) => {
-    if (!config.has(arg)) return;
+  for (const [arg, argVal] of Object.entries(input)) {
+    if (!config.has(arg)) continue;
 
-    // The received type must corresponds to the original type
+    const customValidator = options.get(arg)?.customValidator;
+
+    if (customValidator) {
+      // Coerced truthy values are ignored
+      if (customValidator.isValid(argVal) === true) {
+        config.set(arg, argVal);
+      } else {
+        throw new ValidationError(customValidator.errorMessage(argVal));
+      }
+    }
+
     const expected = typeof defaultValues[arg];
     const received = typeof argVal;
+
+    // The received type must corresponds to the original type
     if (isSameType(expected, received)) {
       config.set(arg, argVal);
     } else {
@@ -40,7 +52,7 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
         `Invalid type for "${arg}". Expected ${expected}, got ${received}`
       );
     }
-  });
+  }
 
   // Check if all required arguments have been defined or if the
   // temporary value is still there

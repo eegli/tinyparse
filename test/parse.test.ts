@@ -13,14 +13,13 @@ describe('Object literal parsing', () => {
   };
 
   it('returns default config if no args', async () => {
-    const c1 = await parse({ defaultValues, options: [], input: {} });
+    const c1 = await parse({ defaultValues, input: {} });
     expect(c1).toStrictEqual(defaultValues);
   });
 
   it('overwrites default values', async () => {
     const c1 = await parse({
       defaultValues,
-      options: [],
       input: {
         stringProp: 'hello',
         boolProp: true,
@@ -34,7 +33,6 @@ describe('Object literal parsing', () => {
     });
     const c2 = await parse({
       defaultValues,
-      options: [],
       input: {
         stringProp: 'hello',
       },
@@ -49,7 +47,6 @@ describe('Object literal parsing', () => {
     const c = await parse({
       defaultValues,
       input: { unknownProp: 'hello' } as unknown as typeof defaultValues,
-      options: [],
     });
     expect(c).toStrictEqual({
       ...defaultValues,
@@ -62,7 +59,6 @@ describe('Object literal parsing', () => {
       await parse({
         defaultValues,
         input: { boolProp: {} } as unknown as typeof defaultValues,
-        options: [],
       });
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
@@ -85,7 +81,19 @@ describe('Parsing with options', () => {
     const args: Parameters<typeof parse>[0] = {
       defaultValues,
       input: { stringProp: 'goodbye' },
-      options: [{ name: 'stringProp', required: true }],
+      options: new Map([
+        [
+          'stringProp',
+          {
+            name: 'stringProp',
+            required: true,
+            customValidator: {
+              isValid: (v) => typeof v === 'string',
+              errorMessage: () => "whoops this shouldn't happen",
+            },
+          },
+        ],
+      ]),
     };
     await expect(parse(args)).resolves.toStrictEqual({
       ...defaultValues,
@@ -98,13 +106,42 @@ describe('Parsing with options', () => {
     const args: Parameters<typeof parse>[0] = {
       defaultValues,
       input: {},
-      options: [{ name: 'stringProp', required: true }],
+      options: new Map([
+        ['stringProp', { name: 'stringProp', required: true }],
+      ]),
     };
     try {
       await parse(args);
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
       expect(e).toHaveProperty('message', '"stringProp" is required');
+    }
+  });
+
+  it('rejects for failed custom validation', async () => {
+    expect.assertions(2);
+    const args: Parameters<typeof parse>[0] = {
+      defaultValues,
+      input: { stringProp: 'goodbye' },
+      options: new Map([
+        [
+          'stringProp',
+          {
+            name: 'stringProp',
+            required: true,
+            customValidator: {
+              isValid: (v) => v === 'hello',
+              errorMessage: (v) => `did get "${v}", expected hello`,
+            },
+          },
+        ],
+      ]),
+    };
+    try {
+      await parse(args);
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e).toHaveProperty('message', 'did get "goodbye", expected hello');
     }
   });
 });
