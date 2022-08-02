@@ -88,8 +88,8 @@ describe('Parsing with options', () => {
             name: 'stringProp',
             required: true,
             customValidator: {
-              validate: (v) => typeof v === 'string',
-              reason: () => "whoops this shouldn't happen",
+              isValid: (v) => typeof v === 'string',
+              errorMessage: () => "whoops this shouldn't happen",
             },
           },
         ],
@@ -130,8 +130,8 @@ describe('Parsing with options', () => {
             name: 'stringProp',
             required: true,
             customValidator: {
-              validate: (v) => v === 'hello',
-              reason: (v) => `did get "${v}", expected hello`,
+              isValid: (v) => v === 'hello',
+              errorMessage: (v) => `did get "${v}", expected hello`,
             },
           },
         ],

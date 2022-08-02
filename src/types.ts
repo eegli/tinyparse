@@ -3,8 +3,8 @@ export type FlagOption = {
   description?: string;
   shortFlag?: `-${string}`;
   customValidator?: {
-    validate: (value: unknown) => boolean;
-    reason: (value: unknown) => string;
+    isValid: (value: unknown) => boolean;
+    errorMessage: (value: unknown) => string;
   };
 };
 

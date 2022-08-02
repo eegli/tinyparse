@@ -6,7 +6,7 @@ process.argv.push('-gp', '--config', 'github.json');
 
 test('Integration and docs', async (t) => {
   await t.test('full example', async () => {
-    // Default values. These will be used as defaults/fallback
+    // Default values. They will be used as defaults/fallback
     const defaultValues = {
       username: '',
       hasGithubProfile: false,
@@ -28,6 +28,15 @@ test('Integration and docs', async (t) => {
             required: true,
             // For the help() command
             description: 'Your Github username',
+            // A custom validator that will receive the value for
+            // "username" and returns a boolean
+            customValidator: {
+              isValid: (value) =>
+                typeof value === 'string' && /\w+/.test(value),
+              // The error message for when validation fails
+              errorMessage: (value) =>
+                `${value} is not a valid GitHub username`,
+            },
           },
           hasGithubProfile: {
             description: 'Indicate whether you have a Github profile',

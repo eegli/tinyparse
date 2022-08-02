@@ -34,10 +34,10 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
 
     if (customValidator) {
       // Coerced truthy values are ignored
-      if (customValidator.validate(argVal) === true) {
+      if (customValidator.isValid(argVal) === true) {
         config.set(arg, argVal);
       } else {
-        throw new ValidationError(customValidator.reason(argVal));
+        throw new ValidationError(customValidator.errorMessage(argVal));
       }
     }
 
