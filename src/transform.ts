@@ -5,13 +5,11 @@ export function transformOptions(
   parsingOptions?: ParsingOptions
 ): InternalOptions {
   if (!parsingOptions?.options) return new Map();
-  return new Map(
-    Object.entries(parsingOptions.options).reduce((acc, [name, opts]) => {
-      if (!opts) return acc;
-      acc.set(name, { ...opts, name });
-      return acc;
-    }, new Map())
-  );
+  return Object.entries(parsingOptions.options).reduce((acc, [name, opts]) => {
+    if (!opts) return acc;
+    acc.set(name, { ...opts, name });
+    return acc;
+  }, new Map());
 }
 
 type TransFormArgV = {
