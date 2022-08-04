@@ -45,15 +45,16 @@ The factory creates a `help()` function that can be used to print all available 
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 
-// Default values. They will be used as defaults/fallbak
+// Default values. They will be used as defaults/fallback
 const defaultValues = {
   username: '',
+  birthday: '',
   hasGithubProfile: false,
 };
 
 const { help, parse } = createParser(
   defaultValues,
-  // Optional configuration
+  // More configuration
   {
     // Parse a file (for example, a config file). Only takes
     // effect when parsing an array of strings
@@ -64,15 +65,18 @@ const { help, parse } = createParser(
     // Options per key
     options: {
       username: {
+        // Fail if there is no value for "username"
         required: true,
-        // For the help() command
         description: 'Your Github username',
+      },
+      birthday: {
         // A custom validator that will receive the value for
-        // "username" and returns a boolean
+        // "birthday". It must return a boolean
         customValidator: {
-          isValid: (value) => typeof value === 'string' && /\w+/.test(value),
+          isValid: (value) =>
+            typeof value === 'string' && !isNaN(Date.parse(value)),
           // The error message for when validation fails
-          errorMessage: (value) => `${value} is not a valid GitHub username`,
+          errorMessage: (v) => `${v} is not a valid date`,
         },
       },
       hasGithubProfile: {
@@ -84,33 +88,41 @@ const { help, parse } = createParser(
     },
   }
 );
-const parsedObj = await parse({ username: 'feegli' });
+const parsedObj = await parse({ username: 'feegli', birthday: '1996-01-01' });
+
 assert.deepStrictEqual(parsedObj, {
   username: 'feegli',
+  birthday: '1996-01-01',
   hasGithubProfile: false,
 });
 
 // process.argv = ['arg0','arg1', '-gp', '--config', 'github.json']
 // Read from file "github.json" with content {"username": "eegli"}
-const parsedArgv = await parse(process.argv);
+const parsedArgv = await parse([
+  'arg0',
+  'arg1',
+  '-gp',
+  '--config',
+  'github.json',
+]);
 assert.deepStrictEqual(parsedArgv, {
   username: 'eegli',
+  birthday: '',
   hasGithubProfile: true,
 });
 
 help();
 `"Usage
 
-    Required
-        --username <username> [string]
-        Your Github username
+Required
+   --username <username> [string]
+   Your Github username
 
-    Optional
-        -gp, --hasGithubProfile [boolean]
-        Indicate whether you have a Github profile
+Optional
+   --birthday <birthday> [string]
 
-        --config [string]
-        Path to your Github config file
+   -gp, --hasGithubProfile [boolean]
+   Indicate whether you have a Github profile 
 "`;
 ```
 
