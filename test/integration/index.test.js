@@ -1,11 +1,11 @@
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { describe, test } from 'node:test';
 
 process.argv.push('-gp', '--config', 'github.json');
 
-test('Integration and docs', async (t) => {
-  await t.test('full example', async () => {
+describe('Integration and docs', () => {
+  test('full example', async () => {
     // Default values. They will be used as defaults/fallback
     const defaultValues = {
       username: '',
@@ -76,7 +76,7 @@ test('Integration and docs', async (t) => {
 
     console.log(help());
   });
-  await t.test('invalid types example', async () => {
+  test('invalid types example', async () => {
     const { parse } = createParser({ username: '' });
     await assert.rejects(
       async () => {
@@ -89,7 +89,7 @@ test('Integration and docs', async (t) => {
       }
     );
   });
-  await t.test('process argv', async () => {
+  test('process argv', async () => {
     const { parse } = createParser(
       {
         hasGithubProfile: false,
