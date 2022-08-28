@@ -13,10 +13,7 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 **I use this mostly for other pet projects of mine so it comes with some opinions**
 
-Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings - usually, `process.argv`.
-
-- The object to parse _into_ must be of type `Record<string, string | number | boolean>`
-- When parsing JSON files, they must _deserialized_ into the same simple `Record` shape
+Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings - usually, `process.argv`. The object to parse _into_ may only have `string`, `number` or `boolean` property values.
 
 ## Installation
 

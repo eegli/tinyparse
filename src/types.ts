@@ -25,6 +25,6 @@ export type ParsingOptions<
 
 export type InternalOptions = Map<string, FlagOption & { name: string }>;
 
-export type SimpleRecord<T extends string = string> = Record<T, ObjectValues>;
+export type SimpleRecord<T extends string = string> = Record<T, Value>;
 
-export type ObjectValues = string | number | boolean;
+export type Value = string | number | boolean;
