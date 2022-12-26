@@ -41,14 +41,14 @@ describe('Helper text', () => {
       "CLI options
 
       Required
-         --color <color> [string]
+         --color [string]
          A color
 
-         -p, --port <port> [number]
+         -p, --port [number]
          The port to listen on
 
       Optional
-         --id <id> [string]
+         --id [string]
 
          -wa, --withAuth [boolean]
          Require authentication for this action
