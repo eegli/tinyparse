@@ -43,7 +43,6 @@ export const displayHelp = ({
 
     str += `${tab}${shortFlag ? `${shortFlag}, ` : ''}`;
     str += `--${name}`;
-    str += isBoolean ? '' : ` <${name}>`;
     str += ` [${typeof defaultValues[name]}]`;
     str += description ? `\n${tab}` + description : '';
     str += isLast ? '' : '\n\n';
