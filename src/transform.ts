@@ -50,8 +50,9 @@ export function transformArgv<T extends SimpleRecord>({
         acc.set(arg, true);
         // Assume number
       } else if (/^\d+$/.test(argVal)) {
-        const skipConvert = options.get(arg)?.skipNumberParsing;
-        if (skipConvert) {
+        const skipParseInt = options.get(arg)?.skipParseInt;
+        // Do not convert to number
+        if (skipParseInt) {
           acc.set(arg, argVal);
         } else {
           acc.set(arg, +argVal);

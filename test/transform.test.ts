@@ -152,7 +152,7 @@ describe('Argv transformer with options', () => {
   it('does not parse numbers if configured', async () => {
     const c = transformArgv({
       argv: ['--date', '2022'],
-      options: new Map([['date', { name: 'date', skipNumberParsing: true }]]),
+      options: new Map([['date', { name: 'date', skipParseInt: true }]]),
     });
     expect(c).toStrictEqual({
       date: '2022',

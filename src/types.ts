@@ -1,13 +1,13 @@
-export type FlagOption = {
+interface BaseFlagOptions {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
-  skipNumberParsing?: boolean;
+  skipParseInt?: boolean;
   customValidator?: {
     isValid: (value: unknown) => boolean;
     errorMessage: (value: unknown) => string;
   };
-};
+}
 
 export type FilePathArg = {
   longFlag: `--${string}`;
@@ -20,11 +20,11 @@ export type ParsingOptions<
 > = {
   filePathArg?: FilePathArg;
   options?: {
-    [K in Extract<V, string>]?: FlagOption;
+    [K in Extract<V, string>]?: BaseFlagOptions;
   };
 };
 
-export type InternalOptions = Map<string, FlagOption & { name: string }>;
+export type InternalOptions = Map<string, BaseFlagOptions & { name: string }>;
 
 export type SimpleRecord<T extends string = string> = Record<T, Value>;
 

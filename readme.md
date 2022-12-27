@@ -17,6 +17,8 @@ Tinyparse is made for parsing simple user input. It can parse object literals an
 
 ## Installation
 
+Node.js v14 or later is required.
+
 ```bash
 yarn add @eegli/tinyparse
 ```
