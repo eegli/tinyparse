@@ -41,7 +41,6 @@
     "prepublish": "preconstruct build",
     "test": "jest --verbose",
     "test:types": "jest -c jest.config.tsd.js",
-    "test:all": "yarn test && yarn test:integration",
     "test:integration": "yarn build && cd test/integration && npm install -S ../../ && npm test",
     "test:coverage": "jest --coverage",
     "test:watch": "jest  --verbose --watch"
