@@ -10,6 +10,7 @@ type ParseObjLiteral<T> = {
   options?: InternalOptions;
 };
 
+// eslint-disable-next-line require-await
 export async function parseObjectLiteral<T extends SimpleRecord>({
   defaultValues,
   input,
