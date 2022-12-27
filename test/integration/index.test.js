@@ -39,9 +39,6 @@ describe('Integration and docs', () => {
               // The error message for when validation fails
               errorMessage: (v) => `${v} is not a valid date`,
             },
-            // Skip parsing the value for "birthday" to an integer. By
-            // default, numeric strings are parsed to integers
-            skipParseInt: true,
           },
           hasGithubProfile: {
             description: 'Indicate whether you have a Github profile',
@@ -91,6 +88,7 @@ describe('Integration and docs', () => {
         hasGithubProfile: false,
         hasGithubPlus: true,
         followerCount: 0,
+        birthYear: '',
       },
       {
         options: {
@@ -103,11 +101,14 @@ describe('Integration and docs', () => {
       '--hasGithubPlus',
       '-fc',
       '10',
+      '--birthYear',
+      '2018',
     ]);
     assert.deepStrictEqual(parsed, {
       hasGithubPlus: true,
       hasGithubProfile: true,
       followerCount: 10,
+      birthYear: '2018',
     });
   });
 });
