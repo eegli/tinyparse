@@ -95,19 +95,28 @@ describe('Integration and docs', () => {
         hasGithubProfile: false,
         hasGithubPlus: true,
         followerCount: 0,
+        birthDay: '',
       },
-      { options: { followerCount: { shortFlag: '-fc' } } }
+      {
+        options: {
+          followerCount: { shortFlag: '-fc' },
+          birthDay: { skipParseInt: true },
+        },
+      }
     );
     const parsed = await parse([
       '--hasGithubProfile',
       '--hasGithubPlus',
       '-fc',
       '10',
+      '--birthDay',
+      '2018',
     ]);
     assert.deepStrictEqual(parsed, {
       hasGithubPlus: true,
       hasGithubProfile: true,
       followerCount: 10,
+      birthDay: '2018',
     });
   });
 });

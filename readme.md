@@ -199,28 +199,37 @@ const { parse } = createParser(
     hasGithubProfile: false,
     hasGithubPlus: true,
     followerCount: 0,
+    birthDay: '',
   },
-  { options: { followerCount: { shortFlag: '-fc' } } }
+  {
+    options: {
+      followerCount: { shortFlag: '-fc' },
+      birthDay: { skipParseInt: true },
+    },
+  }
 );
-
 const parsed = await parse([
   '--hasGithubProfile',
   '--hasGithubPlus',
   '-fc',
   '10',
+  '--birthDay',
+  '2018',
 ]);
-
 assert.deepStrictEqual(parsed, {
   hasGithubPlus: true,
   hasGithubProfile: true,
   followerCount: 10,
+  birthDay: '2018',
 });
 ```
 
 Notice how:
 
-1. Since `hasGithubPlus` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
-2. Strings that are valid numbers are automagically converted to a number (see `--followerCount` / `-fc`). This only applies if the object to be parsed is an array of strings.
+- Since `hasGithubPlus` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
+- Strings that are valid numbers are automagically converted to a number (see `--followerCount` / `-fc`). This only applies if the object to be parsed is an array of strings.
+
+If you want to **opt-out of auto parsing** for numeric strings, you can do so with the `skipParseInt` option (see `birthDay`). This is especially useful when dealing with JavaScript date time strings: Some input may _look_ be a number but you actually need a string! (E.g., when you'll feed the input to `Date.parse()`).
 
 ### Good to know when parsing strings
 
