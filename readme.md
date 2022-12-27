@@ -77,7 +77,7 @@ const { help, parse } = createParser(
           // The error message for when validation fails
           errorMessage: (v) => `${v} is not a valid date`,
         },
-        // Skip parsing the value for "birthday" to an integer. By
+        // Do not try to parse the value for "birthday" to an integer. By
         // default, numeric strings are parsed to integers
         skipParseInt: true,
       },

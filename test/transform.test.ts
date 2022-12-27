@@ -94,7 +94,7 @@ describe('Argv transformer', () => {
       ).toStrictEqual({
         boolProp1: true,
         stringProp: 'hello from node',
-        numProp: 123,
+        numProp: '123',
         boolProp2: true,
       });
     });
@@ -122,7 +122,7 @@ describe('Argv transformer with options', () => {
       ]),
     });
     expect(c).toStrictEqual({
-      secret: 123,
+      secret: '123',
       password: 'MyPassword',
       donotignore: true,
       input: 'this is a string',
@@ -150,14 +150,5 @@ describe('Argv transformer with options', () => {
         filePathFlag: '--config',
       });
     }).toThrow('config.json is not a valid JSON file');
-  });
-  it('does not parse numbers if configured', () => {
-    const c = transformArgv({
-      argv: ['--date', '2022'],
-      options: new Map([['date', { name: 'date', skipParseInt: true }]]),
-    });
-    expect(c).toStrictEqual({
-      date: '2022',
-    });
   });
 });

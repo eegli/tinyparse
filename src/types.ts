@@ -2,7 +2,6 @@ interface BaseFlagOptions {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
-  skipParseInt?: boolean;
   customValidator?: {
     isValid: (value: unknown) => boolean;
     errorMessage: (value: unknown) => string;
