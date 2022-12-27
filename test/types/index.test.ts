@@ -24,7 +24,7 @@ expectAssignable<Promise<Input>>(
 );
 
 type Options = Parameters<typeof createParser<Input>>[1];
-type OptionKeys = NonNullable<Options>['options'];
+type KeyOptions = NonNullable<Options>['options'];
 
 expectAssignable<Options>({});
 expectAssignable<Options>({
@@ -35,7 +35,7 @@ expectAssignable<Options>({
 expectAssignable<Options>({
   options: {},
 });
-expectAssignable<OptionKeys>({
+expectAssignable<KeyOptions>({
   name: {
     required: true,
     description: 'The name of the user',
