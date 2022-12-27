@@ -77,6 +77,9 @@ const { help, parse } = createParser(
           // The error message for when validation fails
           errorMessage: (v) => `${v} is not a valid date`,
         },
+        // Skip parsing the value for "birthday" to an integer. By
+        // default, numeric strings are parsed to integers
+        skipParseInt: true,
       },
       hasGithubProfile: {
         description: 'Indicate whether you have a Github profile',
@@ -87,42 +90,41 @@ const { help, parse } = createParser(
     },
   }
 );
-const parsedObj = await parse({ username: 'feegli', birthday: '1996-01-01' });
-
+const parsedObj = await parse({
+  username: 'feegli',
+  birthday: '1996-01-01',
+});
 assert.deepStrictEqual(parsedObj, {
   username: 'feegli',
   birthday: '1996-01-01',
   hasGithubProfile: false,
 });
 
-// process.argv = ['arg0','arg1', '-gp', '--config', 'github.json']
 // Read from file "github.json" with content {"username": "eegli"}
-const parsedArgv = await parse([
-  'arg0',
-  'arg1',
-  '-gp',
-  '--config',
-  'github.json',
-]);
+process.argv = ['--birthday', '1996', '-gp', '--config', 'github.json'];
+
+const parsedArgv = await parse(process.argv);
 assert.deepStrictEqual(parsedArgv, {
   username: 'eegli',
-  birthday: '',
+  birthday: '1996',
   hasGithubProfile: true,
 });
-
 help();
-`"Usage
+`Usage
 
 Required
-   --username <username> [string]
+   --username [string]
    Your Github username
 
 Optional
-   --birthday <birthday> [string]
+   --birthday [string]
 
    -gp, --hasGithubProfile [boolean]
-   Indicate whether you have a Github profile 
-"`;
+   Indicate whether you have a Github profile
+
+   --config [string]
+   Path to your Github config file
+`;
 ```
 
 ### Parsing required properties

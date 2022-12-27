@@ -39,6 +39,9 @@ describe('Integration and docs', () => {
               // The error message for when validation fails
               errorMessage: (v) => `${v} is not a valid date`,
             },
+            // Skip parsing the value for "birthday" to an integer. By
+            // default, numeric strings are parsed to integers
+            skipParseInt: true,
           },
           hasGithubProfile: {
             description: 'Indicate whether you have a Github profile',
@@ -59,22 +62,15 @@ describe('Integration and docs', () => {
       hasGithubProfile: false,
     });
 
-    // process.argv = ['arg0','arg1', '-gp', '--config', 'github.json']
     // Read from file "github.json" with content {"username": "eegli"}
-    const parsedArgv = await parse([
-      'arg0',
-      'arg1',
-      '-gp',
-      '--config',
-      'github.json',
-    ]);
+    process.argv = ['--birthday', '1996', '-gp', '--config', 'github.json'];
+
+    const parsedArgv = await parse(process.argv);
     assert.deepStrictEqual(parsedArgv, {
       username: 'eegli',
-      birthday: '',
+      birthday: '1996',
       hasGithubProfile: true,
     });
-
-    console.log(help());
   });
   test('invalid types example', async () => {
     const { parse } = createParser({ username: '' });
@@ -95,12 +91,10 @@ describe('Integration and docs', () => {
         hasGithubProfile: false,
         hasGithubPlus: true,
         followerCount: 0,
-        birthDay: '',
       },
       {
         options: {
           followerCount: { shortFlag: '-fc' },
-          birthDay: { skipParseInt: true },
         },
       }
     );
@@ -109,14 +103,11 @@ describe('Integration and docs', () => {
       '--hasGithubPlus',
       '-fc',
       '10',
-      '--birthDay',
-      '2018',
     ]);
     assert.deepStrictEqual(parsed, {
       hasGithubPlus: true,
       hasGithubProfile: true,
       followerCount: 10,
-      birthDay: '2018',
     });
   });
 });
