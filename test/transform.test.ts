@@ -133,7 +133,6 @@ describe('Argv transformer with options', () => {
     expect(c).toStrictEqual({});
   });
   it('parses from simple JSON files', async () => {
-    transformArgv({ argv: [] });
     const c = transformArgv({
       argv: ['--config', 'test/config.json'],
       filePathFlag: '--config',
@@ -143,12 +142,20 @@ describe('Argv transformer with options', () => {
     });
   });
   it('throws for invalid files', async () => {
-    transformArgv({ argv: [] });
     expect(() => {
       transformArgv({
         argv: ['--config', 'config.json'],
         filePathFlag: '--config',
       });
     }).toThrow('config.json is not a valid JSON file');
+  });
+  it('does not parse numbers if configured', async () => {
+    const c = transformArgv({
+      argv: ['--date', '2022'],
+      options: new Map([['date', { name: 'date', skipNumberParsing: true }]]),
+    });
+    expect(c).toStrictEqual({
+      date: '2022',
+    });
   });
 });

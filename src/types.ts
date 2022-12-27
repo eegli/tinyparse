@@ -2,6 +2,7 @@ export type FlagOption = {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
+  skipNumberParsing?: boolean;
   customValidator?: {
     isValid: (value: unknown) => boolean;
     errorMessage: (value: unknown) => string;
