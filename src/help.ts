@@ -34,7 +34,6 @@ export const displayHelp = ({
 
   opts.forEach(({ name, description, required, shortFlag }, idx) => {
     const isLast = idx === opts.length - 1;
-    const isBoolean = typeof defaultValues[name] === 'boolean';
 
     if (optionalFlag && !required) {
       str += 'Optional\n';

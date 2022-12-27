@@ -36,7 +36,7 @@ describe('External options transformer', () => {
 });
 
 describe('Argv transformer', () => {
-  it('parses empty', async () => {
+  it('parses empty', () => {
     const c = transformArgv({ argv: [] });
     expect(c).toStrictEqual({});
   });
@@ -102,7 +102,7 @@ describe('Argv transformer', () => {
 });
 
 describe('Argv transformer with options', () => {
-  it('supports long and short flags', async () => {
+  it('supports long and short flags', () => {
     const c = transformArgv({
       argv: [
         '-ignoreme',
@@ -128,11 +128,12 @@ describe('Argv transformer with options', () => {
       input: 'this is a string',
     });
   });
-  it('transforms empty', async () => {
+  it('transforms empty', () => {
     const c = transformArgv({ argv: ['-s', '123'] });
     expect(c).toStrictEqual({});
   });
-  it('parses from simple JSON files', async () => {
+  it('parses from simple JSON files', () => {
+    transformArgv({ argv: [] });
     const c = transformArgv({
       argv: ['--config', 'test/config.json'],
       filePathFlag: '--config',
@@ -141,7 +142,8 @@ describe('Argv transformer with options', () => {
       username: 'eegli',
     });
   });
-  it('throws for invalid files', async () => {
+  it('throws for invalid files', () => {
+    transformArgv({ argv: [] });
     expect(() => {
       transformArgv({
         argv: ['--config', 'config.json'],
@@ -149,7 +151,7 @@ describe('Argv transformer with options', () => {
       });
     }).toThrow('config.json is not a valid JSON file');
   });
-  it('does not parse numbers if configured', async () => {
+  it('does not parse numbers if configured', () => {
     const c = transformArgv({
       argv: ['--date', '2022'],
       options: new Map([['date', { name: 'date', skipParseInt: true }]]),
