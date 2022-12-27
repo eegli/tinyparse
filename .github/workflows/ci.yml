@@ -26,6 +26,8 @@ jobs:
         run: yarn install --immutable
       - name: Run unit tests
         run: yarn test --coverage --verbose
+      - name: Run type tests
+        run: yarn test:types --verbose
       - name: Run integration tests
         if: matrix.node == '18'
         run: yarn test:integration
