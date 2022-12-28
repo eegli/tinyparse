@@ -31,9 +31,9 @@ npm i @eegli/tinyparse
 
 ## Usage example
 
-- First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default
+- First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
 
-- Second argument: Options object. You can specify both a _file flag_ (whose value will point to a file) and options per key
+- Second argument: Options object. You can specify both a _file flag_ (whose value will point to a file) and options per key.
 
 Note that most arguments and options are optional. IntelliSense and
 TypeScript will show you the detailed signatures and what is required.
@@ -45,14 +45,14 @@ import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 
 // Default values. They will be used as defaults/fallback
-const defaultValues = {
+const defaultUser = {
   username: '',
-  birthday: '',
+  age: 0,
   hasGithubProfile: false,
 };
 
 const { help, parse } = createParser(
-  defaultValues,
+  defaultUser,
   // More configuration
   {
     // Parse a file (for example, a config file). Only takes
@@ -66,14 +66,13 @@ const { help, parse } = createParser(
       username: {
         // Fail if there is no value for "username"
         required: true,
-        description: 'Your Github username',
+        description: 'Your custom username',
       },
-      birthday: {
+      age: {
         // A custom validator that will receive the value for
-        // "birthday". It must return a boolean
+        // "age". It must return a boolean
         customValidator: {
-          isValid: (value) =>
-            typeof value === 'string' && !isNaN(Date.parse(value)),
+          isValid: (value) => typeof value === 'number' && value > 0,
           // The error message for when validation fails
           errorMessage: (v) => `${v} is not a valid date`,
         },
@@ -82,28 +81,31 @@ const { help, parse } = createParser(
         description: 'Indicate whether you have a Github profile',
         // Short flag alias. Only takes effect when parsing an
         // array of strings
-        shortFlag: '-gp',
+        shortFlag: '-ghp',
       },
     },
   }
 );
-const parsedObj = await parse({
-  username: 'feegli',
-  birthday: '1996-01-01',
-});
-assert.deepStrictEqual(parsedObj, {
-  username: 'feegli',
-  birthday: '1996-01-01',
+
+// Some user input
+const userInput = {
+  username: 'eegli',
+  age: 12,
+};
+const parsedInput = await parse(userInput);
+assert.deepStrictEqual(parsedInput, {
+  username: 'eegli',
+  age: 12,
   hasGithubProfile: false,
 });
 
 // Read from file "github.json" with content {"username": "eegli"}
-process.argv = ['--birthday', '1996', '-gp', '--config', 'github.json'];
+process.argv = ['--age', '12', '-ghp', '--config', 'github.json'];
 
 const parsedArgv = await parse(process.argv);
 assert.deepStrictEqual(parsedArgv, {
   username: 'eegli',
-  birthday: '1996',
+  age: 12,
   hasGithubProfile: true,
 });
 
@@ -194,23 +196,16 @@ Optionally, **short flags** can be specified for each argument. Short flags are 
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 
-const { parse } = createParser(
-  {
-    hasGithubProfile: false,
-    hasGithubPlus: true,
-    followerCount: 0,
-    birthYear: '',
-  },
-  {
-    options: {
-      followerCount: { shortFlag: '-fc' },
-    },
-  }
-);
+const { parse } = createParser({
+  hasGithubProfile: false,
+  hasGithubPlus: true,
+  followerCount: 0,
+  birthYear: '',
+});
 const parsed = await parse([
   '--hasGithubProfile',
   '--hasGithubPlus',
-  '-fc',
+  '--followerCount',
   '10',
   '--birthYear',
   '2018',
@@ -226,7 +221,8 @@ assert.deepStrictEqual(parsed, {
 Notice how:
 
 - Since `hasGithubPlus` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
-- If the expected value for a flag is a number, tinyparse will try to parse it accordingly (see `--followerCount` / `-fc`). This only applies if the object to be parsed is an array of strings.
+- If the _expected value_ for a flag is a number, tinyparse will try to parse it accordingly (see `--followerCount`). This only applies if the object to be parsed is an array of strings.
+- Altough we could parse the value for `--birthYear` to a number (`2018`), it is kept as a string since that is what's expected with the given default value (`{ birthYear: '' }`)
 
 ### Good to know when parsing strings
 

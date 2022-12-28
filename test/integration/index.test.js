@@ -2,19 +2,17 @@ import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
-process.argv.push('-gp', '--config', 'github.json');
-
 describe('Integration and docs', () => {
   test('full example', async () => {
     // Default values. They will be used as defaults/fallback
-    const defaultValues = {
+    const defaultUser = {
       username: '',
-      birthday: '',
+      age: 0,
       hasGithubProfile: false,
     };
 
     const { help, parse } = createParser(
-      defaultValues,
+      defaultUser,
       // More configuration
       {
         // Parse a file (for example, a config file). Only takes
@@ -28,14 +26,13 @@ describe('Integration and docs', () => {
           username: {
             // Fail if there is no value for "username"
             required: true,
-            description: 'Your Github username',
+            description: 'Your custom username',
           },
-          birthday: {
+          age: {
             // A custom validator that will receive the value for
-            // "birthday". It must return a boolean
+            // "age". It must return a boolean
             customValidator: {
-              isValid: (value) =>
-                typeof value === 'string' && !isNaN(Date.parse(value)),
+              isValid: (value) => typeof value === 'number' && value > 0,
               // The error message for when validation fails
               errorMessage: (v) => `${v} is not a valid date`,
             },
@@ -44,28 +41,31 @@ describe('Integration and docs', () => {
             description: 'Indicate whether you have a Github profile',
             // Short flag alias. Only takes effect when parsing an
             // array of strings
-            shortFlag: '-gp',
+            shortFlag: '-ghp',
           },
         },
       }
     );
-    const parsedObj = await parse({
-      username: 'feegli',
-      birthday: '1996-01-01',
-    });
-    assert.deepStrictEqual(parsedObj, {
-      username: 'feegli',
-      birthday: '1996-01-01',
+
+    // Some user input
+    const userInput = {
+      username: 'eegli',
+      age: 12,
+    };
+    const parsedInput = await parse(userInput);
+    assert.deepStrictEqual(parsedInput, {
+      username: 'eegli',
+      age: 12,
       hasGithubProfile: false,
     });
 
     // Read from file "github.json" with content {"username": "eegli"}
-    process.argv = ['--birthday', '1996', '-gp', '--config', 'github.json'];
+    process.argv = ['--age', '12', '-ghp', '--config', 'github.json'];
 
     const parsedArgv = await parse(process.argv);
     assert.deepStrictEqual(parsedArgv, {
       username: 'eegli',
-      birthday: '1996',
+      age: 12,
       hasGithubProfile: true,
     });
   });
@@ -83,23 +83,16 @@ describe('Integration and docs', () => {
     );
   });
   test('process argv', async () => {
-    const { parse } = createParser(
-      {
-        hasGithubProfile: false,
-        hasGithubPlus: true,
-        followerCount: 0,
-        birthYear: '',
-      },
-      {
-        options: {
-          followerCount: { shortFlag: '-fc' },
-        },
-      }
-    );
+    const { parse } = createParser({
+      hasGithubProfile: false,
+      hasGithubPlus: true,
+      followerCount: 0,
+      birthYear: '',
+    });
     const parsed = await parse([
       '--hasGithubProfile',
       '--hasGithubPlus',
-      '-fc',
+      '--followerCount',
       '10',
       '--birthYear',
       '2018',
