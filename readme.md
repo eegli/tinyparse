@@ -15,6 +15,23 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings - usually, `process.argv`. The object to parse _into_ may only have `string`, `number` or `boolean` property values.
 
+```ts
+import { createParser } from '@eegli/tinyparse';
+import assert from 'node:assert/strict';
+
+const defaultValues = {
+  username: '',
+};
+
+const { parse } = createParser(defaultValues);
+
+const parsed1 = await parse({ username: 'eegli' });
+const parsed2 = await parse(['--username', 'ilgee']);
+
+assert.deepStrictEqual(parsed1, { username: 'eegli' });
+assert.deepStrictEqual(parsed2, { username: 'ilgee' });
+```
+
 ## Installation
 
 Node.js v14 or later is required.
@@ -30,6 +47,10 @@ npm i @eegli/tinyparse
 ```
 
 ## Usage example
+
+Tinyparse binds a parser to some default values you feed it.
+
+`createParser(defaultValues, options = {})`
 
 - First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
 

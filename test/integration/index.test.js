@@ -3,6 +3,20 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
 describe('Integration and docs', () => {
+  test('simple example', async () => {
+    const defaultValues = {
+      username: '',
+    };
+
+    const { parse } = createParser(defaultValues);
+
+    const parsed1 = await parse({ username: 'eegli' });
+    const parsed2 = await parse(['--username', 'eegli']);
+
+    assert.deepStrictEqual(parsed1, { username: 'eegli' });
+    assert.deepStrictEqual(parsed2, { username: 'eegli' });
+  });
+
   test('full example', async () => {
     // Default values. They will be used as defaults/fallback
     const defaultUser = {
