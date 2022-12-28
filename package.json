@@ -1,6 +1,6 @@
 {
   "name": "@eegli/tinyparse",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "A tiny utility for parsing & validating Node CLI args and object literals",
   "keywords": [
     "cli",
