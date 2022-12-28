@@ -95,7 +95,7 @@ const { help, parse } = createParser(
         customValidator: {
           isValid: (value) => typeof value === 'number' && value > 0,
           // The error message for when validation fails
-          errorMessage: (v) => `${v} is not a valid date`,
+          errorMessage: (v) => `${v} is not a positive number`,
         },
       },
       hasGithubProfile: {
