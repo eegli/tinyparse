@@ -15,7 +15,26 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 
 Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings - usually, `process.argv`. The object to parse _into_ may only have `string`, `number` or `boolean` property values.
 
+```ts
+import { createParser } from '@eegli/tinyparse';
+import assert from 'node:assert/strict';
+
+const defaultValues = {
+  username: '',
+};
+
+const { parse } = createParser(defaultValues);
+
+const parsed1 = await parse({ username: 'eegli' });
+const parsed2 = await parse(['--username', 'ilgee']);
+
+assert.deepStrictEqual(parsed1, { username: 'eegli' });
+assert.deepStrictEqual(parsed2, { username: 'ilgee' });
+```
+
 ## Installation
+
+Node.js v14 or later is required.
 
 ```bash
 yarn add @eegli/tinyparse
@@ -29,9 +48,13 @@ npm i @eegli/tinyparse
 
 ## Usage example
 
-- First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default
+Tinyparse binds a parser to some default values you feed it.
 
-- Second argument: Options object. You can specify both a _file flag_ (whose value will point to a file) and options per key
+`createParser(defaultValues, options = {})`
+
+- First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
+
+- Second argument: Options object. You can specify both a _file flag_ (whose value will point to a file) and options per key.
 
 Note that most arguments and options are optional. IntelliSense and
 TypeScript will show you the detailed signatures and what is required.
@@ -43,14 +66,14 @@ import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 
 // Default values. They will be used as defaults/fallback
-const defaultValues = {
+const defaultUser = {
   username: '',
-  birthday: '',
+  age: 0,
   hasGithubProfile: false,
 };
 
 const { help, parse } = createParser(
-  defaultValues,
+  defaultUser,
   // More configuration
   {
     // Parse a file (for example, a config file). Only takes
@@ -64,63 +87,65 @@ const { help, parse } = createParser(
       username: {
         // Fail if there is no value for "username"
         required: true,
-        description: 'Your Github username',
+        description: 'Your custom username',
       },
-      birthday: {
+      age: {
         // A custom validator that will receive the value for
-        // "birthday". It must return a boolean
+        // "age". It must return a boolean
         customValidator: {
-          isValid: (value) =>
-            typeof value === 'string' && !isNaN(Date.parse(value)),
+          isValid: (value) => typeof value === 'number' && value > 0,
           // The error message for when validation fails
-          errorMessage: (v) => `${v} is not a valid date`,
+          errorMessage: (v) => `${v} is not a positive number`,
         },
       },
       hasGithubProfile: {
         description: 'Indicate whether you have a Github profile',
         // Short flag alias. Only takes effect when parsing an
         // array of strings
-        shortFlag: '-gp',
+        shortFlag: '-ghp',
       },
     },
   }
 );
-const parsedObj = await parse({ username: 'feegli', birthday: '1996-01-01' });
 
-assert.deepStrictEqual(parsedObj, {
-  username: 'feegli',
-  birthday: '1996-01-01',
+// Some user input
+const userInput = {
+  username: 'eegli',
+  age: 12,
+};
+const parsedInput = await parse(userInput);
+assert.deepStrictEqual(parsedInput, {
+  username: 'eegli',
+  age: 12,
   hasGithubProfile: false,
 });
 
-// process.argv = ['arg0','arg1', '-gp', '--config', 'github.json']
 // Read from file "github.json" with content {"username": "eegli"}
-const parsedArgv = await parse([
-  'arg0',
-  'arg1',
-  '-gp',
-  '--config',
-  'github.json',
-]);
+process.argv = ['--age', '12', '-ghp', '--config', 'github.json'];
+
+const parsedArgv = await parse(process.argv);
 assert.deepStrictEqual(parsedArgv, {
   username: 'eegli',
-  birthday: '',
+  age: 12,
   hasGithubProfile: true,
 });
 
 help();
-`"Usage
+`Usage
 
 Required
-   --username <username> [string]
+   --username [string]
    Your Github username
 
 Optional
-   --birthday <birthday> [string]
+   --birthday [string]
 
    -gp, --hasGithubProfile [boolean]
-   Indicate whether you have a Github profile 
-"`;
+   Indicate whether you have a Github profile
+
+   --config [string]
+   Path to your Github config file
+`;
 ```
 
 ### Parsing required properties
@@ -192,33 +217,33 @@ Optionally, **short flags** can be specified for each argument. Short flags are 
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 
-const { parse } = createParser(
-  {
-    hasGithubProfile: false,
-    hasGithubPlus: true,
-    followerCount: 0,
-  },
-  { options: { followerCount: { shortFlag: '-fc' } } }
-);
-
+const { parse } = createParser({
+  hasGithubProfile: false,
+  hasGithubPlus: true,
+  followerCount: 0,
+  birthYear: '',
+});
 const parsed = await parse([
   '--hasGithubProfile',
   '--hasGithubPlus',
-  '-fc',
+  '--followerCount',
   '10',
+  '--birthYear',
+  '2018',
 ]);
-
 assert.deepStrictEqual(parsed, {
   hasGithubPlus: true,
   hasGithubProfile: true,
   followerCount: 10,
+  birthYear: '2018',
 });
 ```
 
 Notice how:
 
-1. Since `hasGithubPlus` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
-2. Strings that are valid numbers are automagically converted to a number (see `--followerCount` / `-fc`). This only applies if the object to be parsed is an array of strings.
+- Since `hasGithubPlus` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
+- If the _expected value_ for a flag is a number, tinyparse will try to parse it accordingly (see `--followerCount`). This only applies if the object to be parsed is an array of strings.
+- Altough we could parse the value for `--birthYear` to a number (`2018`), it is kept as a string since that is what's expected with the given default value (`{ birthYear: '' }`)
 
 ### Good to know when parsing strings
 

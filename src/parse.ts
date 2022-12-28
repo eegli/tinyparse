@@ -26,29 +26,38 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
     config.set(arg.name, requiredSym);
   });
 
-  for (const [arg, argVal] of Object.entries(input)) {
+  for (const inputPair of Object.entries(input)) {
+    const [arg] = inputPair;
+    let [, argVal] = inputPair;
+
     if (!config.has(arg)) continue;
 
+    const expectedType = typeof defaultValues[arg];
+
+    // Iif the expected type is a number, try to convert the value
+    if (expectedType === 'number') {
+      argVal = Number(argVal);
+    }
+
+    const receivedType = typeof argVal;
     const customValidator = options.get(arg)?.customValidator;
 
+    // Custom validation
     if (customValidator) {
-      // Coerced truthy values are ignored
-      if (customValidator.isValid(argVal) === true) {
+      if (customValidator.isValid(argVal)) {
         config.set(arg, argVal);
       } else {
         throw new ValidationError(customValidator.errorMessage(argVal));
       }
     }
 
-    const expected = typeof defaultValues[arg];
-    const received = typeof argVal;
-
-    // The received type must corresponds to the original type
-    if (isSameType(expected, received)) {
+    // Default validation (based on types) -  The received type must
+    // corresponds to the original type
+    if (isSameType(expectedType, receivedType)) {
       config.set(arg, argVal);
     } else {
       throw new ValidationError(
-        `Invalid type for "${arg}". Expected ${expected}, got ${received}`
+        `Invalid type for "${arg}". Expected ${expectedType}, got ${receivedType}`
       );
     }
   }

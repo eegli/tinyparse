@@ -4,12 +4,14 @@ import { parseJSONFile } from './utils';
 export function transformOptions(
   parsingOptions?: ParsingOptions
 ): InternalOptions {
-  if (!parsingOptions?.options) return new Map();
-  return Object.entries(parsingOptions.options).reduce((acc, [name, opts]) => {
-    if (!opts) return acc;
-    acc.set(name, { ...opts, name });
-    return acc;
-  }, new Map());
+  return Object.entries(parsingOptions?.options || {}).reduce(
+    (acc, [name, opts]) => {
+      if (!opts) return acc;
+      acc.set(name, { ...opts, name });
+      return acc;
+    },
+    new Map()
+  );
 }
 
 type TransFormArgV = {
@@ -49,8 +51,6 @@ export function transformArgv<T extends SimpleRecord>({
       else if (!argVal || argVal.startsWith('-')) {
         acc.set(arg, true);
         // Assume number
-      } else if (/^\d+$/.test(argVal)) {
-        acc.set(arg, +argVal);
         // Assume string
       } else {
         acc.set(arg, argVal);

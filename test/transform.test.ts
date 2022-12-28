@@ -94,7 +94,7 @@ describe('Argv transformer', () => {
       ).toStrictEqual({
         boolProp1: true,
         stringProp: 'hello from node',
-        numProp: 123,
+        numProp: '123',
         boolProp2: true,
       });
     });
@@ -122,7 +122,7 @@ describe('Argv transformer with options', () => {
       ]),
     });
     expect(c).toStrictEqual({
-      secret: 123,
+      secret: '123',
       password: 'MyPassword',
       donotignore: true,
       input: 'this is a string',
