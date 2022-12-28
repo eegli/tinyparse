@@ -1,4 +1,4 @@
-import { expectAssignable, expectType } from 'tsd-lite';
+import { expectAssignable, expectNotAssignable, expectType } from 'tsd-lite';
 import { createParser } from '../../src';
 
 type Input = {
@@ -47,4 +47,16 @@ expectAssignable<KeyOptions>({
   },
   age: {},
   loggedIn: {},
+});
+
+type Defaults = Parameters<typeof createParser<Input>>[0];
+
+expectNotAssignable<Defaults>({
+  name: {},
+});
+expectNotAssignable<Defaults>({
+  name: [],
+});
+expectNotAssignable<Defaults>({
+  [Symbol.iterator]: null,
 });
