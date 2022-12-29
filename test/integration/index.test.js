@@ -97,16 +97,25 @@ describe('Integration and docs', () => {
     );
   });
   test('process argv', async () => {
-    const { parse } = createParser({
-      hasGithubProfile: false,
-      hasGithubPlus: true,
-      followerCount: 0,
-      birthYear: '',
-    });
+    const { parse } = createParser(
+      {
+        hasGithubProfile: false,
+        hasGithubPlus: true,
+        followerCount: 0,
+        birthYear: '',
+      },
+      {
+        options: {
+          followerCount: {
+            shortFlag: '-fc',
+          },
+        },
+      }
+    );
     const parsed = await parse([
       '--hasGithubProfile',
       '--hasGithubPlus',
-      '--followerCount',
+      '-fc',
       '10',
       '--birthYear',
       '2018',

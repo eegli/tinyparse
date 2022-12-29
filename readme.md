@@ -135,12 +135,12 @@ help();
 
 Required
    --username [string]
-   Your Github username
+   Your custom username
 
 Optional
-   --birthday [string]
+   --age [number]
 
-   -gp, --hasGithubProfile [boolean]
+   -ghp, --hasGithubProfile [boolean]
    Indicate whether you have a Github profile
 
    --config [string]
@@ -217,16 +217,25 @@ Optionally, **short flags** can be specified for each argument. Short flags are 
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 
-const { parse } = createParser({
-  hasGithubProfile: false,
-  hasGithubPlus: true,
-  followerCount: 0,
-  birthYear: '',
-});
+const { parse } = createParser(
+  {
+    hasGithubProfile: false,
+    hasGithubPlus: true,
+    followerCount: 0,
+    birthYear: '',
+  },
+  {
+    options: {
+      followerCount: {
+        shortFlag: '-fc',
+      },
+    },
+  }
+);
 const parsed = await parse([
   '--hasGithubProfile',
   '--hasGithubPlus',
-  '--followerCount',
+  '-fc',
   '10',
   '--birthYear',
   '2018',
@@ -242,7 +251,7 @@ assert.deepStrictEqual(parsed, {
 Notice how:
 
 - Since `hasGithubPlus` was already true, the boolean flag did not change that. Such a default configuration does not make much sense.
-- If the _expected value_ for a flag is a number, tinyparse will try to parse it accordingly (see `--followerCount`). This only applies if the object to be parsed is an array of strings.
+- If the _expected value_ for a flag is a number, tinyparse will try to parse it accordingly (see `--followerCount` / `-fc`). This only applies if the object to be parsed is an array of strings.
 - Altough we could parse the value for `--birthYear` to a number (`2018`), it is kept as a string since that is what's expected with the given default value (`{ birthYear: '' }`)
 
 ### Good to know when parsing strings
