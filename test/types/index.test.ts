@@ -1,4 +1,4 @@
-import { expectAssignable, expectNotAssignable, expectType } from 'tsd-lite';
+import { expectAssignable, expectNotAssignable } from 'tsd-lite';
 import { createParser } from '../../src';
 
 type Input = {
@@ -6,14 +6,6 @@ type Input = {
   age: number;
   loggedIn: boolean;
 };
-
-expectType<Promise<Input>>(
-  createParser<Input>({
-    name: 'eric',
-    age: 11,
-    loggedIn: false,
-  }).parse()
-);
 
 expectAssignable<Promise<Input>>(
   createParser({

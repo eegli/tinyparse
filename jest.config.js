@@ -7,11 +7,27 @@ module.exports = {
   },
   roots: ['<rootDir>/src', '<rootDir>/test'],
   collectCoverageFrom: ['<rootDir>/src/**'],
-  setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
-  testPathIgnorePatterns: ['/node_modules/', '/integration/', '/types'],
   coverageThreshold: {
     global: {
       statements: 90,
     },
   },
+  projects: [
+    {
+      displayName: {
+        color: 'cyan',
+        name: 'unit',
+      },
+      testMatch: ['<rootDir>/test/*.test.ts'],
+      setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
+    },
+    {
+      displayName: {
+        color: 'magenta',
+        name: 'types',
+      },
+      runner: 'jest-runner-tsd',
+      testMatch: ['<rootDir>/test/types/*.test.ts'],
+    },
+  ],
 };
