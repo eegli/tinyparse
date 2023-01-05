@@ -9,15 +9,15 @@ type ForwardArgs = Record<string, unknown>;
 type ParseObjLiteral<T> = {
   defaultValues: T;
   input: Partial<T>;
+  options: InternalOptions;
   forwardArgs?: ForwardArgs;
-  options?: InternalOptions;
 };
 
 // eslint-disable-next-line require-await
 export async function parseObjectLiteral<T extends SimpleRecord>({
   defaultValues,
   input,
-  options = new Map(),
+  options,
   forwardArgs,
 }: ParseObjLiteral<T>): Promise<T & ForwardArgs> {
   const requiredArgs = [...options.values()].filter((opts) => opts.required);

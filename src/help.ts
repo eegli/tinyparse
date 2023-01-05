@@ -2,16 +2,16 @@ import { FilePathArg, InternalOptions, SimpleRecord } from './types';
 
 type DisplayHelp = {
   defaultValues: SimpleRecord;
-  options?: InternalOptions;
+  options: InternalOptions;
   filePathArg?: FilePathArg;
   title?: string;
 };
 
 export const displayHelp = ({
   defaultValues,
-  options = new Map(),
-  title = 'Usage',
+  options,
   filePathArg,
+  title = 'Usage',
 }: DisplayHelp): string => {
   // Required properties first
   const opts = [...options.values()].sort((a, b) =>
