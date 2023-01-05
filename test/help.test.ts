@@ -35,14 +35,14 @@ describe('Helper text', () => {
     expect(help('CLI options')).toMatchInlineSnapshot(`
       "CLI options
 
-      Required
+      Required flags
          --color [string]
          A color
 
          -p, --port [number]
          The port to listen on
 
-      Optional
+      Optional flags
          --id [string]
 
          -wa, --withAuth [boolean]

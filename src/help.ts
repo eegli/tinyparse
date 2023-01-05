@@ -26,7 +26,7 @@ export const displayHelp = ({
 
   // Maybe no option is required
   if (opts[0]?.required) {
-    str += 'Required\n';
+    str += 'Required flags\n';
   }
 
   let optionalFlag = true;
@@ -36,7 +36,7 @@ export const displayHelp = ({
     const isLast = idx === opts.length - 1;
 
     if (optionalFlag && !required) {
-      str += 'Optional\n';
+      str += 'Optional flags\n';
       optionalFlag = false;
     }
 
