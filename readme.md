@@ -26,10 +26,10 @@ const defaultValues = {
 const { parse } = createParser(defaultValues);
 
 const parsed1 = await parse({ username: 'eegli' });
-const parsed2 = await parse(['--username', 'ilgee']);
+const parsed2 = await parse(['--username', 'eegli']);
 
 assert.deepStrictEqual(parsed1, { username: 'eegli' });
-assert.deepStrictEqual(parsed2, { username: 'ilgee' });
+assert.deepStrictEqual(parsed2, { username: 'eegli', _: [] });
 ```
 
 ## Installation
@@ -125,6 +125,7 @@ process.argv = ['--age', '12', '-ghp', '--config', 'github.json'];
 
 const parsedArgv = await parse(process.argv);
 assert.deepStrictEqual(parsedArgv, {
+  _: [],
   username: 'eegli',
   age: 12,
   hasGithubProfile: true,
@@ -234,6 +235,7 @@ const { parse } = createParser(
   }
 );
 const parsed = await parse([
+  'congratulate',
   '--name',
   '"Eric Egli"',
   '--hasGithubProfile',
@@ -244,6 +246,7 @@ const parsed = await parse([
   '2018',
 ]);
 assert.deepStrictEqual(parsed, {
+  _: ['congratulate'],
   name: '"Eric Egli"',
   hasGithubPlus: true,
   hasGithubProfile: true,
