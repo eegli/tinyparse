@@ -14,7 +14,7 @@ describe('Integration and docs', () => {
     const parsed2 = await parse(['--username', 'eegli']);
 
     assert.deepStrictEqual(parsed1, { username: 'eegli' });
-    assert.deepStrictEqual(parsed2, { username: 'eegli' });
+    assert.deepStrictEqual(parsed2, { username: 'eegli', _: [] });
   });
 
   test('full example', async () => {
@@ -78,6 +78,7 @@ describe('Integration and docs', () => {
 
     const parsedArgv = await parse(process.argv);
     assert.deepStrictEqual(parsedArgv, {
+      _: [],
       username: 'eegli',
       age: 12,
       hasGithubProfile: true,

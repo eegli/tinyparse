@@ -4,7 +4,7 @@ import {
   PositionalArgs,
   SimpleRecord,
   Value,
-  WithPositionalArgs,
+  WithMaybePositionalArgs,
 } from './types';
 import { isSameType } from './utils';
 
@@ -13,7 +13,7 @@ const requiredSym = Symbol('isRequired');
 type ParseObjLiteral<T> = {
   defaultValues: T;
   input: Partial<T>;
-  positionalArgs: PositionalArgs;
+  positionalArgs?: PositionalArgs;
   options?: InternalOptions;
 };
 
@@ -23,7 +23,7 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
   input,
   options = new Map(),
   positionalArgs,
-}: ParseObjLiteral<T>): Promise<WithPositionalArgs<T>> {
+}: ParseObjLiteral<T>): Promise<WithMaybePositionalArgs<T>> {
   const requiredArgs = [...options.values()].filter((opts) => opts.required);
 
   const config = new Map<string, Value | symbol>(Object.entries(defaultValues));
@@ -78,5 +78,8 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
     }
   }, <string[]>[]);
 
-  return { ...(Object.fromEntries(config) as T), _: positionalArgs };
+  return {
+    ...(Object.fromEntries(config) as T),
+    ...(positionalArgs && { _: positionalArgs }),
+  };
 }

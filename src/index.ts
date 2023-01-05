@@ -5,7 +5,7 @@ import {
   ParsingOptions,
   PositionalArgs,
   SimpleRecord,
-  WithPositionalArgs,
+  WithMaybePositionalArgs,
 } from './types';
 
 export { ValidationError } from './error';
@@ -28,9 +28,9 @@ export function createParser<T extends SimpleRecord>(
       return displayHelp({ defaultValues, options, title, filePathArg });
     },
     parse: function (
-      input: Partial<T> | string[] = []
-    ): Promise<WithPositionalArgs<T>> {
-      let positionalArgs: PositionalArgs = [];
+      input: Partial<T> | string[] = {}
+    ): Promise<WithMaybePositionalArgs<T>> {
+      let positionalArgs: PositionalArgs | undefined;
       if (Array.isArray(input)) {
         [input, positionalArgs] = transformArgv<T>({
           argv: input,
