@@ -114,6 +114,7 @@ describe('Integration and docs', () => {
       }
     );
     const parsed = await parse([
+      'congratulate',
       '--name',
       '"Eric Egli"',
       '--hasGithubProfile',
@@ -124,6 +125,7 @@ describe('Integration and docs', () => {
       '2018',
     ]);
     assert.deepStrictEqual(parsed, {
+      _: ['congratulate'],
       name: '"Eric Egli"',
       hasGithubPlus: true,
       hasGithubProfile: true,

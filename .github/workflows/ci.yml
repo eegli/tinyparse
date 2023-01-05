@@ -29,13 +29,13 @@ jobs:
       - name: Run type tests
         run: yarn test:types --verbose
       - name: Run integration tests
-        if: matrix.node == '18'
+        if: matrix.node == '19'
         run: yarn test:integration
       - name: Run build
         run: yarn build
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
-        if: matrix.node == '18'
+        if: matrix.node == '19'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
