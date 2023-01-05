@@ -11,7 +11,7 @@ _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but 
 - JSON file parsing support
 - Zero dependencies
 
-**I use this mostly for other pet projects of mine so it comes with some opinions**
+**I use this mostly for other pet projects of mine so it comes with some opinions.**
 
 Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings - usually, `process.argv`. The object to parse _into_ may only have `string`, `number` or `boolean` property values.
 
@@ -219,6 +219,7 @@ import assert from 'node:assert/strict';
 
 const { parse } = createParser(
   {
+    name: '',
     hasGithubProfile: false,
     hasGithubPlus: true,
     followerCount: 0,
@@ -233,6 +234,8 @@ const { parse } = createParser(
   }
 );
 const parsed = await parse([
+  '--name',
+  '"Eric Egli"',
   '--hasGithubProfile',
   '--hasGithubPlus',
   '-fc',
@@ -241,6 +244,7 @@ const parsed = await parse([
   '2018',
 ]);
 assert.deepStrictEqual(parsed, {
+  name: '"Eric Egli"',
   hasGithubPlus: true,
   hasGithubProfile: true,
   followerCount: 10,
@@ -256,10 +260,13 @@ Notice how:
 
 ### Good to know when parsing strings
 
-- `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag argument. Passing arguments such as `["--password", "-x8ap!"]` results in undefined behavior
-- If you really need to parse a value that starts with `-`, consider reading it from a file instead. This is a little less convenient but works for any value
+- `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag argument. Arguments such as `["--password", "-x8ap!"]` should be wrapped in quotes!
 - Later values will overwrite earlier values. `["--password", "abc", "--password", "xyz"]` will parse to `password: "xyz"`
 
 ## More examples
 
-For more examples, [check the extensive test suites](test) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
+For more examples, [check the extensive test suites](test) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts).
+
+## Resources
+
+This project has been guided by the amazing [Command Line Interface Guidelines](https://clig.dev/) by Aanand Prasad, Ben Firshman, Carl Tashian and Eva Parish.

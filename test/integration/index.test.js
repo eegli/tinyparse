@@ -99,6 +99,7 @@ describe('Integration and docs', () => {
   test('process argv', async () => {
     const { parse } = createParser(
       {
+        name: '',
         hasGithubProfile: false,
         hasGithubPlus: true,
         followerCount: 0,
@@ -113,6 +114,8 @@ describe('Integration and docs', () => {
       }
     );
     const parsed = await parse([
+      '--name',
+      '"Eric Egli"',
       '--hasGithubProfile',
       '--hasGithubPlus',
       '-fc',
@@ -121,6 +124,7 @@ describe('Integration and docs', () => {
       '2018',
     ]);
     assert.deepStrictEqual(parsed, {
+      name: '"Eric Egli"',
       hasGithubPlus: true,
       hasGithubProfile: true,
       followerCount: 10,
