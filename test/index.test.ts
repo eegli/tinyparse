@@ -6,7 +6,7 @@ describe('Lib', () => {
       {
         "help": [Function],
         "parse": [Function],
-        "positionalArgs": [],
+        "positionalArgs": [Function],
       }
     `);
     expect(ValidationError).toBeTruthy();

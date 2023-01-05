@@ -105,38 +105,45 @@ describe('Argv transformer', () => {
 });
 
 describe('Argv transformer with options', () => {
+  it('transforms empty', () => {
+    const c = transformArgv({ argv: ['-s', '123'] });
+    expect(c).toStrictEqual([{}, []]);
+  });
   it('supports long and short flags', () => {
     const c = transformArgv({
       argv: [
-        '-ignoreme',
-        '-s',
+        'positional_1',
+        'positional_2',
+        '-thisisignored',
+        'thisisignored',
+        '--secret',
         '123',
         '--input',
         'this is a string',
-        '--donotignore',
+        '--notignored',
         '-p',
         'xyz123',
         '-p',
         'MyPassword',
+        'thisisignored',
+        '--sinlgeQuotes',
+        '"-this is a string"',
+        '--doubleQuotes',
+        "'-this is a string'",
       ],
-      options: new Map([
-        ['secret', { name: 'secret', shortFlag: '-s' }],
-        ['password', { name: 'password', shortFlag: '-p' }],
-      ]),
+      options: new Map([['password', { name: 'password', shortFlag: '-p' }]]),
     });
     expect(c).toStrictEqual([
       {
         secret: '123',
         password: 'MyPassword',
-        donotignore: true,
+        notignored: true,
         input: 'this is a string',
+        sinlgeQuotes: '"-this is a string"',
+        doubleQuotes: "'-this is a string'",
       },
-      [],
+      ['positional_1', 'positional_2'],
     ]);
-  });
-  it('transforms empty', () => {
-    const c = transformArgv({ argv: ['-s', '123'] });
-    expect(c).toStrictEqual([{}, []]);
   });
   it('parses from simple JSON files', () => {
     transformArgv({ argv: [] });

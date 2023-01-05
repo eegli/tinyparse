@@ -39,6 +39,8 @@ export function createParser<T extends SimpleRecord>(
       return displayHelp({ defaultValues, options, title, filePathArg });
     },
     parse,
-    positionalArgs,
+    positionalArgs: function (): string[] {
+      return positionalArgs;
+    },
   };
 }
