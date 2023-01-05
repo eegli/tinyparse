@@ -204,7 +204,7 @@ Tinyparse expects that **every** CLI argument is specified with a long or short 
 
 | Example                       | Abstract format                     | Support |
 | ----------------------------- | ----------------------------------- | ------- |
-| `run-cli src/app`             | `[command] [arg]`                   | ❌      |
+| `run-cli src/app`             | `[command] [arg]`                   | ✅      |
 | `run-cli --directory src/app` | `[command] [long flag] [flag arg]`  | ✅      |
 | `run-cli -d src/app`          | `[command] [short flag] [flag arg]` | ✅      |
 | `run-cli --verbose`           | `[command] [boolean long flag]`     | ✅      |
