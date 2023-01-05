@@ -113,7 +113,9 @@ const userInput = {
   username: 'eegli',
   age: 12,
 };
+
 const parsedInput = await parse(userInput);
+
 assert.deepStrictEqual(parsedInput, {
   username: 'eegli',
   age: 12,
@@ -121,11 +123,13 @@ assert.deepStrictEqual(parsedInput, {
 });
 
 // Read from file "github.json" with content {"username": "eegli"}
-process.argv = ['--age', '12', '-ghp', '--config', 'github.json'];
+process.argv = ['profile', '--age', '12', '-ghp', '--config', 'github.json'];
 
 const parsedArgv = await parse(process.argv);
+
+// When parsing an array of strings, positional arguments are available on the _ property
 assert.deepStrictEqual(parsedArgv, {
-  _: [],
+  _: ['profile'],
   username: 'eegli',
   age: 12,
   hasGithubProfile: true,
@@ -200,7 +204,9 @@ try {
 
 Definitions from [CLI Flags Explained](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag).
 
-Tinyparse expects that **every** CLI argument is specified with a long or short flag. It ignores standalone arguments. A valid key-value pair consists of a flag followed by the flag argument. The order of flag + arg pairs does not matter.
+Tinyparse allows both **positional arguments** and **long or short flags** that start with a hyphen (`-`). A valid flag-value pair consists of a flag followed by the flag value, separated by a whitespace. The order of flag + arg pairs does not matter.
+
+All arguments until the first flag are considered positional arguments. Later "positional" arguments that follow a flag value are ignored (see example below).
 
 | Example                       | Abstract format                     | Support |
 | ----------------------------- | ----------------------------------- | ------- |
@@ -235,16 +241,18 @@ const { parse } = createParser(
   }
 );
 const parsed = await parse([
-  'congratulate',
+  'congratulate', // Positional argument
   '--name',
-  '"Eric Egli"',
-  '--hasGithubProfile',
+  '"Eric Egli"', // Value with spaces
+  '--hasGithubProfile', // Boolean flag
   '--hasGithubPlus',
-  '-fc',
-  '10',
+  '-fc', // Short flag
+  '10', // Will be parsed as number
+  'ignoredProperty', // This property is ignored
   '--birthYear',
-  '2018',
+  '2018', // Will remain a string
 ]);
+
 assert.deepStrictEqual(parsed, {
   _: ['congratulate'],
   name: '"Eric Egli"',

@@ -115,16 +115,18 @@ describe('Integration and docs', () => {
       }
     );
     const parsed = await parse([
-      'congratulate',
+      'congratulate', // Positional argument
       '--name',
-      '"Eric Egli"',
-      '--hasGithubProfile',
+      '"Eric Egli"', // Value with spaces
+      '--hasGithubProfile', // Boolean flag
       '--hasGithubPlus',
-      '-fc',
-      '10',
+      '-fc', // Short flag
+      '10', // Will be parsed as number
+      'ignoredProperty', // This property is ignored
       '--birthYear',
-      '2018',
+      '2018', // Will remain a string
     ]);
+
     assert.deepStrictEqual(parsed, {
       _: ['congratulate'],
       name: '"Eric Egli"',

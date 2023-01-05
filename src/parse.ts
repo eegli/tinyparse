@@ -1,19 +1,15 @@
 import { ValidationError } from './error';
-import {
-  InternalOptions,
-  PositionalArgs,
-  SimpleRecord,
-  Value,
-  WithMaybePositionalArgs,
-} from './types';
+import { InternalOptions, SimpleRecord, Value } from './types';
 import { isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
 
+type ForwardArgs = Record<string, unknown>;
+
 type ParseObjLiteral<T> = {
   defaultValues: T;
   input: Partial<T>;
-  positionalArgs?: PositionalArgs;
+  forwardArgs?: ForwardArgs;
   options?: InternalOptions;
 };
 
@@ -22,8 +18,8 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
   defaultValues,
   input,
   options = new Map(),
-  positionalArgs,
-}: ParseObjLiteral<T>): Promise<WithMaybePositionalArgs<T>> {
+  forwardArgs,
+}: ParseObjLiteral<T>): Promise<T & ForwardArgs> {
   const requiredArgs = [...options.values()].filter((opts) => opts.required);
 
   const config = new Map<string, Value | symbol>(Object.entries(defaultValues));
@@ -80,6 +76,6 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
 
   return {
     ...(Object.fromEntries(config) as T),
-    ...(positionalArgs && { _: positionalArgs }),
+    ...forwardArgs,
   };
 }

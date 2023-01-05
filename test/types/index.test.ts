@@ -1,5 +1,6 @@
 import { expectAssignable, expectNotAssignable } from 'tsd-lite';
 import { createParser } from '../../src';
+import { WithPositionalArgs } from '../../src/types';
 
 type Input = {
   name: string;
@@ -13,6 +14,22 @@ expectAssignable<Promise<Input>>(
     age: 11,
     loggedIn: false,
   }).parse()
+);
+
+expectAssignable<Promise<WithPositionalArgs<Input>>>(
+  createParser({
+    name: 'eric',
+    age: 11,
+    loggedIn: false,
+  }).parse([])
+);
+
+expectNotAssignable<Promise<WithPositionalArgs<Input>>>(
+  createParser({
+    name: 'eric',
+    age: 11,
+    loggedIn: false,
+  }).parse({})
 );
 
 type Options = Parameters<typeof createParser<Input>>[1];

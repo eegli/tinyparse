@@ -25,7 +25,7 @@ export type ParsingOptions<
 
 export type PositionalArgs = string[];
 
-export type WithMaybePositionalArgs<T> = T & { _?: PositionalArgs };
+export type WithPositionalArgs<T> = T & { _: PositionalArgs };
 
 export type InternalOptions = Map<string, BaseFlagOptions & { name: string }>;
 

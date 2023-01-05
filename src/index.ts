@@ -5,7 +5,7 @@ import {
   ParsingOptions,
   PositionalArgs,
   SimpleRecord,
-  WithMaybePositionalArgs,
+  WithPositionalArgs,
 } from './types';
 
 export { ValidationError } from './error';
@@ -23,27 +23,29 @@ export function createParser<T extends SimpleRecord>(
   const options = transformOptions(parsingOptions);
   const filePathArg = parsingOptions?.filePathArg;
 
+  function parse(input?: Partial<T>): Promise<T>;
+  function parse(input?: string[]): Promise<WithPositionalArgs<T>>;
+  function parse(input: Partial<T> | string[] = {}): Promise<T> {
+    let positionalArgs: PositionalArgs | undefined;
+    if (Array.isArray(input)) {
+      [input, positionalArgs] = transformArgv<T>({
+        argv: input,
+        filePathFlag: filePathArg?.longFlag,
+        options,
+      });
+    }
+    return parseObjectLiteral({
+      defaultValues,
+      input,
+      options,
+      forwardArgs: positionalArgs && { _: positionalArgs },
+    });
+  }
+
   return {
     help: function (title?: string): string {
       return displayHelp({ defaultValues, options, title, filePathArg });
     },
-    parse: function (
-      input: Partial<T> | string[] = {}
-    ): Promise<WithMaybePositionalArgs<T>> {
-      let positionalArgs: PositionalArgs | undefined;
-      if (Array.isArray(input)) {
-        [input, positionalArgs] = transformArgv<T>({
-          argv: input,
-          filePathFlag: filePathArg?.longFlag,
-          options,
-        });
-      }
-      return parseObjectLiteral({
-        defaultValues,
-        input,
-        options,
-        positionalArgs,
-      });
-    },
+    parse,
   };
 }
