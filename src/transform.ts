@@ -3,6 +3,7 @@ import {
   ParsingOptions,
   PositionalArgs,
   SimpleRecord,
+  WithPositionalArgs,
 } from './types';
 import { parseJSONFile } from './utils';
 
@@ -17,6 +18,12 @@ export function transformOptions(
     },
     new Map()
   );
+}
+
+export function buildWithPositionalArgs(
+  positionalArgs?: PositionalArgs
+): WithPositionalArgs<unknown> | undefined {
+  return positionalArgs && { _: positionalArgs };
 }
 
 const hasOwnProp = Object.prototype.hasOwnProperty;

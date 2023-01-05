@@ -1,6 +1,10 @@
 import { displayHelp } from './help';
 import { parseObjectLiteral } from './parse';
-import { transformArgv, transformOptions } from './transform';
+import {
+  buildWithPositionalArgs,
+  transformArgv,
+  transformOptions,
+} from './transform';
 import {
   ParsingOptions,
   PositionalArgs,
@@ -38,7 +42,7 @@ export function createParser<T extends SimpleRecord>(
       defaultValues,
       input,
       options,
-      forwardArgs: positionalArgs && { _: positionalArgs },
+      forwardArgs: buildWithPositionalArgs(positionalArgs),
     });
   }
 
