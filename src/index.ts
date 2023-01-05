@@ -18,10 +18,9 @@ export function createParser<T extends SimpleRecord>(
   const options = transformOptions(parsingOptions);
   const filePathArg = parsingOptions?.filePathArg;
 
-  let positionalArgs: string[] = [];
   function parse(input: Partial<T> | string[] = []): Promise<T> {
     if (Array.isArray(input)) {
-      [input, positionalArgs] = transformArgv({
+      [input] = transformArgv<T>({
         argv: input,
         filePathFlag: filePathArg?.longFlag,
         options,
@@ -39,8 +38,5 @@ export function createParser<T extends SimpleRecord>(
       return displayHelp({ defaultValues, options, title, filePathArg });
     },
     parse,
-    positionalArgs: function (): string[] {
-      return positionalArgs;
-    },
   };
 }

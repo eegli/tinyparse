@@ -16,19 +16,17 @@ export function transformOptions(
 
 const hasOwnProp = Object.prototype.hasOwnProperty;
 
-type TransFormArgV = {
-  argv: string[];
-  options?: InternalOptions;
-  filePathFlag?: `--${string}`;
-};
-
 type PositionalArgs = string[];
 
 export function transformArgv<T extends SimpleRecord>({
   argv,
   options = new Map(),
   filePathFlag,
-}: TransFormArgV): [Partial<T>, PositionalArgs] {
+}: {
+  argv: string[];
+  options?: InternalOptions;
+  filePathFlag?: `--${string}`;
+}): [Partial<T>, PositionalArgs] {
   const shortFlags = [...options.entries()].reduce((acc, [name, opts]) => {
     if (opts.shortFlag) acc[opts.shortFlag] = name;
     return acc;
