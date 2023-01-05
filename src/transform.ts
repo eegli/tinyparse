@@ -1,4 +1,9 @@
-import { InternalOptions, ParsingOptions, SimpleRecord } from './types';
+import {
+  InternalOptions,
+  ParsingOptions,
+  PositionalArgs,
+  SimpleRecord,
+} from './types';
 import { parseJSONFile } from './utils';
 
 export function transformOptions(
@@ -15,8 +20,6 @@ export function transformOptions(
 }
 
 const hasOwnProp = Object.prototype.hasOwnProperty;
-
-type PositionalArgs = string[];
 
 export function transformArgv<T extends SimpleRecord>({
   argv,

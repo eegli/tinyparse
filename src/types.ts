@@ -23,6 +23,10 @@ export type ParsingOptions<
   };
 };
 
+export type PositionalArgs = string[];
+
+export type WithPositionalArgs<T> = T & { _: PositionalArgs };
+
 export type InternalOptions = Map<string, BaseFlagOptions & { name: string }>;
 
 export type SimpleRecord<T extends string = string> = Record<T, Value>;

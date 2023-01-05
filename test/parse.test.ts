@@ -12,11 +12,15 @@ describe('Object literal parsing', () => {
     numProp: 999,
   };
 
+  const positionalArgs = {
+    _: [],
+  };
+
   const { parse } = createParser(defaultValues);
 
   it('returns default config if no args', async () => {
     const c1 = await parse();
-    expect(c1).toStrictEqual(defaultValues);
+    expect(c1).toStrictEqual({ ...defaultValues, ...positionalArgs });
   });
 
   it('overwrites default values', async () => {
@@ -26,6 +30,7 @@ describe('Object literal parsing', () => {
       numProp: 69,
     });
     expect(c1).toStrictEqual({
+      ...positionalArgs,
       stringProp: 'hello',
       boolProp: true,
       numProp: 69,
@@ -35,6 +40,7 @@ describe('Object literal parsing', () => {
     });
     expect(c2).toStrictEqual({
       ...defaultValues,
+      ...positionalArgs,
       stringProp: 'hello',
     });
   });
@@ -45,6 +51,7 @@ describe('Object literal parsing', () => {
     } as unknown as typeof defaultValues);
     expect(c).toStrictEqual({
       ...defaultValues,
+      ...positionalArgs,
     });
   });
 
@@ -69,6 +76,22 @@ describe('Parsing with options', () => {
     numProp: 1,
   };
 
+  const positionalArgs = {
+    _: [],
+  };
+
+  it('collects positional arguments', async () => {
+    const { parse } = createParser(defaultValues);
+    const input = ['arg1', 'arg2', '--stringProp', 'hello', 'arg3'];
+    const expected = {
+      ...defaultValues,
+      _: ['arg1', 'arg2'],
+      stringProp: 'hello',
+    };
+
+    await expect(parse(input)).resolves.toStrictEqual(expected);
+  });
+
   it('resolves if all required args are present', async () => {
     const { parse } = createParser(defaultValues, {
       options: {
@@ -81,6 +104,7 @@ describe('Parsing with options', () => {
     const input2 = ['--stringProp', 'hello'];
     const expected = {
       ...defaultValues,
+      ...positionalArgs,
       stringProp: 'hello',
     };
 
@@ -104,6 +128,7 @@ describe('Parsing with options', () => {
     const input2 = { numProp: 0 };
     const expected = {
       ...defaultValues,
+      ...positionalArgs,
       numProp: 0,
     };
     await expect(parse(input1)).resolves.toStrictEqual(expected);
@@ -115,6 +140,7 @@ describe('Parsing with options', () => {
     const input = ['--numProp', '1', '--stringProp', '1'];
     const expected = {
       ...defaultValues,
+      ...positionalArgs,
       stringProp: '1',
       numProp: 1,
     };
