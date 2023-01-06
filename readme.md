@@ -208,6 +208,8 @@ Tinyparse allows both **positional arguments** and **long or short flags** that 
 
 All arguments until the first flag are considered positional arguments. Later "positional" arguments that follow a flag value are ignored (see example below).
 
+**Positional arguments are _not_ validated, they are purely collected.**
+
 | Example                       | Abstract format                     | Support |
 | ----------------------------- | ----------------------------------- | ------- |
 | `run-cli src/app`             | `[command] [arg]`                   | ✅      |
