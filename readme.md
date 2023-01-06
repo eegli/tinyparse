@@ -273,6 +273,7 @@ Notice how:
 
 - `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag argument. Arguments such as `["--password", "-x8ap!"]` should be wrapped in quotes!
 - Later values will overwrite earlier values. `["--password", "abc", "--password", "xyz"]` will parse to `password: "xyz"`
+- Remember that it's never a good idea to read secrets directly from flags. [Read them from a file instead](https://clig.dev/#arguments-and-flags)
 
 ## More examples
 
