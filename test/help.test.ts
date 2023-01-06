@@ -32,8 +32,11 @@ describe('Helper text', () => {
       },
     });
 
-    expect(help('CLI options')).toMatchInlineSnapshot(`
-      "CLI options
+    expect(help('CLI usage', 'copy <file1> <file2> [flags]'))
+      .toMatchInlineSnapshot(`
+      "CLI usage
+
+      copy <file1> <file2> [flags]
 
       Required flags
          --color [string]

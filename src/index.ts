@@ -47,8 +47,14 @@ export function createParser<T extends SimpleRecord>(
   }
 
   return {
-    help: function (title?: string): string {
-      return displayHelp({ defaultValues, options, title, filePathArg });
+    help: function (title?: string, baseCommand?: string): string {
+      return displayHelp({
+        defaultValues,
+        options,
+        title,
+        filePathArg,
+        baseCommand,
+      });
     },
     parse,
   };
