@@ -127,7 +127,8 @@ process.argv = ['profile', '--age', '12', '-ghp', '--config', 'github.json'];
 
 const parsedArgv = await parse(process.argv);
 
-// When parsing an array of strings, positional arguments are available on the _ property
+// When parsing an array of strings, positional arguments are
+// available on the _ property
 assert.deepStrictEqual(parsedArgv, {
   _: ['profile'],
   username: 'eegli',

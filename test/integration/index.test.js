@@ -85,7 +85,8 @@ describe('Integration and docs', () => {
 
     const parsedArgv = await parse(process.argv);
 
-    // When parsing an array of strings, positional arguments are available on the _ property
+    // When parsing an array of strings, positional arguments are
+    // available on the _ property
     assert.deepStrictEqual(parsedArgv, {
       _: ['profile'],
       username: 'eegli',
