@@ -6,14 +6,14 @@
 
 _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but it's not as capable as its parents._
 
-- Promise-based
 - TypeScript first
-- JSON file parsing support
+- Positional flag arguments support
+- JSON file reading built-in
 - Zero dependencies
 
 **I use this mostly for other pet projects of mine so it comes with some opinions.**
 
-Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings - usually, `process.argv`. The object to parse _into_ may only have `string`, `number` or `boolean` property values.
+Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings (e.g., CLI input such as `process.argv`). The object to parse _into_ may only have `string`, `number` or `boolean` property values.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -54,7 +54,7 @@ Tinyparse binds a parser to some default values you feed it.
 
 - First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
 
-- Second argument: Options object. You can specify both a _file flag_ (whose value will point to a file) and options per key.
+- Second argument: Options object. You can specify both a _file flag_ (whose flag value will point to a file) and options per key.
 
 Note that most arguments and options are optional. IntelliSense and
 TypeScript will show you the detailed signatures and what is required.
@@ -156,7 +156,7 @@ Optional flags
 
 ### Parsing required properties
 
-A key can be marked as required. If a required key is not present in the input, a `ValidationError` is thrown.
+A property - or flag - can be marked as required. If a required property is not present in the input, a `ValidationError` is thrown.
 
 This works for object literals as well as string array arguments.
 
@@ -205,7 +205,7 @@ try {
 
 Definitions from [CLI Flags Explained](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag).
 
-Tinyparse allows both **positional arguments** and **long or short flags** that start with a hyphen (`-`). A valid flag-value pair consists of a flag followed by the flag value, separated by a whitespace. The order of flag + arg pairs does not matter.
+Tinyparse allows both **positional arguments** and **long or short flags**, which start with a hyphen (`-`). A valid flag-value pair consists of a flag followed by the flag value, separated by a whitespace. The order of flag + arg pairs does not matter.
 
 All arguments until the first flag are considered positional arguments. Later "positional" arguments that follow a flag value are ignored (see example below).
 
@@ -274,7 +274,7 @@ Notice how:
 
 ### Good to know when parsing strings
 
-- `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag argument. Arguments such as `["--password", "-x8ap!"]` should be wrapped in quotes!
+- `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag value. Flag values such as `["--password", "-x8ap!"]` should be wrapped in quotes!
 - Later values will overwrite earlier values. `["--password", "abc", "--password", "xyz"]` will parse to `password: "xyz"`
 - Remember that it's never a good idea to read secrets directly from flags. [Read them from a file instead](https://clig.dev/#arguments-and-flags)
 
