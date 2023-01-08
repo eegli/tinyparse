@@ -40,7 +40,8 @@
     "postpack": "pinst --enable",
     "prepublish": "preconstruct build",
     "test": "jest --verbose",
-    "test:types": "jest -c jest.config.tsd.js",
+    "test:unit": "jest --selectProjects unit",
+    "test:types": "jest --selectProjects types",
     "test:integration": "yarn build && cd test/integration && npm install -S ../../ && npm test",
     "test:coverage": "jest --coverage",
     "test:watch": "jest  --verbose --watch"

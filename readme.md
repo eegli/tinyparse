@@ -6,14 +6,14 @@
 
 _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but it's not as capable as its parents._
 
-- Promise-based
 - TypeScript first
-- JSON file parsing support
+- Positional & flag arguments support
+- JSON file reading built-in
 - Zero dependencies
 
-**I use this mostly for other pet projects of mine so it comes with some opinions**
+**I use this mostly for other pet projects of mine so it comes with some opinions.**
 
-Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings - usually, `process.argv`. The object to parse _into_ may only have `string`, `number` or `boolean` property values.
+Tinyparse is made for parsing simple user input. It can parse object literals and arrays of strings (e.g., CLI input such as `process.argv`). The object to parse _into_ may only have `string`, `number` or `boolean` property values.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -26,13 +26,13 @@ const defaultValues = {
 const { parse } = createParser(defaultValues);
 
 const parsed1 = await parse({ username: 'eegli' });
-const parsed2 = await parse(['--username', 'ilgee']);
+const parsed2 = await parse(['--username', 'eegli']);
 
 assert.deepStrictEqual(parsed1, { username: 'eegli' });
-assert.deepStrictEqual(parsed2, { username: 'ilgee' });
+assert.deepStrictEqual(parsed2, { username: 'eegli', _: [] });
 ```
 
-## Installation
+## Install
 
 Node.js v14 or later is required.
 
@@ -46,7 +46,7 @@ or
 npm i @eegli/tinyparse
 ```
 
-## Usage example
+## Usage
 
 Tinyparse binds a parser to some default values you feed it.
 
@@ -54,7 +54,7 @@ Tinyparse binds a parser to some default values you feed it.
 
 - First argument: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
 
-- Second argument: Options object. You can specify both a _file flag_ (whose value will point to a file) and options per key.
+- Second argument: Options object. You can specify both a _file flag_ (whose flag value will point to a file) and options per key.
 
 Note that most arguments and options are optional. IntelliSense and
 TypeScript will show you the detailed signatures and what is required.
@@ -113,7 +113,9 @@ const userInput = {
   username: 'eegli',
   age: 12,
 };
+
 const parsedInput = await parse(userInput);
+
 assert.deepStrictEqual(parsedInput, {
   username: 'eegli',
   age: 12,
@@ -121,36 +123,40 @@ assert.deepStrictEqual(parsedInput, {
 });
 
 // Read from file "github.json" with content {"username": "eegli"}
-process.argv = ['--age', '12', '-ghp', '--config', 'github.json'];
+process.argv = ['profile', '--age', '12', '-ghp', '--config', 'github.json'];
 
 const parsedArgv = await parse(process.argv);
+
+// When parsing an array of strings, positional arguments are available on the _ property
 assert.deepStrictEqual(parsedArgv, {
+  _: ['profile'],
   username: 'eegli',
   age: 12,
   hasGithubProfile: true,
 });
 
-help();
-`Usage
+// Print available options with descriptions. Optionally, set a title and a base command showing the usage of positional arguments. Everything else is auto-generated
+help('CLI usage', 'my-cli <message> [flags]');
+`
+CLI usage
 
-Required
-   --username [string]
-   Your custom username
+my-cli <message> [flags]
 
-Optional
-   --age [number]
+Required flags
+    --username [string]
+    Your custom username
 
-   -ghp, --hasGithubProfile [boolean]
-   Indicate whether you have a Github profile
+Optional flags
+    --age [number]
 
-   --config [string]
-   Path to your Github config file
+    -ghp, --hasGithubProfile [boolean]
+    Indicate whether you have a Github profile
 `;
 ```
 
 ### Parsing required properties
 
-A key can be marked as required. If a required key is not present in the input, a `ValidationError` is thrown.
+A property - or flag - can be marked as required. If a required property is not present in the input, a `ValidationError` is thrown.
 
 This works for object literals as well as string array arguments.
 
@@ -193,17 +199,21 @@ try {
 
 **Unknown arguments are ignored.**
 
-## Usage with string arrays (e.g. process.argv)
+## CLI Arguments
 
 ### Glossary and support
 
 Definitions from [CLI Flags Explained](https://oclif.io/blog/2019/02/20/cli-flags-explained#short-flag).
 
-Tinyparse expects that **every** CLI argument is specified with a long or short flag. It ignores standalone arguments. A valid key-value pair consists of a flag followed by the flag argument. The order of flag + arg pairs does not matter.
+Tinyparse allows both **positional arguments** and **long or short flags**, which start with a hyphen (`-`). A valid flag-value pair consists of a flag followed by the flag value, separated by a whitespace. The order of flag + arg pairs does not matter.
+
+All arguments until the first flag are considered positional arguments. Later "positional" arguments that follow a flag value are ignored (see example below).
+
+**Positional arguments are _not_ validated, they are purely collected.**
 
 | Example                       | Abstract format                     | Support |
 | ----------------------------- | ----------------------------------- | ------- |
-| `run-cli src/app`             | `[command] [arg]`                   | ❌      |
+| `run-cli src/app`             | `[command] [arg]`                   | ✅      |
 | `run-cli --directory src/app` | `[command] [long flag] [flag arg]`  | ✅      |
 | `run-cli -d src/app`          | `[command] [short flag] [flag arg]` | ✅      |
 | `run-cli --verbose`           | `[command] [boolean long flag]`     | ✅      |
@@ -219,6 +229,7 @@ import assert from 'node:assert/strict';
 
 const { parse } = createParser(
   {
+    name: '',
     hasGithubProfile: false,
     hasGithubPlus: true,
     followerCount: 0,
@@ -233,14 +244,21 @@ const { parse } = createParser(
   }
 );
 const parsed = await parse([
-  '--hasGithubProfile',
+  'congratulate', // Positional argument
+  '--name',
+  '"Eric Egli"', // Value with spaces
+  '--hasGithubProfile', // Boolean flag
   '--hasGithubPlus',
-  '-fc',
-  '10',
+  '-fc', // Short flag
+  '10', // Will be parsed as number
+  'ignoredProperty', // This property is ignored
   '--birthYear',
-  '2018',
+  '2018', // Will remain a string
 ]);
+
 assert.deepStrictEqual(parsed, {
+  _: ['congratulate'],
+  name: '"Eric Egli"',
   hasGithubPlus: true,
   hasGithubProfile: true,
   followerCount: 10,
@@ -256,10 +274,14 @@ Notice how:
 
 ### Good to know when parsing strings
 
-- `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag argument. Passing arguments such as `["--password", "-x8ap!"]` results in undefined behavior
-- If you really need to parse a value that starts with `-`, consider reading it from a file instead. This is a little less convenient but works for any value
+- `-` is a reserved prefix. Any string that starts with `-` will be treated as a flag and not a flag value. Flag values such as `["--password", "-x8ap!"]` should be wrapped in quotes!
 - Later values will overwrite earlier values. `["--password", "abc", "--password", "xyz"]` will parse to `password: "xyz"`
+- Remember that it's never a good idea to read secrets directly from flags. [Read them from a file instead](https://clig.dev/#arguments-and-flags)
 
 ## More examples
 
-For more examples, [check the extensive test suites](test) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
+For more examples, [check the extensive test suites](test) or play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts).
+
+## Resources
+
+This project has been guided by the amazing [Command Line Interface Guidelines](https://clig.dev/) by Aanand Prasad, Ben Firshman, Carl Tashian and Eva Parish.

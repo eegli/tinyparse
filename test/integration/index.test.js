@@ -14,7 +14,7 @@ describe('Integration and docs', () => {
     const parsed2 = await parse(['--username', 'eegli']);
 
     assert.deepStrictEqual(parsed1, { username: 'eegli' });
-    assert.deepStrictEqual(parsed2, { username: 'eegli' });
+    assert.deepStrictEqual(parsed2, { username: 'eegli', _: [] });
   });
 
   test('full example', async () => {
@@ -78,6 +78,7 @@ describe('Integration and docs', () => {
 
     const parsedArgv = await parse(process.argv);
     assert.deepStrictEqual(parsedArgv, {
+      _: [],
       username: 'eegli',
       age: 12,
       hasGithubProfile: true,
@@ -99,6 +100,7 @@ describe('Integration and docs', () => {
   test('process argv', async () => {
     const { parse } = createParser(
       {
+        name: '',
         hasGithubProfile: false,
         hasGithubPlus: true,
         followerCount: 0,
@@ -113,14 +115,21 @@ describe('Integration and docs', () => {
       }
     );
     const parsed = await parse([
-      '--hasGithubProfile',
+      'congratulate', // Positional argument
+      '--name',
+      '"Eric Egli"', // Value with spaces
+      '--hasGithubProfile', // Boolean flag
       '--hasGithubPlus',
-      '-fc',
-      '10',
+      '-fc', // Short flag
+      '10', // Will be parsed as number
+      'ignoredProperty', // This property is ignored
       '--birthYear',
-      '2018',
+      '2018', // Will remain a string
     ]);
+
     assert.deepStrictEqual(parsed, {
+      _: ['congratulate'],
+      name: '"Eric Egli"',
       hasGithubPlus: true,
       hasGithubProfile: true,
       followerCount: 10,

@@ -1,24 +1,30 @@
 import { FilePathArg, InternalOptions, SimpleRecord } from './types';
 
-type DisplayHelp = {
+interface HelpOptions {
   defaultValues: SimpleRecord;
-  options?: InternalOptions;
+  options: InternalOptions;
   filePathArg?: FilePathArg;
   title?: string;
-};
+  baseCommand?: string;
+}
 
 export const displayHelp = ({
   defaultValues,
-  options = new Map(),
-  title = 'Usage',
+  options,
   filePathArg,
-}: DisplayHelp): string => {
+  title,
+  baseCommand,
+}: HelpOptions): string => {
   // Required properties first
   const opts = [...options.values()].sort((a, b) =>
     a.required === b.required ? 0 : a.required ? -1 : 1
   );
 
-  let str = title;
+  let str = title || 'Usage';
+
+  if (baseCommand) {
+    str += `\n\n${baseCommand}`;
+  }
 
   if (opts.length > 0) {
     str += '\n\n';
@@ -26,7 +32,7 @@ export const displayHelp = ({
 
   // Maybe no option is required
   if (opts[0]?.required) {
-    str += 'Required\n';
+    str += 'Required flags\n';
   }
 
   let optionalFlag = true;
@@ -36,7 +42,7 @@ export const displayHelp = ({
     const isLast = idx === opts.length - 1;
 
     if (optionalFlag && !required) {
-      str += 'Optional\n';
+      str += 'Optional flags\n';
       optionalFlag = false;
     }
 

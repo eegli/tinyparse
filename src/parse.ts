@@ -4,18 +4,22 @@ import { isSameType } from './utils';
 
 const requiredSym = Symbol('isRequired');
 
+type ForwardArgs = Record<string, unknown>;
+
 type ParseObjLiteral<T> = {
   defaultValues: T;
   input: Partial<T>;
-  options?: InternalOptions;
+  options: InternalOptions;
+  forwardArgs?: ForwardArgs;
 };
 
 // eslint-disable-next-line require-await
 export async function parseObjectLiteral<T extends SimpleRecord>({
   defaultValues,
   input,
-  options = new Map(),
-}: ParseObjLiteral<T>): Promise<T> {
+  options,
+  forwardArgs,
+}: ParseObjLiteral<T>): Promise<T & ForwardArgs> {
   const requiredArgs = [...options.values()].filter((opts) => opts.required);
 
   const config = new Map<string, Value | symbol>(Object.entries(defaultValues));
@@ -70,5 +74,8 @@ export async function parseObjectLiteral<T extends SimpleRecord>({
     }
   }, <string[]>[]);
 
-  return Object.fromEntries(config) as T;
+  return {
+    ...(Object.fromEntries(config) as T),
+    ...forwardArgs,
+  };
 }
