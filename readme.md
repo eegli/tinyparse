@@ -32,7 +32,7 @@ assert.deepStrictEqual(parsed1, { username: 'eegli' });
 assert.deepStrictEqual(parsed2, { username: 'eegli', _: [] });
 ```
 
-## Installation
+## Install
 
 Node.js v14 or later is required.
 
