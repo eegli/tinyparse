@@ -74,15 +74,29 @@ describe('Integration and docs', () => {
     });
 
     // Read from file "github.json" with content {"username": "eegli"}
-    process.argv = ['--age', '12', '-ghp', '--config', 'github.json'];
+    process.argv = [
+      'profile',
+      '--age',
+      '12',
+      '-ghp',
+      '--config',
+      'github.json',
+    ];
 
     const parsedArgv = await parse(process.argv);
+
+    // When parsing an array of strings, positional arguments are available on the _ property
     assert.deepStrictEqual(parsedArgv, {
-      _: [],
+      _: ['profile'],
       username: 'eegli',
       age: 12,
       hasGithubProfile: true,
     });
+
+    // Print available options with descriptions. Optionally, set a
+    // title and a base command showing the usage of positional
+    // arguments. Everything else is auto-generated
+    help('CLI usage', 'my-cli <message> [flags]');
   });
   test('invalid types example', async () => {
     const { parse } = createParser({ username: '' });

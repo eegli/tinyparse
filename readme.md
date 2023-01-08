@@ -135,7 +135,9 @@ assert.deepStrictEqual(parsedArgv, {
   hasGithubProfile: true,
 });
 
-// Print available options with descriptions. Optionally, set a title and a base command showing the usage of positional arguments. Everything else is auto-generated
+// Print available options with descriptions. Optionally, set a
+// title and a base command showing the usage of positional
+// arguments. Everything else is auto-generated
 help('CLI usage', 'my-cli <message> [flags]');
 `
 CLI usage
