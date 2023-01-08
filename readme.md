@@ -46,7 +46,7 @@ or
 npm i @eegli/tinyparse
 ```
 
-## Usage example
+## Usage
 
 Tinyparse binds a parser to some default values you feed it.
 
@@ -199,7 +199,7 @@ try {
 
 **Unknown arguments are ignored.**
 
-## Usage with string arrays (e.g. process.argv)
+## CLI Arguments
 
 ### Glossary and support
 
