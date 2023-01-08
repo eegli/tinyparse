@@ -7,7 +7,7 @@
 _Like [Joi](https://joi.dev/) and [Yargs](https://yargs.js.org/) had a baby but it's not as capable as its parents._
 
 - TypeScript first
-- Positional flag arguments support
+- Positional & flag arguments support
 - JSON file reading built-in
 - Zero dependencies
 
