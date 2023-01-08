@@ -1,4 +1,6 @@
+import decamelize from './decamelize';
 import {
+  InternalOption,
   InternalOptions,
   ParsingOptions,
   PositionalArgs,
@@ -10,10 +12,22 @@ import { parseJSONFile } from './utils';
 export function transformOptions(
   parsingOptions?: ParsingOptions
 ): InternalOptions {
+  const shoulDecamelize = parsingOptions?.decamelize;
   return Object.entries(parsingOptions?.options || {}).reduce(
     (acc, [name, opts]) => {
       if (!opts) return acc;
-      acc.set(name, { ...opts, name });
+
+      const transformedOptions: InternalOption = {
+        ...opts,
+        name,
+      };
+      if (shoulDecamelize) {
+        transformedOptions.decamelizedKey = decamelize(name, {
+          separator: '-',
+        });
+      }
+
+      acc.set(name, transformedOptions);
       return acc;
     },
     new Map()

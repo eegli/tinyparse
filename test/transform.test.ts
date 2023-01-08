@@ -4,10 +4,10 @@ describe('External options transformer', () => {
   test('transforms options to internal structure', () => {
     const res = transformOptions({
       options: {
-        test: {
+        testOne: {
           required: true,
         },
-        test2: {
+        testTwo: {
           description: 'another property',
         },
       },
@@ -15,17 +15,46 @@ describe('External options transformer', () => {
     expect(res).toStrictEqual(
       new Map([
         [
-          'test',
+          'testOne',
           {
-            name: 'test',
+            name: 'testOne',
             required: true,
           },
         ],
         [
-          'test2',
+          'testTwo',
           {
+            name: 'testTwo',
             description: 'another property',
-            name: 'test2',
+          },
+        ],
+      ])
+    );
+    expect(transformOptions({})).toStrictEqual(new Map());
+    expect(transformOptions()).toStrictEqual(new Map());
+  });
+  test('respects decamelize option', () => {
+    const res = transformOptions({
+      decamelize: true,
+      options: {
+        testOne: {},
+        testTwo: {},
+      },
+    });
+    expect(res).toStrictEqual(
+      new Map([
+        [
+          'testOne',
+          {
+            name: 'testOne',
+            decamelizedKey: 'test-one',
+          },
+        ],
+        [
+          'testTwo',
+          {
+            name: 'testTwo',
+            decamelizedKey: 'test-two',
           },
         ],
       ])

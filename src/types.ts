@@ -17,6 +17,7 @@ export type ParsingOptions<
   K = string,
   V = K extends Record<string, unknown> ? keyof K : K extends string ? K : never
 > = {
+  decamelize?: boolean;
   filePathArg?: FilePathArg;
   options?: {
     [K in Extract<V, string>]?: BaseFlagOptions;
@@ -27,7 +28,12 @@ export type PositionalArgs = string[];
 
 export type WithPositionalArgs<T> = T & { _: PositionalArgs };
 
-export type InternalOptions = Map<string, BaseFlagOptions & { name: string }>;
+export type InternalOption = BaseFlagOptions & {
+  name: string;
+  decamelizedKey?: string;
+};
+
+export type InternalOptions = Map<string, InternalOption>;
 
 export type SimpleRecord<T extends string = string> = Record<T, Value>;
 
