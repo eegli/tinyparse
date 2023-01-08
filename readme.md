@@ -135,21 +135,22 @@ assert.deepStrictEqual(parsedArgv, {
   hasGithubProfile: true,
 });
 
-help();
-`Usage
+// Print available options with descriptions. Optionally, set a title and a base command showing the usage of positional arguments. Everything else is auto-generated
+help('CLI usage', 'my-cli <message> [flags]');
+`
+CLI usage
 
-Required
-   --username [string]
-   Your custom username
+my-cli <message> [flags]
 
-Optional
-   --age [number]
+Required flags
+    --username [string]
+    Your custom username
 
-   -ghp, --hasGithubProfile [boolean]
-   Indicate whether you have a Github profile
+Optional flags
+    --age [number]
 
-   --config [string]
-   Path to your Github config file
+    -ghp, --hasGithubProfile [boolean]
+    Indicate whether you have a Github profile
 `;
 ```
 

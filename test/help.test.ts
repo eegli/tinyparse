@@ -79,4 +79,53 @@ describe('Helper text', () => {
     const { help } = createParser(defaultValues);
     expect(help()).toMatchInlineSnapshot(`"Usage"`);
   });
+  it('matches readme example', () => {
+    const { help } = createParser(
+      {
+        username: '',
+        age: 0,
+        hasGithubProfile: false,
+      },
+      {
+        options: {
+          username: {
+            // Fail if there is no value for "username"
+            required: true,
+            description: 'Your custom username',
+          },
+          age: {
+            // A custom validator that will receive the value for
+            // "age". It must return a boolean
+            customValidator: {
+              isValid: (value) => typeof value === 'number' && value > 0,
+              // The error message for when validation fails
+              errorMessage: (v) => `${v} is not a positive number`,
+            },
+          },
+          hasGithubProfile: {
+            description: 'Indicate whether you have a Github profile',
+            // Short flag alias. Only takes effect when parsing an
+            // array of strings
+            shortFlag: '-ghp',
+          },
+        },
+      }
+    );
+    expect(help('CLI usage', 'my-cli <message> [flags]'))
+      .toMatchInlineSnapshot(`
+      "CLI usage
+
+      my-cli <message> [flags]
+
+      Required flags
+         --username [string]
+         Your custom username
+
+      Optional flags
+         --age [number]
+
+         -ghp, --hasGithubProfile [boolean]
+         Indicate whether you have a Github profile"
+    `);
+  });
 });
