@@ -1,19 +1,19 @@
 import decamelize from './lib/decamelize';
-import { FilePathFlag, InternalOptions, ParserParams } from './types';
+import { FilePathArg, InternalOptions, ParserParams } from './types';
 
 export class Options {
   private readonly _opts: InternalOptions = new Map();
   private readonly _aliases: Map<string, string> = new Map();
 
   public readonly shouldDecamelize: boolean;
-  public readonly filePathFlag: FilePathFlag | undefined;
+  public readonly filePathFlag?: FilePathArg;
 
   constructor(keys: string[], params: ParserParams = {}) {
     for (const key of keys) {
       this._opts.set(key, params.options?.[key] || {});
     }
     this.shouldDecamelize = params.decamelize || false;
-    this.filePathFlag = params.filePathFlag;
+    this.filePathFlag = params.filePathArg;
 
     for (const [key, opts] of this._opts) {
       if (opts.shortFlag) {

@@ -21,7 +21,7 @@ describe('Options', () => {
     const options = new Options(['first', 'secondSecond', 'thirdthird'], {
       options: { first: { shortFlag: '-f' } },
       decamelize: true,
-      filePathFlag: {
+      filePathArg: {
         longFlag: '--file',
       },
     });

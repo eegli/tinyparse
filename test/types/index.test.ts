@@ -36,7 +36,7 @@ type Params = Parameters<typeof createParser<Input>>[1];
 
 expectAssignable<Params>({});
 expectAssignable<Params>({
-  filePathFlag: {
+  filePathArg: {
     longFlag: '--file' as const,
   },
 });

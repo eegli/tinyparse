@@ -8,7 +8,7 @@ export interface BaseArgOptions {
   };
 }
 
-export type FilePathFlag = {
+export type FilePathArg = {
   longFlag: `--${string}`;
   description?: string;
 };
@@ -23,7 +23,7 @@ export type ParserParams<T extends SimpleRecord = SimpleRecord> = {
   options?: ArgOptions<T>;
 } & {
   decamelize?: boolean;
-  filePathFlag?: FilePathFlag;
+  filePathArg?: FilePathArg;
 };
 export type PositionalArgs = string[];
 

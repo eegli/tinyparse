@@ -10,7 +10,7 @@ describe('Helper text', () => {
     };
 
     const { help } = createParser(defaultValues, {
-      filePathFlag: {
+      filePathArg: {
         longFlag: '--config',
         description: 'The config file to use',
       },
@@ -59,7 +59,7 @@ describe('Helper text', () => {
   it('creates helper text for file flag only', () => {
     const { help } = createParser(
       {},
-      { filePathFlag: { longFlag: '--config' } }
+      { filePathArg: { longFlag: '--config' } }
     );
     expect(help()).toMatchInlineSnapshot(`
       "Usage
