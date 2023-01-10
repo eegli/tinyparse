@@ -1,9 +1,9 @@
-import { FilePathArg, InternalOptions, SimpleRecord } from './types';
+import { Options } from './options';
+import { SimpleRecord } from './types';
 
 interface HelpOptions {
   defaultValues: SimpleRecord;
-  options: InternalOptions;
-  filePathArg?: FilePathArg;
+  options: Options;
   title?: string;
   baseCommand?: string;
 }
@@ -11,13 +11,12 @@ interface HelpOptions {
 export const displayHelp = ({
   defaultValues,
   options,
-  filePathArg,
   title,
   baseCommand,
 }: HelpOptions): string => {
   // Required properties first
-  const opts = [...options.values()].sort((a, b) =>
-    a.required === b.required ? 0 : a.required ? -1 : 1
+  const sortedOptions = [...options.entries()].sort(([, optA], [, optB]) =>
+    optA.required === optB.required ? 0 : optA.required ? -1 : 1
   );
 
   let str = title || 'Usage';
@@ -26,20 +25,21 @@ export const displayHelp = ({
     str += `\n\n${baseCommand}`;
   }
 
-  if (opts.length > 0) {
+  if (sortedOptions.length > 0) {
     str += '\n\n';
   }
 
   // Maybe no option is required
-  if (opts[0]?.required) {
+  const hasRequiredFlag = sortedOptions[0]?.[1].required;
+  if (hasRequiredFlag) {
     str += 'Required flags\n';
   }
 
   let optionalFlag = true;
   const tab = '   ';
 
-  opts.forEach(({ name, description, required, shortFlag }, idx) => {
-    const isLast = idx === opts.length - 1;
+  sortedOptions.forEach(([name, { description, required, shortFlag }], idx) => {
+    const isLast = idx === sortedOptions.length - 1;
 
     if (optionalFlag && !required) {
       str += 'Optional flags\n';
@@ -53,8 +53,8 @@ export const displayHelp = ({
     str += isLast ? '' : '\n\n';
   });
 
-  if (filePathArg) {
-    const { longFlag, description } = filePathArg;
+  if (options.filePathFlag) {
+    const { longFlag, description } = options.filePathFlag;
     str += `\n\n${tab}${longFlag} [string]\n`;
     str += description ? `${tab}${description}\n` : '';
   }

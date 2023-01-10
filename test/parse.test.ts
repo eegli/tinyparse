@@ -158,6 +158,20 @@ describe('Parsing with options', () => {
     await expect(parse(input)).resolves.toStrictEqual(expected);
   });
 
+  it('handles decamelization setting', async () => {
+    const { parse } = createParser(defaultValues, {
+      global: { decamelize: true },
+    });
+    const input = ['--string-prop', 'hello', '--numProp', '1'];
+    const expected = {
+      ...defaultValues,
+      ...positionalArgs,
+      stringProp: 'hello',
+      numProp: 1,
+    };
+    await expect(parse(input)).resolves.toStrictEqual(expected);
+  });
+
   it('rejects for missing required args', async () => {
     const { parse } = createParser(defaultValues, {
       options: {

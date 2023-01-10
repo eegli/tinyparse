@@ -1,4 +1,4 @@
-interface BaseFlagOptions {
+export interface BaseArgOptions {
   required?: boolean;
   description?: string;
   shortFlag?: `-${string}`;
@@ -8,33 +8,33 @@ interface BaseFlagOptions {
   };
 }
 
-export type FilePathArg = {
+export type FilePathFlag = {
   longFlag: `--${string}`;
   description?: string;
 };
 
-export type ParsingOptions<
-  K = string,
-  V = K extends Record<string, unknown> ? keyof K : K extends string ? K : never
-> = {
+export type GlobalOptions = {
   decamelize?: boolean;
-  filePathArg?: FilePathArg;
-  options?: {
-    [K in Extract<V, string>]?: BaseFlagOptions;
-  };
+  filePathFlag?: FilePathFlag;
+};
+
+export type ArgOptions<
+  O extends Record<string, unknown> = Record<string, BaseArgOptions>
+> = {
+  [K in Extract<keyof O, string>]?: BaseArgOptions;
+};
+
+export type ParserParams<T extends SimpleRecord = SimpleRecord> = {
+  options?: ArgOptions<T>;
+  global?: GlobalOptions;
 };
 
 export type PositionalArgs = string[];
 
 export type WithPositionalArgs<T> = T & { _: PositionalArgs };
 
-export type InternalOption = BaseFlagOptions & {
-  name: string;
-  decamelizedKey?: string;
-};
+export type InternalOptions = Map<string, BaseArgOptions>;
 
-export type InternalOptions = Map<string, InternalOption>;
-
-export type SimpleRecord<T extends string = string> = Record<T, Value>;
+export type SimpleRecord = Record<string, Value>;
 
 export type Value = string | number | boolean;

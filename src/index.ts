@@ -1,16 +1,8 @@
+import { ArgvParser } from './argv';
 import { displayHelp } from './help';
-import { parseObjectLiteral } from './parse';
-import {
-  buildWithPositionalArgs,
-  transformArgv,
-  transformOptions,
-} from './transform';
-import {
-  ParsingOptions,
-  PositionalArgs,
-  SimpleRecord,
-  WithPositionalArgs,
-} from './types';
+import { Options } from './options';
+import { Parser } from './parser';
+import { ParserParams, SimpleRecord, WithPositionalArgs } from './types';
 
 export { ValidationError } from './error';
 
@@ -22,28 +14,28 @@ export { ValidationError } from './error';
  */
 export function createParser<T extends SimpleRecord>(
   defaultValues: T,
-  parsingOptions?: ParsingOptions<T>
+  params?: ParserParams<T>
 ) {
-  const options = transformOptions(parsingOptions);
-  const filePathArg = parsingOptions?.filePathArg;
+  const options = new Options(
+    params?.options,
+    Object.keys(defaultValues),
+    params?.global
+  );
 
-  function parse(input?: Partial<T>): Promise<T>;
-  function parse(input?: string[]): Promise<WithPositionalArgs<T>>;
-  function parse(input: Partial<T> | string[] = {}): Promise<T> {
-    let positionalArgs: PositionalArgs | undefined;
+  async function parse(input?: Partial<T>): Promise<T>;
+  async function parse(input?: string[]): Promise<WithPositionalArgs<T>>;
+  async function parse(input: Partial<T> | string[] = {}): Promise<T> {
     if (Array.isArray(input)) {
-      [input, positionalArgs] = transformArgv<T>({
-        argv: input,
-        filePathFlag: filePathArg?.longFlag,
-        options,
+      const parser = new ArgvParser<T>(defaultValues);
+      const [transformed, positionals] = parser.transform(input, {
+        aliases: options.aliases,
+        shouldDecamelize: options.shouldDecamelize,
+        filePathFlag: options.filePathFlag?.longFlag,
       });
+      const parsed = await parser.parse(transformed, options.options);
+      return parser.build(parsed, positionals);
     }
-    return parseObjectLiteral({
-      defaultValues,
-      input,
-      options,
-      forwardArgs: buildWithPositionalArgs(positionalArgs),
-    });
+    return new Parser<T>(defaultValues).parse(input, options.options);
   }
 
   return {
@@ -52,7 +44,6 @@ export function createParser<T extends SimpleRecord>(
         defaultValues,
         options,
         title,
-        filePathArg,
         baseCommand,
       });
     },
