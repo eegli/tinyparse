@@ -1,47 +1,15 @@
-import { transformArgv, transformOptions } from '../src/transform';
-
-describe('External options transformer', () => {
-  test('transforms options to internal structure', () => {
-    const res = transformOptions({
-      options: {
-        test: {
-          required: true,
-        },
-        test2: {
-          description: 'another property',
-        },
-      },
-    });
-    expect(res).toStrictEqual(
-      new Map([
-        [
-          'test',
-          {
-            name: 'test',
-            required: true,
-          },
-        ],
-        [
-          'test2',
-          {
-            description: 'another property',
-            name: 'test2',
-          },
-        ],
-      ])
-    );
-    expect(transformOptions({})).toStrictEqual(new Map());
-    expect(transformOptions()).toStrictEqual(new Map());
-  });
-});
+import { ArgvParser } from '../src/argv';
 
 describe('Argv transformer', () => {
   it('parses empty', () => {
-    const c = transformArgv({ argv: [] });
-    expect(c).toStrictEqual([{}, []]);
+    const parser = new ArgvParser({});
+    expect(parser.transform([], { aliases: new Map() })).toStrictEqual([
+      {},
+      [],
+    ]);
   });
 
-  const orders: Parameters<typeof transformArgv>[0][] = [
+  const orders = [
     {
       argv: [
         '--boolProp1',
@@ -85,11 +53,10 @@ describe('Argv transformer', () => {
   ];
   orders.forEach((variant, idx) => {
     it('works with order ' + idx, () => {
+      const parser = new ArgvParser({});
       expect(
-        transformArgv({
-          argv: variant.argv,
-          options: variant.options,
-          filePathFlag: variant.filePathFlag,
+        parser.transform(variant.argv, {
+          aliases: new Map(),
         })
       ).toStrictEqual([
         {
@@ -105,20 +72,18 @@ describe('Argv transformer', () => {
 });
 
 describe('Argv transformer with options', () => {
-  it('transforms empty', () => {
-    const c = transformArgv({ argv: ['-s', '123'] });
-    expect(c).toStrictEqual([{}, []]);
-  });
   it('supports long and short flags', () => {
-    const c = transformArgv({
-      argv: [
+    const parser = new ArgvParser({});
+
+    const transformed = parser.transform(
+      [
         'positional_1',
         'positional_2',
         '-thisisignored',
         'thisisignored',
         '--secret',
         '123',
-        '--input',
+        '--input-message',
         'this is a string',
         '--notignored',
         '-p',
@@ -131,14 +96,19 @@ describe('Argv transformer with options', () => {
         '--doubleQuotes',
         "'-this is a string'",
       ],
-      options: new Map([['password', { name: 'password', shortFlag: '-p' }]]),
-    });
-    expect(c).toStrictEqual([
+      {
+        aliases: new Map([
+          ['-p', 'password'],
+          ['input-message', 'inputMessage'],
+        ]),
+      }
+    );
+    expect(transformed).toStrictEqual([
       {
         secret: '123',
         password: 'MyPassword',
         notignored: true,
-        input: 'this is a string',
+        inputMessage: 'this is a string',
         sinlgeQuotes: '"-this is a string"',
         doubleQuotes: "'-this is a string'",
       },
@@ -146,12 +116,12 @@ describe('Argv transformer with options', () => {
     ]);
   });
   it('parses from simple JSON files', () => {
-    transformArgv({ argv: [] });
-    const c = transformArgv({
-      argv: ['--config', 'test/config.json'],
+    const parser = new ArgvParser({});
+    const transformed = parser.transform(['--config', 'test/config.json'], {
+      aliases: new Map([['-p', '--password']]),
       filePathFlag: '--config',
     });
-    expect(c).toStrictEqual([
+    expect(transformed).toStrictEqual([
       {
         username: 'eegli',
       },
@@ -159,10 +129,11 @@ describe('Argv transformer with options', () => {
     ]);
   });
   it('throws for invalid files', () => {
-    transformArgv({ argv: [] });
+    const parser = new ArgvParser({});
+
     expect(() => {
-      transformArgv({
-        argv: ['--config', 'config.json'],
+      parser.transform(['--config', 'config.json'], {
+        aliases: new Map([['-p', '--password']]),
         filePathFlag: '--config',
       });
     }).toThrow('config.json is not a valid JSON file');
