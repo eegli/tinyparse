@@ -31,7 +31,7 @@ describe('Integration and docs', () => {
       {
         // Parse a file (for example, a config file). Only takes
         // effect when parsing an array of strings
-        filePathArg: {
+        filePathFlag: {
           longFlag: '--config',
           description: 'Path to your Github config file',
         },

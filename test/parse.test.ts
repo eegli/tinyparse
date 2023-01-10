@@ -159,9 +159,7 @@ describe('Parsing with options', () => {
   });
 
   it('handles decamelization setting', async () => {
-    const { parse } = createParser(defaultValues, {
-      global: { decamelize: true },
-    });
+    const { parse } = createParser(defaultValues, { decamelize: true });
     const input = ['--string-prop', 'hello', '--numProp', '1'];
     const expected = {
       ...defaultValues,

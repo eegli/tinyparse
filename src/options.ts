@@ -1,25 +1,16 @@
 import decamelize from './decamelize';
-import {
-  ArgOptions,
-  FilePathFlag,
-  GlobalOptions,
-  InternalOptions,
-} from './types';
+import { FilePathFlag, InternalOptions, ParserParams } from './types';
 
 export class Options {
   private readonly _opts: InternalOptions = new Map();
   public readonly shouldDecamelize: boolean;
   public readonly filePathFlag: FilePathFlag | undefined;
-  constructor(
-    keys: string[] = [],
-    keyOptions: ArgOptions = {},
-    globalOptions: GlobalOptions = {}
-  ) {
+  constructor(keys: string[] = [], params: ParserParams = {}) {
     for (const key of keys) {
-      this._opts.set(key, keyOptions[key] || {});
+      this._opts.set(key, params.options?.[key] || {});
     }
-    this.shouldDecamelize = globalOptions.decamelize || false;
-    this.filePathFlag = globalOptions.filePathFlag;
+    this.shouldDecamelize = params.decamelize || false;
+    this.filePathFlag = params.filePathFlag;
   }
 
   public get aliases(): Map<string, string> {

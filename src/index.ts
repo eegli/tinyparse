@@ -16,11 +16,7 @@ export function createParser<T extends SimpleRecord>(
   defaultValues: T,
   params?: ParserParams<T>
 ) {
-  const options = new Options(
-    Object.keys(defaultValues),
-    params?.options,
-    params?.global
-  );
+  const options = new Options(Object.keys(defaultValues), params);
 
   async function parse(input?: Partial<T>): Promise<T>;
   async function parse(input?: string[]): Promise<WithPositionalArgs<T>>;

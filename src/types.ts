@@ -26,8 +26,7 @@ export type ArgOptions<
 
 export type ParserParams<T extends SimpleRecord = SimpleRecord> = {
   options?: ArgOptions<T>;
-  global?: GlobalOptions;
-};
+} & GlobalOptions;
 
 export type PositionalArgs = string[];
 
