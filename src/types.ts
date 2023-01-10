@@ -1,7 +1,7 @@
 export interface BaseArgOptions {
   required?: boolean;
   description?: string;
-  shortFlag?: `-${string}`;
+  shortFlag?: string;
   customValidator?: {
     isValid: (value: unknown) => boolean;
     errorMessage: (value: unknown) => string;
@@ -9,7 +9,8 @@ export interface BaseArgOptions {
 }
 
 export type FilePathArg = {
-  longFlag: `--${string}`;
+  longFlag: string;
+  shortFlag?: string;
   description?: string;
 };
 
