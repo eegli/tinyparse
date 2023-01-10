@@ -13,11 +13,6 @@ export type FilePathFlag = {
   description?: string;
 };
 
-export type GlobalOptions = {
-  decamelize?: boolean;
-  filePathFlag?: FilePathFlag;
-};
-
 export type ArgOptions<
   O extends Record<string, unknown> = Record<string, BaseArgOptions>
 > = {
@@ -26,8 +21,10 @@ export type ArgOptions<
 
 export type ParserParams<T extends SimpleRecord = SimpleRecord> = {
   options?: ArgOptions<T>;
-} & GlobalOptions;
-
+} & {
+  decamelize?: boolean;
+  filePathFlag?: FilePathFlag;
+};
 export type PositionalArgs = string[];
 
 export type WithPositionalArgs<T> = T & { _: PositionalArgs };

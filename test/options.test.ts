@@ -1,22 +1,17 @@
 import { Options } from '../src/options';
 
 describe('Options', () => {
-  test('Initial key merging', () => {
-    const opt1 = new Options(['a', 'b', 'c']);
-    const opt2 = new Options([], {
-      options: { a: {}, b: {}, c: {} },
-    });
-    expect([...opt1.keys()]).toStrictEqual(['a', 'b', 'c']);
-    expect([...opt2.keys()]).toStrictEqual([]);
-  });
-  test('entries', () => {
-    let options = new Options(['b', 'c']);
-    expect(options.get('a')).toStrictEqual({});
+  test('key merging', () => {
+    let options = new Options(['a', 'b']);
+    expect([...options.entries()]).toStrictEqual([
+      ['a', {}],
+      ['b', {}],
+    ]);
 
     options = new Options(['a', 'b'], {
-      options: { a: { description: 'void' }, x: {} },
+      options: { a: { description: 'void' }, ignoreThis: {} },
     });
-    expect(options.get('a')).toStrictEqual({ description: 'void' });
+
     expect([...options.entries()]).toStrictEqual([
       ['a', { description: 'void' }],
       ['b', {}],

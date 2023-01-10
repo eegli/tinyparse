@@ -6,7 +6,7 @@ module.exports = {
     printBasicPrototype: false,
   },
   roots: ['<rootDir>/src', '<rootDir>/test'],
-  collectCoverageFrom: ['<rootDir>/src/**'],
+  collectCoverageFrom: ['<rootDir>/src/**', '!<rootDir>/src/lib/**'],
   coverageThreshold: {
     global: {
       statements: 90,

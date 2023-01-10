@@ -1,46 +1,41 @@
-import decamelize from './decamelize';
+import decamelize from './lib/decamelize';
 import { FilePathFlag, InternalOptions, ParserParams } from './types';
 
 export class Options {
   private readonly _opts: InternalOptions = new Map();
+  private readonly _aliases: Map<string, string> = new Map();
+
   public readonly shouldDecamelize: boolean;
   public readonly filePathFlag: FilePathFlag | undefined;
-  constructor(keys: string[] = [], params: ParserParams = {}) {
+
+  constructor(keys: string[], params: ParserParams = {}) {
     for (const key of keys) {
       this._opts.set(key, params.options?.[key] || {});
     }
     this.shouldDecamelize = params.decamelize || false;
     this.filePathFlag = params.filePathFlag;
-  }
 
-  public get aliases(): Map<string, string> {
-    const aliases = new Map<string, string>();
     for (const [key, opts] of this._opts) {
       if (opts.shortFlag) {
-        aliases.set(opts.shortFlag, key);
+        this._aliases.set(opts.shortFlag, key);
       }
       if (this.shouldDecamelize) {
         const decamelized = decamelize(key, { separator: '-' });
         if (decamelized !== key) {
-          aliases.set(decamelized, key);
+          this._aliases.set(decamelized, key);
         }
       }
     }
-    return aliases;
+    this;
+  }
+
+  public get aliases() {
+    return this._aliases;
   }
   public get options() {
     return this._opts;
   }
-  public get(key: string) {
-    if (!key) return this._opts;
-    return this._opts.get(key) || {};
-  }
-  public keys() {
-    return this._opts.keys();
-  }
-  public values() {
-    return this._opts.values();
-  }
+
   public entries() {
     return this._opts.entries();
   }
