@@ -32,30 +32,33 @@ expectNotAssignable<Promise<WithPositionalArgs<Input>>>(
   }).parse({})
 );
 
-type Options = Parameters<typeof createParser<Input>>[1];
-type KeyOptions = NonNullable<Options>['options'];
+type Params = Parameters<typeof createParser<Input>>[1];
 
-expectAssignable<Options>({});
-expectAssignable<Options>({
-  filePathArg: {
-    longFlag: '--file' as const,
-  },
-});
-expectAssignable<Options>({
-  options: {},
-});
-expectAssignable<KeyOptions>({
-  name: {
-    required: true,
-    description: 'The name of the user',
-    shortFlag: `-n` as const,
-    customValidator: {
-      isValid: () => true,
-      errorMessage: () => 'Error',
+expectAssignable<Params>({});
+expectAssignable<Params>({
+  global: {
+    filePathFlag: {
+      longFlag: '--file' as const,
     },
   },
-  age: {},
-  loggedIn: {},
+});
+expectAssignable<Params>({
+  options: {},
+});
+expectAssignable<Params>({
+  options: {
+    name: {
+      required: true,
+      description: 'The name of the user',
+      shortFlag: `-n` as const,
+      customValidator: {
+        isValid: () => true,
+        errorMessage: () => 'Error',
+      },
+    },
+    age: {},
+    loggedIn: {},
+  },
 });
 
 type Defaults = Parameters<typeof createParser<Input>>[0];
