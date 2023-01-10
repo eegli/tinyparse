@@ -2,23 +2,21 @@ import { Parser } from './parser';
 import { PositionalArgs, SimpleRecord, WithPositionalArgs } from './types';
 import { parseJSONFile } from './utils';
 
+type TransformArgs = {
+  aliases: Map<string, string>;
+  filePathFlag?: string;
+};
+
 export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
-  build(input: T, positionals: string[]): WithPositionalArgs<T> {
+  public build(input: T, positionals: string[]): WithPositionalArgs<T> {
     return {
       ...input,
       _: positionals,
     };
   }
-
   public transform(
     argv: string[],
-    {
-      aliases,
-      filePathFlag,
-    }: {
-      aliases: Map<string, string>;
-      filePathFlag?: string;
-    }
+    { aliases, filePathFlag }: TransformArgs
   ): [Partial<T>, PositionalArgs] {
     const flagMap = new Map<string, unknown>();
 

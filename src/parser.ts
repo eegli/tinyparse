@@ -2,10 +2,11 @@ import { ValidationError } from './error';
 import { BaseArgOptions, SimpleRecord, Value } from './types';
 import { isSameType } from './utils';
 
-const requiredSym = Symbol('isRequired');
-
 export class Parser<T extends SimpleRecord> {
+  private readonly _requiredSym = Symbol('isRequired');
+
   constructor(private readonly _defaultValues: T) {}
+
   // eslint-disable-next-line require-await
   public async parse(
     input: Partial<T>,
@@ -22,7 +23,7 @@ export class Parser<T extends SimpleRecord> {
     // For each required argument, replace its value temporarily
     // with a symbol
     requiredArgs.forEach((arg) => {
-      config.set(arg, requiredSym);
+      config.set(arg, this._requiredSym);
     });
 
     for (const inputPair of Object.entries(input)) {
@@ -64,7 +65,7 @@ export class Parser<T extends SimpleRecord> {
     // Check if all required arguments have been defined or if the
     // temporary value is still there
     requiredArgs.forEach((arg) => {
-      if (config.get(arg) === requiredSym) {
+      if (config.get(arg) === this._requiredSym) {
         throw new ValidationError(`"${arg}" is required`);
       }
     }, <string[]>[]);

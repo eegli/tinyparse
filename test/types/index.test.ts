@@ -1,4 +1,4 @@
-import { expectAssignable, expectNotAssignable } from 'tsd-lite';
+import { expectAssignable, expectNotAssignable, expectType } from 'tsd-lite';
 import { createParser } from '../../src';
 import { WithPositionalArgs } from '../../src/types';
 
@@ -16,14 +16,6 @@ expectAssignable<Promise<Input>>(
   }).parse()
 );
 
-expectAssignable<Promise<WithPositionalArgs<Input>>>(
-  createParser({
-    name: 'eric',
-    age: 11,
-    loggedIn: false,
-  }).parse([])
-);
-
 expectNotAssignable<Promise<WithPositionalArgs<Input>>>(
   createParser({
     name: 'eric',
@@ -32,12 +24,20 @@ expectNotAssignable<Promise<WithPositionalArgs<Input>>>(
   }).parse({})
 );
 
+expectAssignable<Promise<WithPositionalArgs<Input>>>(
+  createParser({
+    name: 'eric',
+    age: 11,
+    loggedIn: false,
+  }).parse([])
+);
+
 type Params = Parameters<typeof createParser<Input>>[1];
 
 expectAssignable<Params>({});
 expectAssignable<Params>({
   filePathArg: {
-    longFlag: '--file' as const,
+    longFlag: '--file',
   },
 });
 expectAssignable<Params>({
@@ -48,7 +48,7 @@ expectAssignable<Params>({
     name: {
       required: true,
       description: 'The name of the user',
-      shortFlag: `-n` as const,
+      shortFlag: `-n`,
       customValidator: {
         isValid: () => true,
         errorMessage: () => 'Error',
@@ -60,6 +60,8 @@ expectAssignable<Params>({
 });
 
 type Defaults = Parameters<typeof createParser<Input>>[0];
+
+expectType<Defaults>({ name: '', age: 0, loggedIn: true });
 
 expectNotAssignable<Defaults>({
   name: {},
