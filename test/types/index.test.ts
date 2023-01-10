@@ -1,4 +1,4 @@
-import { expectAssignable, expectNotAssignable } from 'tsd-lite';
+import { expectAssignable, expectNotAssignable, expectType } from 'tsd-lite';
 import { createParser } from '../../src';
 import { WithPositionalArgs } from '../../src/types';
 
@@ -16,14 +16,6 @@ expectAssignable<Promise<Input>>(
   }).parse()
 );
 
-expectAssignable<Promise<WithPositionalArgs<Input>>>(
-  createParser({
-    name: 'eric',
-    age: 11,
-    loggedIn: false,
-  }).parse([])
-);
-
 expectNotAssignable<Promise<WithPositionalArgs<Input>>>(
   createParser({
     name: 'eric',
@@ -32,33 +24,44 @@ expectNotAssignable<Promise<WithPositionalArgs<Input>>>(
   }).parse({})
 );
 
-type Options = Parameters<typeof createParser<Input>>[1];
-type KeyOptions = NonNullable<Options>['options'];
+expectAssignable<Promise<WithPositionalArgs<Input>>>(
+  createParser({
+    name: 'eric',
+    age: 11,
+    loggedIn: false,
+  }).parse([])
+);
 
-expectAssignable<Options>({});
-expectAssignable<Options>({
+type Params = Parameters<typeof createParser<Input>>[1];
+
+expectAssignable<Params>({});
+expectAssignable<Params>({
   filePathArg: {
-    longFlag: '--file' as const,
+    longFlag: '--file',
   },
 });
-expectAssignable<Options>({
+expectAssignable<Params>({
   options: {},
 });
-expectAssignable<KeyOptions>({
-  name: {
-    required: true,
-    description: 'The name of the user',
-    shortFlag: `-n` as const,
-    customValidator: {
-      isValid: () => true,
-      errorMessage: () => 'Error',
+expectAssignable<Params>({
+  options: {
+    name: {
+      required: true,
+      description: 'The name of the user',
+      shortFlag: `-n`,
+      customValidator: {
+        isValid: () => true,
+        errorMessage: () => 'Error',
+      },
     },
+    age: {},
+    loggedIn: {},
   },
-  age: {},
-  loggedIn: {},
 });
 
 type Defaults = Parameters<typeof createParser<Input>>[0];
+
+expectType<Defaults>({ name: '', age: 0, loggedIn: true });
 
 expectNotAssignable<Defaults>({
   name: {},

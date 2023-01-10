@@ -10,6 +10,10 @@ describe('Helper text', () => {
     };
 
     const { help } = createParser(defaultValues, {
+      filePathArg: {
+        longFlag: '--config',
+        description: 'The config file to use',
+      },
       options: {
         id: {},
         color: {
@@ -25,10 +29,6 @@ describe('Helper text', () => {
           shortFlag: '-p',
           required: true,
         },
-      },
-      filePathArg: {
-        longFlag: '--config',
-        description: 'The config file to use',
       },
     });
 
@@ -59,9 +59,7 @@ describe('Helper text', () => {
   it('creates helper text for file flag only', () => {
     const { help } = createParser(
       {},
-      {
-        filePathArg: { longFlag: '--config' },
-      }
+      { filePathArg: { longFlag: '--config' } }
     );
     expect(help()).toMatchInlineSnapshot(`
       "Usage
@@ -77,7 +75,16 @@ describe('Helper text', () => {
       port: 999,
     };
     const { help } = createParser(defaultValues);
-    expect(help()).toMatchInlineSnapshot(`"Usage"`);
+    expect(help()).toMatchInlineSnapshot(`
+      "Usage
+
+      Optional flags
+         --id [string]
+
+         --withAuth [boolean]
+
+         --port [number]"
+    `);
   });
   it('matches readme example', () => {
     const { help } = createParser(
