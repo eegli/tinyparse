@@ -17,8 +17,8 @@ export function createParser<T extends SimpleRecord>(
   params?: ParserParams<T>
 ) {
   const options = new Options(
-    params?.options,
     Object.keys(defaultValues),
+    params?.options,
     params?.global
   );
 
@@ -29,7 +29,6 @@ export function createParser<T extends SimpleRecord>(
       const parser = new ArgvParser<T>(defaultValues);
       const [transformed, positionals] = parser.transform(input, {
         aliases: options.aliases,
-        shouldDecamelize: options.shouldDecamelize,
         filePathFlag: options.filePathFlag?.longFlag,
       });
       const parsed = await parser.parse(transformed, options.options);

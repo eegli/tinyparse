@@ -11,7 +11,7 @@ describe('Helper text', () => {
 
     const { help } = createParser(defaultValues, {
       global: {
-        filePathArg: {
+        filePathFlag: {
           longFlag: '--config',
           description: 'The config file to use',
         },
@@ -63,7 +63,7 @@ describe('Helper text', () => {
       {},
       {
         global: {
-          filePathArg: { longFlag: '--config' },
+          filePathFlag: { longFlag: '--config' },
         },
       }
     );
@@ -81,7 +81,16 @@ describe('Helper text', () => {
       port: 999,
     };
     const { help } = createParser(defaultValues);
-    expect(help()).toMatchInlineSnapshot(`"Usage"`);
+    expect(help()).toMatchInlineSnapshot(`
+      "Usage
+
+      Optional flags
+         --id [string]
+
+         --withAuth [boolean]
+
+         --port [number]"
+    `);
   });
   it('matches readme example', () => {
     const { help } = createParser(

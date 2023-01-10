@@ -2,10 +2,11 @@ import { ArgvParser } from '../src/argv';
 
 describe('Argv transformer', () => {
   it('parses empty', () => {
-    const parser = new ArgvParser();
-    expect(
-      parser.transform([], { aliases: new Map(), shouldDecamelize: false })
-    ).toStrictEqual([{}, []]);
+    const parser = new ArgvParser({});
+    expect(parser.transform([], { aliases: new Map() })).toStrictEqual([
+      {},
+      [],
+    ]);
   });
 
   const orders = [
@@ -52,11 +53,10 @@ describe('Argv transformer', () => {
   ];
   orders.forEach((variant, idx) => {
     it('works with order ' + idx, () => {
-      const parser = new ArgvParser();
+      const parser = new ArgvParser({});
       expect(
         parser.transform(variant.argv, {
           aliases: new Map(),
-          shouldDecamelize: false,
         })
       ).toStrictEqual([
         {
@@ -73,9 +73,9 @@ describe('Argv transformer', () => {
 
 describe('Argv transformer with options', () => {
   it('supports long and short flags', () => {
-    const parser = new ArgvParser();
+    const parser = new ArgvParser({});
 
-    const [transformed] = parser.transform(
+    const transformed = parser.transform(
       [
         'positional_1',
         'positional_2',
@@ -83,7 +83,7 @@ describe('Argv transformer with options', () => {
         'thisisignored',
         '--secret',
         '123',
-        '--input',
+        '--input-message',
         'this is a string',
         '--notignored',
         '-p',
@@ -97,8 +97,10 @@ describe('Argv transformer with options', () => {
         "'-this is a string'",
       ],
       {
-        aliases: new Map([['-p', '--password']]),
-        shouldDecamelize: false,
+        aliases: new Map([
+          ['-p', 'password'],
+          ['input-message', 'inputMessage'],
+        ]),
       }
     );
     expect(transformed).toStrictEqual([
@@ -106,7 +108,7 @@ describe('Argv transformer with options', () => {
         secret: '123',
         password: 'MyPassword',
         notignored: true,
-        input: 'this is a string',
+        inputMessage: 'this is a string',
         sinlgeQuotes: '"-this is a string"',
         doubleQuotes: "'-this is a string'",
       },
@@ -114,11 +116,10 @@ describe('Argv transformer with options', () => {
     ]);
   });
   it('parses from simple JSON files', () => {
-    const parser = new ArgvParser();
+    const parser = new ArgvParser({});
     const transformed = parser.transform(['--config', 'test/config.json'], {
       aliases: new Map([['-p', '--password']]),
       filePathFlag: '--config',
-      shouldDecamelize: false,
     });
     expect(transformed).toStrictEqual([
       {
@@ -128,13 +129,12 @@ describe('Argv transformer with options', () => {
     ]);
   });
   it('throws for invalid files', () => {
-    const parser = new ArgvParser();
+    const parser = new ArgvParser({});
 
     expect(() => {
       parser.transform(['--config', 'config.json'], {
         aliases: new Map([['-p', '--password']]),
         filePathFlag: '--config',
-        shouldDecamelize: false,
       });
     }).toThrow('config.json is not a valid JSON file');
   });

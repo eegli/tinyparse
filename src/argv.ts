@@ -16,7 +16,6 @@ export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
       aliases,
       filePathFlag,
     }: {
-      shouldDecamelize: boolean;
       aliases: Map<string, string>;
       filePathFlag?: string;
     }

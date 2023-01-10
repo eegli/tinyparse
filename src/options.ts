@@ -11,8 +11,8 @@ export class Options {
   public readonly shouldDecamelize: boolean;
   public readonly filePathFlag: FilePathFlag | undefined;
   constructor(
-    keyOptions: ArgOptions = {},
     keys: string[] = [],
+    keyOptions: ArgOptions = {},
     globalOptions: GlobalOptions = {}
   ) {
     for (const key of keys) {
@@ -29,7 +29,10 @@ export class Options {
         aliases.set(opts.shortFlag, key);
       }
       if (this.shouldDecamelize) {
-        aliases.set(decamelize(key, { separator: '-' }), key);
+        const decamelized = decamelize(key, { separator: '-' });
+        if (decamelized !== key) {
+          aliases.set(decamelized, key);
+        }
       }
     }
     return aliases;
@@ -40,6 +43,9 @@ export class Options {
   public get(key: string) {
     if (!key) return this._opts;
     return this._opts.get(key) || {};
+  }
+  public keys() {
+    return this._opts.keys();
   }
   public values() {
     return this._opts.values();
