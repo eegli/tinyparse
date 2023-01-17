@@ -51,7 +51,7 @@ TypeScript will show you the detailed signatures and what is required.
 
 The factory creates a `help()` function that can be used to print all available options, sorted by `required`. This is most useful for CLI apps.
 
-Here's an extensive usage example:
+## Example
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
