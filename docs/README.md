@@ -4,6 +4,9 @@
 
 > A tiny, type-safe and flexible utility for parsing & validating command line arguments in Node.js
 
+<h3 align=center>⚠️This documentation is still under construction⚠️</h3>
+<p align=center>As a backup, refer to the old but complete readme on GitHub</p>
+
 ## What it is
 
 _Like [oclif](https://oclif.io/) and [Yargs](https://yargs.js.org/) had a baby._
