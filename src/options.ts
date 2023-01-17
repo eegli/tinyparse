@@ -18,6 +18,26 @@ export class Options {
     this.shouldDecamelize = !!params.decamelize;
     this.filePathFlag = params.filePathArg;
 
+    // Create alias map
+    this._createAliasMap();
+  }
+
+  private _createAliasMap() {
+    for (const [key, opts] of this._opts) {
+      if (opts.shortFlag) {
+        const shortFlag = this._makeFlag(opts.shortFlag, 'short');
+        this._aliases.set(shortFlag, key);
+        opts.shortFlag = shortFlag;
+      }
+      if (this.shouldDecamelize) {
+        const decamelized = decamelize(key, { separator: '-' });
+        if (decamelized !== key) {
+          const longFlag = this._makeFlag(decamelized, 'long');
+          this._aliases.set(longFlag, key);
+        }
+      }
+    }
+
     if (this.filePathFlag) {
       this.filePathFlag.longFlag = this._makeFlag(
         this.filePathFlag.longFlag,
@@ -30,25 +50,12 @@ export class Options {
         'short'
       );
     }
-
-    // Create alias map
-    for (const [key, opts] of this._opts) {
-      if (opts.shortFlag) {
-        const shortFlag = this._makeFlag(opts.shortFlag, 'short');
-        this._aliases.set(shortFlag, key);
-      }
-      if (this.shouldDecamelize) {
-        const decamelized = decamelize(key, { separator: '-' });
-        if (decamelized !== key) {
-          this._aliases.set(decamelized, key);
-        }
-      }
-    }
   }
 
   private _makeFlag(flag: string, type: 'long' | 'short') {
     const prefix = type === 'long' ? '--' : '-';
-    return flag.startsWith(prefix) ? flag : `${prefix}${flag}`;
+    flag = flag.trim().replace(/^-+/, '');
+    return `${prefix}${flag}`;
   }
 
   public get aliases() {

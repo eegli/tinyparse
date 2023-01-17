@@ -3,18 +3,28 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
 describe('Integration and docs', () => {
-  test('simple example', async () => {
+  test('landing page example', async () => {
+    const { parse } = createParser({
+      username: '',
+    });
+
+    const parsed = await parse(['hello', '--username', 'eegli']);
+
+    assert.deepStrictEqual(parsed, { username: 'eegli', _: ['hello'] });
+  });
+  test('quickstart example', async () => {
     const defaultValues = {
       username: '',
+      active: false,
     };
 
     const { parse } = createParser(defaultValues);
 
-    const parsed1 = await parse({ username: 'eegli' });
-    const parsed2 = await parse(['--username', 'eegli']);
+    const parsed1 = await parse({ username: 'eegli', active: true });
+    const parsed2 = await parse(['--username', 'eegli', '--active']);
 
-    assert.deepStrictEqual(parsed1, { username: 'eegli' });
-    assert.deepStrictEqual(parsed2, { username: 'eegli', _: [] });
+    assert.deepStrictEqual(parsed1, { username: 'eegli', active: true });
+    assert.deepStrictEqual(parsed2, { username: 'eegli', active: true, _: [] });
   });
 
   test('full example', async () => {
@@ -29,12 +39,6 @@ describe('Integration and docs', () => {
       defaultUser,
       // More configuration
       {
-        // Parse a file (for example, a config file). Only takes
-        // effect when parsing an array of strings
-        filePathArg: {
-          longFlag: '--config',
-          description: 'Path to your Github config file',
-        },
         // Options per key
         options: {
           username: {
@@ -55,7 +59,7 @@ describe('Integration and docs', () => {
             description: 'Indicate whether you have a Github profile',
             // Short flag alias. Only takes effect when parsing an
             // array of strings
-            shortFlag: '-ghp',
+            shortFlag: 'ghp',
           },
         },
       }
@@ -66,22 +70,16 @@ describe('Integration and docs', () => {
       username: 'eegli',
       age: 12,
     };
+
     const parsedInput = await parse(userInput);
+
     assert.deepStrictEqual(parsedInput, {
       username: 'eegli',
       age: 12,
       hasGithubProfile: false,
     });
 
-    // Read from file "github.json" with content {"username": "eegli"}
-    process.argv = [
-      'profile',
-      '--age',
-      '12',
-      '-ghp',
-      '--config',
-      'github.json',
-    ];
+    process.argv = ['profile', '--username', 'eegli', '--age', '12', '-ghp'];
 
     const parsedArgv = await parse(process.argv);
 
@@ -97,7 +95,28 @@ describe('Integration and docs', () => {
     // Print available options with descriptions. Optionally, set a
     // title and a base command showing the usage of positional
     // arguments. Everything else is auto-generated
-    help('CLI usage', 'my-cli <message> [flags]');
+
+    // prettier-ignore
+    const helpCommand =
+`CLI usage
+
+my-cli <message> [flags]
+
+Required flags
+   --username [string]
+   Your custom username
+
+Optional flags
+   --age [number]
+
+   -ghp, --hasGithubProfile [boolean]
+   Indicate whether you have a Github profile`;
+
+    assert.strictEqual(
+      help('CLI usage', 'my-cli <message> [flags]'),
+      helpCommand
+    );
+    // console.log(help('CLI usage', 'my-cli <message> [flags]'));
   });
   test('invalid types example', async () => {
     const { parse } = createParser({ username: '' });

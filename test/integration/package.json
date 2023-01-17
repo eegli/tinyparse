@@ -3,7 +3,7 @@
   "type": "module",
   "module": "esnext",
   "scripts": {
-    "test": "node --test"
+    "test": "node index.test.js"
   },
   "dependencies": {
     "@eegli/tinyparse": "file:../.."

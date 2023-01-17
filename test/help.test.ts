@@ -26,7 +26,7 @@ describe('Helper text', () => {
         },
         port: {
           description: 'The port to listen on',
-          shortFlag: '-p',
+          shortFlag: 'p',
           required: true,
         },
       },

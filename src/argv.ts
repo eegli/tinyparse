@@ -24,7 +24,7 @@ export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
     let isPositional = true;
 
     for (let i = 0; i < argv.length; i++) {
-      let curr = argv[i];
+      const curr = argv[i];
 
       if (!curr.startsWith('-') && isPositional) {
         positionals.push(curr);
@@ -33,20 +33,19 @@ export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
 
       isPositional = false;
 
-      // Convert short flag to long flag
+      let flag = curr;
+
+      // Lookup short flag or decamelized alias
       if (aliases.has(curr)) {
-        curr = '--' + aliases.get(curr);
-      }
-
-      // Ignore non-flags
-      if (!curr.startsWith('--')) {
-        continue;
-      }
-
-      let flag = curr.slice(2);
-      if (aliases.has(flag)) {
+        // Now flag is the original key
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        flag = aliases.get(flag)!;
+        flag = aliases.get(curr)!;
+        // No alias, it's likely the original, just strip the prefix
+      } else if (curr.startsWith('--')) {
+        flag = curr.slice(2);
+        // Ignore non-flags
+      } else {
+        continue;
       }
 
       const flagVal = argv[i + 1];

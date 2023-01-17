@@ -44,7 +44,8 @@
     "test:types": "jest --selectProjects types",
     "test:integration": "yarn build && cd test/integration && npm install -S ../../ && npm test",
     "test:coverage": "jest --coverage",
-    "test:watch": "jest  --verbose --watch"
+    "test:watch": "jest  --verbose --watch",
+    "docs": "docsify serve docs"
   },
   "lint-staged": {
     "{src,test}/*.ts": [
@@ -58,9 +59,10 @@
     "@preconstruct/cli": "^2.2.2",
     "@tsd/typescript": "^4.9.4",
     "@types/jest": "^29.2.4",
-    "@types/node": "^18.11.18",
+    "@types/node": "18",
     "@typescript-eslint/eslint-plugin": "^5.47.1",
     "@typescript-eslint/parser": "^5.47.1",
+    "docsify-cli": "^4.4.4",
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-jest": "^27.1.7",

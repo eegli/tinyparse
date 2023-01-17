@@ -99,7 +99,7 @@ describe('Argv transformer with options', () => {
       {
         aliases: new Map([
           ['-p', 'password'],
-          ['input-message', 'inputMessage'],
+          ['--input-message', 'inputMessage'],
         ]),
       }
     );
@@ -124,6 +124,7 @@ describe('Argv transformer with options', () => {
     expect(transformed).toStrictEqual([
       {
         username: 'eegli',
+        hasGitHubPlus: false,
       },
       [],
     ]);
