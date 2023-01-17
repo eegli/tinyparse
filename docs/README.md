@@ -16,9 +16,9 @@ const { parse } = createParser({
   username: '',
 });
 
-const parsed = await parse(['--username', 'eegli']);
+const parsed = await parse(['hello', '--username', 'eegli']);
 
-assert.deepStrictEqual(parsed, { username: 'eegli' });
+assert.deepStrictEqual(parsed, { username: 'eegli', _: ['hello'] });
 ```
 
 I use this mostly for other pet projects of mine so it comes with some opinions 🤪.

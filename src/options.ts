@@ -36,6 +36,7 @@ export class Options {
       if (opts.shortFlag) {
         const shortFlag = this._makeFlag(opts.shortFlag, 'short');
         this._aliases.set(shortFlag, key);
+        opts.shortFlag = shortFlag;
       }
       if (this.shouldDecamelize) {
         const decamelized = decamelize(key, { separator: '-' });

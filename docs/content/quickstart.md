@@ -1,6 +1,8 @@
 # Quickstart
 
-Tinyparse is made for parsing simple user input. It can parse **object literals** and **arrays of strings** (e.g., CLI input such as `process.argv`). The object to parse _into_ may only have `string`, `number` or `boolean` property values.
+Tinyparse is made for parsing simple user input. It is primarily designed to process **command line input** - i.e., `process.argv`, an array of strings - but it can parse **object literals** just as well. The object to parse _into_ may only have `string`, `number` or `boolean` property values.
+
+Tinyparse
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -8,15 +10,16 @@ import assert from 'node:assert/strict';
 
 const defaultValues = {
   username: '',
+  active: false,
 };
 
 const { parse } = createParser(defaultValues);
 
-const parsed1 = await parse({ username: 'eegli' });
-const parsed2 = await parse(['--username', 'eegli']);
+const parsed1 = await parse({ username: 'eegli', active: true });
+const parsed2 = await parse(['--username', 'eegli', '--active']);
 
-assert.deepStrictEqual(parsed1, { username: 'eegli' });
-assert.deepStrictEqual(parsed2, { username: 'eegli', _: [] });
+assert.deepStrictEqual(parsed1, { username: 'eegli', active: true });
+assert.deepStrictEqual(parsed2, { username: 'eegli', active: true, _: [] });
 ```
 
 ## Install
@@ -48,6 +51,8 @@ TypeScript will show you the detailed signatures and what is required.
 
 The factory creates a `help()` function that can be used to print all available options, sorted by `required`. This is most useful for CLI apps.
 
+Here's an extensive usage example:
+
 ```ts
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
@@ -63,12 +68,6 @@ const { help, parse } = createParser(
   defaultUser,
   // More configuration
   {
-    // Parse a file (for example, a config file). Only takes
-    // effect when parsing an array of strings
-    filePathArg: {
-      longFlag: '--config',
-      description: 'Path to your Github config file',
-    },
     // Options per key
     options: {
       username: {
@@ -89,7 +88,7 @@ const { help, parse } = createParser(
         description: 'Indicate whether you have a Github profile',
         // Short flag alias. Only takes effect when parsing an
         // array of strings
-        shortFlag: '-ghp',
+        shortFlag: 'ghp',
       },
     },
   }
@@ -109,8 +108,7 @@ assert.deepStrictEqual(parsedInput, {
   hasGithubProfile: false,
 });
 
-// Read from file "github.json" with content {"username": "eegli"}
-process.argv = ['profile', '--age', '12', '-ghp', '--config', 'github.json'];
+process.argv = ['profile', '--username', 'eegli', '--age', '12', '-ghp'];
 
 const parsedArgv = await parse(process.argv);
 
@@ -127,19 +125,17 @@ assert.deepStrictEqual(parsedArgv, {
 // title and a base command showing the usage of positional
 // arguments. Everything else is auto-generated
 help('CLI usage', 'my-cli <message> [flags]');
-`
-CLI usage
+`CLI usage
 
 my-cli <message> [flags]
 
 Required flags
-    --username [string]
-    Your custom username
+   --username [string]
+   Your custom username
 
 Optional flags
-    --age [number]
+   --age [number]
 
-    -ghp, --hasGithubProfile [boolean]
-    Indicate whether you have a Github profile
-`;
+   -ghp, --hasGithubProfile [boolean]
+   Indicate whether you have a Github profile`;
 ```
