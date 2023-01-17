@@ -1,33 +1,39 @@
 # Reading Files
 
-Aenean non gravida urna. Aliquam quis tortor vulputate, malesuada dui at, posuere nunc. Duis molestie nunc at tellus lobortis volutpat. In non convallis sapien, id semper felis. In commodo condimentum cursus. Mauris luctus tincidunt justo, vitae consequat mi gravida a. In venenatis leo eget sem semper, eu tristique justo hendrerit.
+Tinyparse supports **reading and parsing JSON files** natively. The path to a JSON file relative to the current directory must be specified with a long flag and, optionally, with a short flag. The description is used for the [help command](reference/printing-arguments).
 
 ## Examples
 
+Assume that there is a JSON file with the following content in the current directory:
+
+```js
+{
+  "username": "eegli",
+  "hasGitHubPlus": false
+}
+```
+
+Tinyparse supports reading and parsing JSON files natively.
+
 ```ts
 import { createParser } from '@eegli/tinyparse';
-import assert from 'node:assert/strict';
 
-const defaultUser = {
-  username: '',
-  hasGitHubPlus: false,
-};
-
-const { help, parse } = createParser(defaultUser, {
-  filePathArg: {
-    longFlag: '--config',
-    description: 'Path to your Github config file',
+const { parse } = createParser(
+  {
+    username: '',
+    hasGitHubPlus: true,
   },
-});
+  {
+    filePathArg: {
+      longFlag: '--config',
+      shortFlag: '-c',
+      description: 'Path to your Github config file',
+    },
+  }
+);
 
-// Read from file "github.json" with content {"username": "eegli"}
-process.argv = ['--hasGitHubPlus', '--config', 'github.json'];
+const parsed = await parse(['--config', 'github.json']);
 
-const parsedArgv = await parse(process.argv);
-
-assert.deepStrictEqual(parsedArgv, {
-  _: [],
-  username: 'eegli',
-  hasGitHubPlus: true,
-});
+expect(parsed.username).toBe('eegli');
+expect(parsed.hasGitHubPlus).toBe(false);
 ```

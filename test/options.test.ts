@@ -36,9 +36,12 @@ describe('Options', () => {
       ])
     );
   });
-  test('aliases', () => {
+  test('aliases, trims short flags', () => {
     const options = new Options(['first', 'secondSecond', 'thirdthird'], {
-      options: { first: { shortFlag: '-f' } },
+      options: {
+        first: { shortFlag: '-f' },
+        secondSecond: { shortFlag: '---second' },
+      },
       decamelize: true,
       filePathArg: {
         longFlag: '--file',
@@ -49,7 +52,8 @@ describe('Options', () => {
     expect(options.aliases).toStrictEqual(
       new Map([
         ['-f', 'first'],
-        ['second-second', 'secondSecond'],
+        ['-second', 'secondSecond'],
+        ['--second-second', 'secondSecond'],
       ])
     );
   });

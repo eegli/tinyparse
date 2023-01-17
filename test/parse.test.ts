@@ -66,8 +66,8 @@ describe('Object literal parsing', () => {
 describe('Parsing with options', () => {
   const defaultValues = {
     stringProp: '',
-    boolProp: true,
-    numProp: 1,
+    boolProp: false,
+    numProp: Infinity,
   };
 
   const positionalArgs = {
@@ -166,6 +166,24 @@ describe('Parsing with options', () => {
       ...positionalArgs,
       stringProp: 'hello',
       numProp: 1,
+    };
+    await expect(parse(input)).resolves.toStrictEqual(expected);
+  });
+
+  it('handles short flags', async () => {
+    const { parse } = createParser(defaultValues, {
+      decamelize: true,
+      options: {
+        stringProp: {
+          shortFlag: 's',
+        },
+      },
+    });
+    const input = ['--string-prop', 'hello'];
+    const expected = {
+      ...defaultValues,
+      ...positionalArgs,
+      stringProp: 'hello',
     };
     await expect(parse(input)).resolves.toStrictEqual(expected);
   });

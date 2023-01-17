@@ -31,10 +31,12 @@ Remember that it's never a good idea to read secrets directly from flags. [Read 
 
 When given an array of strings, Tinyparse will collect all positional/command arguments on the `_` property. When given no default values (here, an empty object `{}`), the parser simply acts as a collector (positional arguments are of course also collected when the default values are not empty).
 
+<!-- doctest: positional arguments -->
+
 ```ts
 const { parse } = createParser({});
 const parsed = await parse(['hello-world']);
-expect(parsed).toBe({ _: ['hello-world'] });
+expect(parsed).toStrictEqual({ _: ['hello-world'] });
 ```
 
 ### Boolean Flags
@@ -42,6 +44,8 @@ expect(parsed).toBe({ _: ['hello-world'] });
 Standalone flags are considered **booleans flags**. If they are encountered, their value will be set to `true`. This means that it is _not_ possible to set something to `false` via a flag.
 
 Tinyparse is opinionated about default values. It assumes that any option that can be set by a flag is `false` by default but can be set to `true`.
+
+<!-- doctest: boolean flags 1 -->
 
 ```ts
 const { parse } = createParser({
@@ -52,6 +56,8 @@ expect(parsed.verbose).toBe(true);
 ```
 
 Here, nothing changes:
+
+<!-- doctest: boolean flags 2 -->
 
 ```ts
 const { parse } = createParser({
@@ -64,6 +70,8 @@ expect(parsed.verbose).toBe(true);
 ### Numeric Conversion
 
 If and only if the _expected value_ for a flag is a number, tinyparse will try to convert it accordingly.
+
+<!-- doctest: number conversion -->
 
 ```ts
 const { parse } = createParser({

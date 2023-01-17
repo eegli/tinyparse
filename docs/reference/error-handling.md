@@ -6,6 +6,8 @@ If the parser encounters an _invalid value_, i.e., something that is _not_ of ty
 
 _Missing required arguments._
 
+<!-- doctest: rejects for missing args -->
+
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';
 
@@ -19,28 +21,30 @@ const { parse } = createParser(
     },
   }
 );
-
 try {
   await parse(); // Whoops, forgot username!
 } catch (error) {
   if (error instanceof ValidationError) {
-    expect(error.message).toEqual('"username" is required');
+    expect(error.message).toBe('"username" is required');
   }
 }
 ```
 
 _Invalid types._
 
+<!-- doctest: rejects invalid types -->
+
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';
 
 const { parse } = createParser({ username: '' });
-
-parse({ username: ['eegli'] }).catch((error) => {
+try {
+  await parse({ username: ['eegli'] });
+} catch (error) {
   if (error instanceof ValidationError) {
-    expect(error.message).toEqual(
+    expect(error.message).toBe(
       'Invalid type for "username". Expected string, got object'
     );
   }
-});
+}
 ```
