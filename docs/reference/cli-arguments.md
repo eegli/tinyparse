@@ -29,7 +29,7 @@ Remember that it's never a good idea to read secrets directly from flags. [Read 
 
 ### Positional (Command) Arguments
 
-When given an array of strings, Tinyparse will collect all positional/command arguments on the `_` property. When given no default values (here, an empty object `{}`), the parser simply acts as a collector (positional arguments are of course also collected when the default values are not empty).
+When given an array of strings, Tinyparse will collect all positional/command arguments on the `_` property.
 
 <!-- doctest: positional arguments -->
 
@@ -75,7 +75,7 @@ If and only if the _expected value_ for a flag is a number, tinyparse will try t
 
 ```ts
 const { parse } = createParser({
-  followers: 0, // expect number
+  followers: -1, // expect number
   year: '2000', // expect (date) string
 });
 const parsed = await parse(['--followers', '8', '--year', '2023']);

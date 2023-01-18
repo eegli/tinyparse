@@ -6,7 +6,7 @@ If the parser encounters an _invalid value_, i.e., something that is _not_ of ty
 
 _Missing required arguments._
 
-<!-- doctest: rejects for missing args -->
+<!-- doctest: error handling, rejects for missing args -->
 
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';
@@ -32,7 +32,7 @@ try {
 
 _Invalid types._
 
-<!-- doctest: rejects invalid types -->
+<!-- doctest: error handling, rejects invalid types -->
 
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';

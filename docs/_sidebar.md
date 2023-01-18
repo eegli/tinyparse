@@ -8,3 +8,4 @@
   - [Printing Arguments](reference/printing-arguments.md)
   - [Error Handling](reference/error-handling.md)
 - [Parsing Object Literals](reference/object-literals.md)
+- [Examples](examples.md)
