@@ -15,6 +15,8 @@ Assume that there is a JSON file with the following content in the current direc
 
 Tinyparse supports reading and parsing JSON files natively.
 
+<!-- doctest: file reading -->
+
 ```ts
 import { createParser } from '@eegli/tinyparse';
 

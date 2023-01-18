@@ -1,38 +1,36 @@
 import { createParser, ValidationError } from '../src';
 
-describe('Docs, cli arguments', () => {
-  it('positional arguments', async () => {
+describe('Docs', () => {
+  it('cli arguments, positional arguments', async () => {
     const { parse } = createParser({});
     const parsed = await parse(['hello-world']);
     expect(parsed).toStrictEqual({ _: ['hello-world'] });
   });
-  it('boolean flags 1', async () => {
+  it('cli arguments, boolean flags 1', async () => {
     const { parse } = createParser({
       verbose: false,
     });
     const parsed = await parse(['--verbose']);
     expect(parsed.verbose).toBe(true);
   });
-  it('boolean flags 2', async () => {
+  it('cli arguments, boolean flags 2', async () => {
     const { parse } = createParser({
       verbose: true,
     });
     const parsed = await parse(['--verbose']);
     expect(parsed.verbose).toBe(true);
   });
-  it('number conversion', async () => {
+  it('cli arguments, number conversion', async () => {
     const { parse } = createParser({
-      followers: 0, // expect number
+      followers: -1, // expect number
       year: '2000', // expect (date) string
     });
     const parsed = await parse(['--followers', '8', '--year', '2023']);
     expect(parsed.followers).toBe(8);
     expect(parsed.year).toBe('2023');
   });
-});
 
-describe('Docs, short flags', () => {
-  it('handles short flags', async () => {
+  it('short flags', async () => {
     const { parse } = createParser(
       {
         user: '',
@@ -53,10 +51,14 @@ describe('Docs, short flags', () => {
     expect(parsed.verbose).toBe(true);
     expect(parsed.user).toBe('eegli');
   });
-});
 
-describe('Docs, reading files', () => {
   it('reads from files', async () => {
+    /*
+    Assume that there is a JSON file with the following content in the current directory:
+    {
+      username: 'eegli', hasGitHubPlus: false,
+    }
+    */
     const { parse } = createParser(
       {
         username: '',
@@ -71,22 +73,104 @@ describe('Docs, reading files', () => {
       }
     );
 
+    const parsed = await parse(['--config', 'github.json']);
+
+    expect(parsed.username).toBe('eegli');
+    expect(parsed.hasGitHubPlus).toBe(false);
+  });
+  it('custom validation', async () => {
+    const { parse } = createParser(
+      { birthDate: '2000-01-01' },
+      {
+        options: {
+          birthDate: {
+            customValidator: {
+              isValid(value) {
+                if (typeof value !== 'string') return false;
+                return !isNaN(new Date(value).getTime());
+              },
+              errorMessage(value) {
+                return `Invalid value '${value}' for option 'birthDate'. Expected a valid date string`;
+              },
+            },
+          },
+        },
+      }
+    );
+    // Valid date string
+    await expect(parse(['--birthDate', '2000-01-01'])).resolves.toBeTruthy();
+
+    // What a weird month...
+    await expect(parse(['--birthDate', '2000-22'])).rejects.toThrow();
+  });
+
+  it('file reading', async () => {
     /*
     Assume that there is a JSON file with the following content in the current directory:
     {
       username: 'eegli', hasGitHubPlus: false,
     }
     */
+    const { parse } = createParser(
+      {
+        username: '',
+        hasGitHubPlus: true,
+      },
+      {
+        filePathArg: {
+          longFlag: '--config',
+          shortFlag: '-c',
+          description: 'Path to your Github config file',
+        },
+      }
+    );
 
     const parsed = await parse(['--config', 'github.json']);
 
     expect(parsed.username).toBe('eegli');
     expect(parsed.hasGitHubPlus).toBe(false);
   });
-});
 
-describe('Docs, error handling', () => {
-  it('rejects for missing args', async () => {
+  it('printing args', () => {
+    const { help } = createParser(
+      {
+        username: '',
+        age: -1,
+        hasGithubProfile: false,
+      },
+      {
+        options: {
+          username: {
+            description: 'Your custom username',
+          },
+          hasGithubProfile: {
+            description: 'Indicate whether you have a Github profile',
+          },
+          age: {
+            required: true,
+          },
+        },
+      }
+    );
+    const helpText = help('CLI usage', 'my-cli <message> [flags]');
+    expect(helpText).toMatchInlineSnapshot(`
+      "CLI usage
+
+      my-cli <message> [flags]
+
+      Required flags
+         --age [number]
+
+      Optional flags
+         --username [string]
+         Your custom username
+
+         --hasGithubProfile [boolean]
+         Indicate whether you have a Github profile"
+    `);
+  });
+
+  it('error handling, rejects for missing args', async () => {
     expect.assertions(1);
     const { parse } = createParser(
       { username: '' },
@@ -106,7 +190,7 @@ describe('Docs, error handling', () => {
       }
     }
   });
-  it('rejects invalid types', async () => {
+  it('error handling, rejects invalid types', async () => {
     expect.assertions(1);
     const { parse } = createParser({ username: '' });
     try {

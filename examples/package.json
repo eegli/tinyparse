@@ -1,0 +1,8 @@
+{
+  "name": "example-pkg",
+  "type": "module",
+  "module": "esnext",
+  "dependencies": {
+    "@eegli/tinyparse": "file:../"
+  }
+}
