@@ -32,8 +32,8 @@ I use this mostly for other pet projects of mine so it comes with some opinions 
 
 ## Examples
 
-- Check out the extensive [test suites](test) or
-- Play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts).
+- Check out the extensive [test suites](https://github.com/eegli/tinyparse/tree/main/test) or
+- Play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
 
 ## Resources
 
