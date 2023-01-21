@@ -1,8 +1,8 @@
 # Reading Files
 
-Tinyparse supports **reading and parsing JSON files** natively. The path to a JSON file relative to the current directory must be specified with a long flag and, optionally, with a short flag. The description is used for the [help command](reference/printing-arguments).
+Tinyparse supports reading and parsing JSON files natively. The path to a JSON file relative to the current directory must be specified with a long flag and, optionally, with a short flag. The description is used for the [help command](reference/printing-arguments).
 
-## Examples
+## Example
 
 Assume that there is a JSON file with the following content in the current directory:
 

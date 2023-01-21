@@ -13,7 +13,7 @@ A custom validator has the following signature:
   };
 ```
 
-## Examples
+## Example
 
 <!-- doctest: custom validation -->
 

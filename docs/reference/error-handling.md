@@ -4,7 +4,7 @@ If the parser encounters an _invalid value_, i.e., something that is _not_ of ty
 
 ## Examples
 
-_Missing required arguments._
+Missing required arguments.
 
 <!-- doctest: error handling, rejects for missing args -->
 
@@ -30,7 +30,7 @@ try {
 }
 ```
 
-_Invalid types._
+Invalid types.
 
 <!-- doctest: error handling, rejects invalid types -->
 

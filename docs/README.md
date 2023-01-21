@@ -38,3 +38,5 @@ I use this mostly for other pet projects of mine so it comes with some opinions 
 ## Resources
 
 This project has been guided by the amazing [Command Line Interface Guidelines](https://clig.dev/) by Aanand Prasad, Ben Firshman, Carl Tashian and Eva Parish.
+
+Further inspiration has been taken from the [Apache Commons CLI](https://commons.apache.org/proper/commons-cli/).

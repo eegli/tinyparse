@@ -8,7 +8,7 @@ help(title?: string = 'Usage', baseCommand?: string): string
 
 Both `title` and `baseCommand` are optional. The former is printed on the first line, whereas the latter is printed afterwards and can be used to indicate the usage pattern of your CLI app.
 
-## Examples
+## Example
 
 <!-- doctest: printing args -->
 

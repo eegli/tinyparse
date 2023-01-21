@@ -52,32 +52,6 @@ describe('Docs', () => {
     expect(parsed.user).toBe('eegli');
   });
 
-  it('reads from files', async () => {
-    /*
-    Assume that there is a JSON file with the following content in the current directory:
-    {
-      username: 'eegli', hasGitHubPlus: false,
-    }
-    */
-    const { parse } = createParser(
-      {
-        username: '',
-        hasGitHubPlus: true,
-      },
-      {
-        filePathArg: {
-          longFlag: '--config',
-          shortFlag: '-c',
-          description: 'Path to your Github config file',
-        },
-      }
-    );
-
-    const parsed = await parse(['--config', 'github.json']);
-
-    expect(parsed.username).toBe('eegli');
-    expect(parsed.hasGitHubPlus).toBe(false);
-  });
   it('custom validation', async () => {
     const { parse } = createParser(
       { birthDate: '2000-01-01' },
@@ -102,6 +76,18 @@ describe('Docs', () => {
 
     // What a weird month...
     await expect(parse(['--birthDate', '2000-22'])).rejects.toThrow();
+  });
+
+  it('decamelization', async () => {
+    const { parse } = createParser(
+      { userName: '' },
+      {
+        decamelize: true,
+      }
+    );
+    const parsed = await parse(['--user-name', 'eegli']);
+
+    expect(parsed.userName).toBe('eegli');
   });
 
   it('file reading', async () => {
@@ -130,7 +116,6 @@ describe('Docs', () => {
     expect(parsed.username).toBe('eegli');
     expect(parsed.hasGitHubPlus).toBe(false);
   });
-
   it('printing args', () => {
     const { help } = createParser(
       {
