@@ -2,13 +2,10 @@ import { createParser, ValidationError } from '../src';
 
 describe('Docs', () => {
   it('cli arguments, positional arguments', async () => {
-describe('Docs', () => {
-  it('cli arguments, positional arguments', async () => {
     const { parse } = createParser({});
     const parsed = await parse(['hello-world']);
     expect(parsed).toStrictEqual({ _: ['hello-world'] });
   });
-  it('cli arguments, boolean flags 1', async () => {
   it('cli arguments, boolean flags 1', async () => {
     const { parse } = createParser({
       verbose: false,
@@ -17,7 +14,6 @@ describe('Docs', () => {
     expect(parsed.verbose).toBe(true);
   });
   it('cli arguments, boolean flags 2', async () => {
-  it('cli arguments, boolean flags 2', async () => {
     const { parse } = createParser({
       verbose: true,
     });
@@ -25,9 +21,7 @@ describe('Docs', () => {
     expect(parsed.verbose).toBe(true);
   });
   it('cli arguments, number conversion', async () => {
-  it('cli arguments, number conversion', async () => {
     const { parse } = createParser({
-      followers: -1, // expect number
       followers: -1, // expect number
       year: '2000', // expect (date) string
     });
@@ -36,7 +30,6 @@ describe('Docs', () => {
     expect(parsed.year).toBe('2023');
   });
 
-  it('short flags', async () => {
   it('short flags', async () => {
     const { parse } = createParser(
       {
@@ -162,7 +155,6 @@ describe('Docs', () => {
     `);
   });
 
-  it('error handling, rejects for missing args', async () => {
   it('error handling, rejects for missing args', async () => {
     expect.assertions(1);
     const { parse } = createParser(
