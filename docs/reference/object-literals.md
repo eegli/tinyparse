@@ -1,5 +1,32 @@
 # Parsing Object Literals
 
-Aenean non gravida urna. Aliquam quis tortor vulputate, malesuada dui at, posuere nunc. Duis molestie nunc at tellus lobortis volutpat. In non convallis sapien, id semper felis. In commodo condimentum cursus. Mauris luctus tincidunt justo, vitae consequat mi gravida a. In venenatis leo eget sem semper, eu tristique justo hendrerit.
+Tinyparse is primarily designed to parse CLI flags and arguments. During this process, it converts the input to an object literal, which is then validated according to the rules your set.
+
+This means that you can also use it to parse object literals directly. TypeScript is smart enough to let you know what it expects.
 
 ## Examples
+
+<!-- doctest: object literals, works -->
+
+Parse a valid value.
+
+```ts
+import { createParser } from '@eegli/tinyparse';
+
+const { parse } = createParser({ username: '' });
+const parsed = await parse({ username: 'eegli' });
+
+expect(parsed.username).toBe('eegli');
+```
+
+<!-- doctest: object literals, rejects -->
+
+This will throw a `ValidationError`- Non-primitive values are not supported.
+
+```ts
+import { createParser } from '@eegli/tinyparse';
+
+const { parse } = createParser({ username: '' });
+
+await expect(parse({ username: ['eegli'] })).rejects.toThrow();
+```

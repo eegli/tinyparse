@@ -15,6 +15,8 @@ Note that decamelized aliases are only respected for CLI arguments, i.e., array 
 <!-- doctest: decamelization -->
 
 ```ts
+import { createParser } from '@eegli/tinyparse';
+
 const { parse } = createParser(
   { userName: '' },
   {
