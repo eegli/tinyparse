@@ -1,5 +1,29 @@
 # Decamelize Variables
 
-Aenean non gravida urna. Aliquam quis tortor vulputate, malesuada dui at, posuere nunc. Duis molestie nunc at tellus lobortis volutpat. In non convallis sapien, id semper felis. In commodo condimentum cursus. Mauris luctus tincidunt justo, vitae consequat mi gravida a. In venenatis leo eget sem semper, eu tristique justo hendrerit.
+In JavaScript, sane devs follow the camel case convention to name variables. However, CLI flags are typically spelled all lowercase with a `-` separator. By turning on `decamelization`, the parser will look out for the decamelized version of each flag and treat it as an alias.
 
-## Examples
+Tinyparse implements decamelization as follows:
+
+- `userName` → `user-name`
+- `username` → `username`
+- `Username` → `username`
+
+Note that decamelized aliases are only respected for CLI arguments, i.e., array of strings, and not object literals.
+
+## Example
+
+<!-- doctest: decamelization -->
+
+```ts
+import { createParser } from '@eegli/tinyparse';
+
+const { parse } = createParser(
+  { userName: '' },
+  {
+    decamelize: true,
+  }
+);
+const parsed = await parse(['--user-name', 'eegli']);
+
+expect(parsed.userName).toBe('eegli');
+```

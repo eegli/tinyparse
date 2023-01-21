@@ -4,8 +4,9 @@
 
 > A tiny, type-safe and flexible utility for parsing & validating command line arguments in Node.js
 
-<h3 align=center>⚠️This documentation is still under construction⚠️</h3>
+<!-- <h3 align=center>⚠️This documentation is still under construction⚠️</h3>
 <p align=center>As a backup, refer to the old but complete readme on GitHub</p>
+ -->
 
 ## What it is
 
@@ -35,9 +36,11 @@ I use this mostly for other pet projects of mine so it comes with some opinions 
 
 ## Examples
 
-- Check out the extensive [test suites](test) or
-- Play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts).
+- Check out the extensive [test suites](https://github.com/eegli/tinyparse/tree/main/test) or
+- Play in the dedicated [Code Sandbox](https://codesandbox.io/s/tinyparse-sandbox-pknk4?file=/src/index.ts)
 
 ## Resources
 
 This project has been guided by the amazing [Command Line Interface Guidelines](https://clig.dev/) by Aanand Prasad, Ben Firshman, Carl Tashian and Eva Parish.
+
+Further inspiration has been taken from the [Apache Commons CLI](https://commons.apache.org/proper/commons-cli/).

@@ -1,26 +1,26 @@
 import { createParser, ValidationError } from '../src';
 
 describe('Docs', () => {
-  it('cli arguments, positional arguments', async () => {
+  test('cli arguments, positional arguments', async () => {
     const { parse } = createParser({});
     const parsed = await parse(['hello-world']);
     expect(parsed).toStrictEqual({ _: ['hello-world'] });
   });
-  it('cli arguments, boolean flags 1', async () => {
+  test('cli arguments, boolean flags 1', async () => {
     const { parse } = createParser({
       verbose: false,
     });
     const parsed = await parse(['--verbose']);
     expect(parsed.verbose).toBe(true);
   });
-  it('cli arguments, boolean flags 2', async () => {
+  test('cli arguments, boolean flags 2', async () => {
     const { parse } = createParser({
       verbose: true,
     });
     const parsed = await parse(['--verbose']);
     expect(parsed.verbose).toBe(true);
   });
-  it('cli arguments, number conversion', async () => {
+  test('cli arguments, number conversion', async () => {
     const { parse } = createParser({
       followers: -1, // expect number
       year: '2000', // expect (date) string
@@ -30,7 +30,7 @@ describe('Docs', () => {
     expect(parsed.year).toBe('2023');
   });
 
-  it('short flags', async () => {
+  test('short flags', async () => {
     const { parse } = createParser(
       {
         user: '',
@@ -52,33 +52,7 @@ describe('Docs', () => {
     expect(parsed.user).toBe('eegli');
   });
 
-  it('reads from files', async () => {
-    /*
-    Assume that there is a JSON file with the following content in the current directory:
-    {
-      username: 'eegli', hasGitHubPlus: false,
-    }
-    */
-    const { parse } = createParser(
-      {
-        username: '',
-        hasGitHubPlus: true,
-      },
-      {
-        filePathArg: {
-          longFlag: '--config',
-          shortFlag: '-c',
-          description: 'Path to your Github config file',
-        },
-      }
-    );
-
-    const parsed = await parse(['--config', 'github.json']);
-
-    expect(parsed.username).toBe('eegli');
-    expect(parsed.hasGitHubPlus).toBe(false);
-  });
-  it('custom validation', async () => {
+  test('custom validation', async () => {
     const { parse } = createParser(
       { birthDate: '2000-01-01' },
       {
@@ -104,7 +78,19 @@ describe('Docs', () => {
     await expect(parse(['--birthDate', '2000-22'])).rejects.toThrow();
   });
 
-  it('file reading', async () => {
+  test('decamelization', async () => {
+    const { parse } = createParser(
+      { userName: '' },
+      {
+        decamelize: true,
+      }
+    );
+    const parsed = await parse(['--user-name', 'eegli']);
+
+    expect(parsed.userName).toBe('eegli');
+  });
+
+  test('file reading', async () => {
     /*
     Assume that there is a JSON file with the following content in the current directory:
     {
@@ -130,8 +116,7 @@ describe('Docs', () => {
     expect(parsed.username).toBe('eegli');
     expect(parsed.hasGitHubPlus).toBe(false);
   });
-
-  it('printing args', () => {
+  test('printing args', () => {
     const { help } = createParser(
       {
         username: '',
@@ -170,7 +155,7 @@ describe('Docs', () => {
     `);
   });
 
-  it('error handling, rejects for missing args', async () => {
+  test('error handling, rejects for missing args', async () => {
     expect.assertions(1);
     const { parse } = createParser(
       { username: '' },
@@ -190,7 +175,7 @@ describe('Docs', () => {
       }
     }
   });
-  it('error handling, rejects invalid types', async () => {
+  test('error handling, rejects invalid types', async () => {
     expect.assertions(1);
     const { parse } = createParser({ username: '' });
     try {
@@ -203,5 +188,18 @@ describe('Docs', () => {
         );
       }
     }
+  });
+  test('object literals, works', async () => {
+    const { parse } = createParser({ username: '' });
+    const parsed = await parse({ username: 'eegli' });
+
+    expect(parsed.username).toBe('eegli');
+  });
+  test('object literals, rejects', async () => {
+    expect.assertions(1);
+    const { parse } = createParser({ username: '' });
+
+    // @ts-expect-error test input
+    await expect(parse({ username: ['eegli'] })).rejects.toThrow();
   });
 });
