@@ -1,6 +1,6 @@
-import { Options } from './options';
+import type { Options } from './options';
 
-interface BaseArgOptions {
+interface ArgOption {
   required?: boolean;
   description?: string;
   shortFlag?: string;
@@ -10,7 +10,7 @@ interface BaseArgOptions {
   };
 }
 
-interface InternalArgOptions extends BaseArgOptions {
+export interface InternalArgOption extends ArgOption {
   _type: string;
 }
 
@@ -21,9 +21,9 @@ export type FilePathArg = {
 };
 
 export type ArgOptions<
-  O extends Record<string, unknown> = Record<string, BaseArgOptions>
+  O extends Record<string, unknown> = Record<string, ArgOption>
 > = {
-  [K in Extract<keyof O, string>]?: BaseArgOptions;
+  [K in Extract<keyof O, string>]?: ArgOption;
 };
 
 export type ParserParams<T extends SimpleRecord = SimpleRecord> = {
@@ -46,7 +46,7 @@ export interface InternalHelpOptions extends HelpOptions {
   options: Options;
 }
 
-export type InternalOptions = Map<string, InternalArgOptions>;
+export type InternalOptions = Map<string, InternalArgOption>;
 
 export type SimpleRecord = Record<string, Value>;
 

@@ -116,7 +116,49 @@ describe('Docs', () => {
     expect(parsed.username).toBe('eegli');
     expect(parsed.hasGitHubPlus).toBe(false);
   });
-  test('printing args', () => {
+  test('printing args, without decamelization', () => {
+    const { help } = createParser(
+      {
+        userName: '',
+        age: -1,
+        hasGithubProfile: false,
+      },
+      {
+        options: {
+          userName: {
+            description: 'Your custom username',
+          },
+          hasGithubProfile: {
+            description: 'Indicate whether you have a Github profile',
+          },
+          age: {
+            required: true,
+          },
+        },
+      }
+    );
+    const helpText = help({
+      title: 'CLI usage',
+      base: 'my-cli <message> [flags]',
+    });
+    expect(helpText).toMatchInlineSnapshot(`
+      "CLI usage
+
+      my-cli <message> [flags]
+
+      Required flags
+         --age [number]
+
+      Optional flags
+         --userName [string]
+         Your custom username
+
+         --hasGithubProfile [boolean]
+         Indicate whether you have a Github profile"
+    `);
+  });
+
+  test('printing args, with decamelization', () => {
     const { help } = createParser(
       {
         userName: '',
