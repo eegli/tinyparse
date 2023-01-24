@@ -27,7 +27,6 @@ const { help } = createParser(
     hasGithubProfile: false,
   },
   {
-    decamelize: true,
     options: {
       userName: {
         description: 'Your custom username',
@@ -64,7 +63,7 @@ expect(helpText).toMatchInlineSnapshot(`
 
 <!-- doctest: printing args, with decamelization -->
 
-Note that, when decamelization is enabled, the decamelized version is preferred to the original. Also, the `HelpOptions` is available
+Note that when decamelization is enabled, the decamelized version is preferred to the original.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -72,7 +71,6 @@ import { createParser } from '@eegli/tinyparse';
 const { help } = createParser(
   {
     userName: '',
-    age: -1,
     hasGithubProfile: false,
   },
   {
@@ -85,8 +83,6 @@ expect(helpText).toMatchInlineSnapshot(`
 
       Optional flags
          --user-name [string]
-
-         --age [number]
 
          --has-github-profile [boolean]"
     `);

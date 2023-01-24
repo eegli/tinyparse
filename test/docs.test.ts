@@ -163,7 +163,6 @@ describe('Docs', () => {
     const { help } = createParser(
       {
         userName: '',
-        age: -1,
         hasGithubProfile: false,
       },
       {
@@ -176,8 +175,6 @@ describe('Docs', () => {
 
       Optional flags
          --user-name [string]
-
-         --age [number]
 
          --has-github-profile [boolean]"
     `);
