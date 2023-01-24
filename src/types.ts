@@ -1,4 +1,6 @@
-export interface BaseArgOptions {
+import { Options } from './options';
+
+interface BaseArgOptions {
   required?: boolean;
   description?: string;
   shortFlag?: string;
@@ -6,6 +8,10 @@ export interface BaseArgOptions {
     isValid: (value: unknown) => boolean;
     errorMessage: (value: unknown) => string;
   };
+}
+
+interface InternalArgOptions extends BaseArgOptions {
+  _type: string;
 }
 
 export type FilePathArg = {
@@ -30,7 +36,17 @@ export type PositionalArgs = string[];
 
 export type WithPositionalArgs<T> = T & { _: PositionalArgs };
 
-export type InternalOptions = Map<string, BaseArgOptions>;
+export interface HelpOptions {
+  title?: string;
+  base?: string;
+  decamelize?: boolean;
+}
+
+export interface InternalHelpOptions extends HelpOptions {
+  options: Options;
+}
+
+export type InternalOptions = Map<string, InternalArgOptions>;
 
 export type SimpleRecord = Record<string, Value>;
 

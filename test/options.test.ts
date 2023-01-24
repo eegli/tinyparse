@@ -2,29 +2,35 @@ import { Options } from '../src/options';
 
 describe('Options', () => {
   test('key merging', () => {
-    let options = new Options(['a', 'b']);
+    let options = new Options({ a: '', b: false });
     expect([...options.entries()]).toStrictEqual([
-      ['a', {}],
-      ['b', {}],
+      ['a', { _type: 'string' }],
+      ['b', { _type: 'boolean' }],
     ]);
 
-    options = new Options(['a', 'b'], {
-      options: { a: { description: 'void' }, ignoreThis: {} },
-    });
+    options = new Options(
+      { a: '', b: 0 },
+      {
+        options: { a: { description: 'void' }, ignoreThis: {} },
+      }
+    );
 
     expect([...options.entries()]).toStrictEqual([
-      ['a', { description: 'void' }],
-      ['b', {}],
+      ['a', { description: 'void', _type: 'string' }],
+      ['b', { _type: 'number' }],
     ]);
   });
   test('flag conversion', () => {
-    const options = new Options(['one', 'two'], {
-      options: { one: { shortFlag: '-o' }, two: { shortFlag: 't' } },
-      filePathArg: {
-        longFlag: '--file',
-        shortFlag: 'f',
-      },
-    });
+    const options = new Options(
+      { one: 0, two: 0 },
+      {
+        options: { one: { shortFlag: '-o' }, two: { shortFlag: 't' } },
+        filePathArg: {
+          longFlag: '--file',
+          shortFlag: 'f',
+        },
+      }
+    );
     expect(options.filePathFlag).toStrictEqual({
       longFlag: '--file',
       shortFlag: '-f',
@@ -37,16 +43,19 @@ describe('Options', () => {
     );
   });
   test('aliases, trims short flags', () => {
-    const options = new Options(['firstfirst', 'secondSecond', 'Thirdthird'], {
-      options: {
-        firstfirst: { shortFlag: '-f' },
-        secondSecond: { shortFlag: '---second' },
-      },
-      decamelize: true,
-      filePathArg: {
-        longFlag: '--file',
-      },
-    });
+    const options = new Options(
+      { firstfirst: 0, secondSecond: 0, Thirdthird: 0 },
+      {
+        options: {
+          firstfirst: { shortFlag: '-f' },
+          secondSecond: { shortFlag: '---second' },
+        },
+        decamelize: true,
+        filePathArg: {
+          longFlag: '--file',
+        },
+      }
+    );
     expect(options.shouldDecamelize).toBeTruthy();
     expect(options.filePathFlag).toStrictEqual({ longFlag: '--file' });
     expect(options.aliases).toStrictEqual(

@@ -119,13 +119,14 @@ describe('Docs', () => {
   test('printing args', () => {
     const { help } = createParser(
       {
-        username: '',
+        userName: '',
         age: -1,
         hasGithubProfile: false,
       },
       {
+        decamelize: true,
         options: {
-          username: {
+          userName: {
             description: 'Your custom username',
           },
           hasGithubProfile: {
@@ -137,7 +138,10 @@ describe('Docs', () => {
         },
       }
     );
-    const helpText = help('CLI usage', 'my-cli <message> [flags]');
+    const helpText = help({
+      title: 'CLI usage',
+      base: 'my-cli <message> [flags]',
+    });
     expect(helpText).toMatchInlineSnapshot(`
       "CLI usage
 
@@ -147,10 +151,10 @@ describe('Docs', () => {
          --age [number]
 
       Optional flags
-         --username [string]
+         --user-name [string]
          Your custom username
 
-         --hasGithubProfile [boolean]
+         --has-github-profile [boolean]
          Indicate whether you have a Github profile"
     `);
   });

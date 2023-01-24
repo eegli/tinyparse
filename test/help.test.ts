@@ -3,19 +3,20 @@ import { createParser } from '../src';
 describe('Helper text', () => {
   it('creates helper text with descriptions', () => {
     const defaultValues = {
-      id: '',
+      UserId: '',
       color: '',
       withAuth: false,
       port: 999,
     };
 
     const { help } = createParser(defaultValues, {
+      decamelize: true,
       filePathArg: {
         longFlag: '--config',
         description: 'The config file to use',
       },
       options: {
-        id: {},
+        UserId: {},
         color: {
           required: true,
           description: 'A color',
@@ -32,7 +33,7 @@ describe('Helper text', () => {
       },
     });
 
-    expect(help('CLI usage', 'copy <file1> <file2> [flags]'))
+    expect(help({ title: 'CLI usage', base: 'copy <file1> <file2> [flags]' }))
       .toMatchInlineSnapshot(`
       "CLI usage
 
@@ -46,9 +47,9 @@ describe('Helper text', () => {
          The port to listen on
 
       Optional flags
-         --id [string]
+         --user-id [string]
 
-         -wa, --withAuth [boolean]
+         -wa, --with-auth [boolean]
          Require authentication for this action
 
          --config [string]
@@ -84,55 +85,6 @@ describe('Helper text', () => {
          --withAuth [boolean]
 
          --port [number]"
-    `);
-  });
-  it('matches readme example', () => {
-    const { help } = createParser(
-      {
-        username: '',
-        age: 0,
-        hasGithubProfile: false,
-      },
-      {
-        options: {
-          username: {
-            // Fail if there is no value for "username"
-            required: true,
-            description: 'Your custom username',
-          },
-          age: {
-            // A custom validator that will receive the value for
-            // "age". It must return a boolean
-            customValidator: {
-              isValid: (value) => typeof value === 'number' && value > 0,
-              // The error message for when validation fails
-              errorMessage: (v) => `${v} is not a positive number`,
-            },
-          },
-          hasGithubProfile: {
-            description: 'Indicate whether you have a Github profile',
-            // Short flag alias. Only takes effect when parsing an
-            // array of strings
-            shortFlag: '-ghp',
-          },
-        },
-      }
-    );
-    expect(help('CLI usage', 'my-cli <message> [flags]'))
-      .toMatchInlineSnapshot(`
-      "CLI usage
-
-      my-cli <message> [flags]
-
-      Required flags
-         --username [string]
-         Your custom username
-
-      Optional flags
-         --age [number]
-
-         -ghp, --hasGithubProfile [boolean]
-         Indicate whether you have a Github profile"
     `);
   });
 });

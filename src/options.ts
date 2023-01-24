@@ -1,5 +1,10 @@
-import decamelize from './lib/decamelize';
-import { FilePathArg, InternalOptions, ParserParams } from './types';
+import {
+  FilePathArg,
+  InternalOptions,
+  ParserParams,
+  SimpleRecord,
+} from './types';
+import { decamelize } from './utils';
 
 export class Options {
   private readonly _opts: InternalOptions = new Map();
@@ -8,15 +13,16 @@ export class Options {
   public readonly shouldDecamelize: boolean;
   public readonly filePathFlag?: FilePathArg;
 
-  constructor(keys: string[], params: ParserParams = {}) {
+  constructor(defaults: SimpleRecord, options: ParserParams = {}) {
     // Merge option keys/flags with user-provided options
-    for (const key of keys) {
-      this._opts.set(key, params.options?.[key] || {});
+    for (const [key, value] of Object.entries(defaults)) {
+      const keyOptions = { ...options.options?.[key], _type: typeof value };
+      this._opts.set(key, keyOptions);
     }
 
     // Global options
-    this.shouldDecamelize = !!params.decamelize;
-    this.filePathFlag = params.filePathArg;
+    this.shouldDecamelize = !!options.decamelize;
+    this.filePathFlag = options.filePathArg;
 
     // Create alias map
     this._createAliasMap();
@@ -30,7 +36,7 @@ export class Options {
         opts.shortFlag = shortFlag;
       }
       if (this.shouldDecamelize) {
-        const decamelized = decamelize(key, { separator: '-' });
+        const decamelized = decamelize(key);
         if (decamelized !== key) {
           const longFlag = this._makeFlag(decamelized, 'long');
           this._aliases.set(longFlag, key);
