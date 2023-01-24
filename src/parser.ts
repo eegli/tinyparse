@@ -1,5 +1,5 @@
 import { ValidationError } from './error';
-import { BaseArgOptions, SimpleRecord, Value } from './types';
+import { InternalOptions, SimpleRecord, Value } from './types';
 import { isSameType } from './utils';
 
 export class Parser<T extends SimpleRecord> {
@@ -8,10 +8,7 @@ export class Parser<T extends SimpleRecord> {
   constructor(private readonly _defaultValues: T) {}
 
   // eslint-disable-next-line require-await
-  public async parse(
-    input: Partial<T>,
-    options: Map<string, BaseArgOptions>
-  ): Promise<T> {
+  public async parse(input: Partial<T>, options: InternalOptions): Promise<T> {
     const config = new Map<string, Value | symbol>(
       Object.entries(this._defaultValues)
     );

@@ -1,3 +1,4 @@
+import type { ParserOptions } from '../src';
 import { createParser, ValidationError } from '../src';
 
 describe('Docs', () => {
@@ -116,16 +117,16 @@ describe('Docs', () => {
     expect(parsed.username).toBe('eegli');
     expect(parsed.hasGitHubPlus).toBe(false);
   });
-  test('printing args', () => {
+  test('printing args, without decamelization', () => {
     const { help } = createParser(
       {
-        username: '',
+        userName: '',
         age: -1,
         hasGithubProfile: false,
       },
       {
         options: {
-          username: {
+          userName: {
             description: 'Your custom username',
           },
           hasGithubProfile: {
@@ -137,7 +138,10 @@ describe('Docs', () => {
         },
       }
     );
-    const helpText = help('CLI usage', 'my-cli <message> [flags]');
+    const helpText = help({
+      title: 'CLI usage',
+      base: 'my-cli <message> [flags]',
+    });
     expect(helpText).toMatchInlineSnapshot(`
       "CLI usage
 
@@ -147,11 +151,32 @@ describe('Docs', () => {
          --age [number]
 
       Optional flags
-         --username [string]
+         --userName [string]
          Your custom username
 
          --hasGithubProfile [boolean]
          Indicate whether you have a Github profile"
+    `);
+  });
+
+  test('printing args, with decamelization', () => {
+    const { help } = createParser(
+      {
+        userName: '',
+        hasGithubProfile: false,
+      },
+      {
+        decamelize: true,
+      }
+    );
+    const helpText = help();
+    expect(helpText).toMatchInlineSnapshot(`
+      "Usage
+
+      Optional flags
+         --user-name [string]
+
+         --has-github-profile [boolean]"
     `);
   });
 
@@ -201,5 +226,24 @@ describe('Docs', () => {
 
     // @ts-expect-error test input
     await expect(parse({ username: ['eegli'] })).rejects.toThrow();
+  });
+  // eslint-disable-next-line jest/expect-expect
+  test('typescript, bootstrapping', () => {
+    const defaults = {
+      abc: 'abc',
+    };
+
+    type CustomOptions = ParserOptions<typeof defaults>;
+
+    // Construct the options for a parser...
+    const options: CustomOptions = {
+      options: {
+        abc: {
+          /* ... */
+        },
+      },
+    };
+    // ...and bootstrap it later
+    createParser(defaults, options);
   });
 });

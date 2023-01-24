@@ -1,10 +1,15 @@
 import { ArgvParser } from './argv';
 import { displayHelp } from './help';
 import { Options } from './options';
-import { ParserParams, SimpleRecord, WithPositionalArgs } from './types';
+import {
+  HelpOptions,
+  ParserOptions,
+  SimpleRecord,
+  WithPositionalArgs,
+} from './types';
 
 export { ValidationError } from './error';
-export type { ParserParams, WithPositionalArgs };
+export type { ParserOptions };
 
 /**
  * Parser factory function. Returns a parser that is bound to the
@@ -14,9 +19,9 @@ export type { ParserParams, WithPositionalArgs };
  */
 export function createParser<T extends SimpleRecord>(
   defaultValues: T,
-  params?: ParserParams<T>
+  params?: ParserOptions<T>
 ) {
-  const options = new Options(Object.keys(defaultValues), params);
+  const options = new Options(defaultValues, params);
   const parser = new ArgvParser<T>(defaultValues);
 
   async function parse(input?: Partial<T>): Promise<T>;
@@ -34,12 +39,11 @@ export function createParser<T extends SimpleRecord>(
   }
 
   return {
-    help: function (title?: string, baseCommand?: string): string {
+    help: function ({ title, base }: HelpOptions = {}): string {
       return displayHelp({
-        defaultValues,
         options,
+        base,
         title,
-        baseCommand,
       });
     },
     parse,
