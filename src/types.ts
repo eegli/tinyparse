@@ -1,5 +1,3 @@
-import type { Options } from './options';
-
 interface ArgOption {
   required?: boolean;
   description?: string;
@@ -26,7 +24,12 @@ export type ArgOptions<
   [K in Extract<keyof O, string>]?: ArgOption;
 };
 
-export type ParserParams<T extends SimpleRecord = SimpleRecord> = {
+export interface HelpOptions {
+  title?: string;
+  base?: string;
+}
+
+export type ParserOptions<T extends SimpleRecord = SimpleRecord> = {
   options?: ArgOptions<T>;
 } & {
   decamelize?: boolean;
@@ -35,16 +38,6 @@ export type ParserParams<T extends SimpleRecord = SimpleRecord> = {
 export type PositionalArgs = string[];
 
 export type WithPositionalArgs<T> = T & { _: PositionalArgs };
-
-export interface HelpOptions {
-  title?: string;
-  base?: string;
-  decamelize?: boolean;
-}
-
-export interface InternalHelpOptions extends HelpOptions {
-  options: Options;
-}
 
 export type InternalOptions = Map<string, InternalArgOption>;
 

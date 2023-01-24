@@ -1,3 +1,4 @@
+import type { ParserOptions } from '../src';
 import { createParser, ValidationError } from '../src';
 
 describe('Docs', () => {
@@ -167,37 +168,18 @@ describe('Docs', () => {
       },
       {
         decamelize: true,
-        options: {
-          userName: {
-            description: 'Your custom username',
-          },
-          hasGithubProfile: {
-            description: 'Indicate whether you have a Github profile',
-          },
-          age: {
-            required: true,
-          },
-        },
       }
     );
-    const helpText = help({
-      title: 'CLI usage',
-      base: 'my-cli <message> [flags]',
-    });
+    const helpText = help();
     expect(helpText).toMatchInlineSnapshot(`
-      "CLI usage
-
-      my-cli <message> [flags]
-
-      Required flags
-         --age [number]
+      "Usage
 
       Optional flags
          --user-name [string]
-         Your custom username
 
-         --has-github-profile [boolean]
-         Indicate whether you have a Github profile"
+         --age [number]
+
+         --has-github-profile [boolean]"
     `);
   });
 
@@ -247,5 +229,24 @@ describe('Docs', () => {
 
     // @ts-expect-error test input
     await expect(parse({ username: ['eegli'] })).rejects.toThrow();
+  });
+  // eslint-disable-next-line jest/expect-expect
+  test('typescript, bootstrapping', () => {
+    const defaults = {
+      abc: 'abc',
+    };
+
+    type CustomOptions = ParserOptions<typeof defaults>;
+
+    // Construct the options for a parser...
+    const options: CustomOptions = {
+      options: {
+        abc: {
+          /* ... */
+        },
+      },
+    };
+    // ...and bootstrap it later
+    createParser(defaults, options);
   });
 });

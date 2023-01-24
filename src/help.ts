@@ -1,5 +1,10 @@
-import { InternalHelpOptions } from './types';
+import { Options } from './options';
+import { HelpOptions } from './types';
 import { decamelize } from './utils';
+
+interface InternalHelpOptions extends HelpOptions {
+  options: Options;
+}
 
 export const displayHelp = ({
   options,

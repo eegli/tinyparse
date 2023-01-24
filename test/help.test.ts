@@ -10,7 +10,6 @@ describe('Helper text', () => {
     };
 
     const { help } = createParser(defaultValues, {
-      decamelize: true,
       filePathArg: {
         longFlag: '--config',
         description: 'The config file to use',
@@ -47,14 +46,34 @@ describe('Helper text', () => {
          The port to listen on
 
       Optional flags
-         --user-id [string]
+         --UserId [string]
 
-         -wa, --with-auth [boolean]
+         -wa, --withAuth [boolean]
          Require authentication for this action
 
          --config [string]
          The config file to use
       "
+    `);
+  });
+  it('decamelization handling enabled', () => {
+    const defaultValues = {
+      UserId: '',
+      someColor: '',
+      withAuth: false,
+    };
+    const { help } = createParser(defaultValues, {
+      decamelize: true,
+    });
+    expect(help()).toMatchInlineSnapshot(`
+      "Usage
+
+      Optional flags
+         --user-id [string]
+
+         --some-color [string]
+
+         --with-auth [boolean]"
     `);
   });
   it('creates helper text for file flag only', () => {

@@ -1,7 +1,7 @@
 import {
   FilePathArg,
   InternalOptions,
-  ParserParams,
+  ParserOptions,
   SimpleRecord,
 } from './types';
 import { decamelize } from './utils';
@@ -13,7 +13,7 @@ export class Options {
   public readonly shouldDecamelize: boolean;
   public readonly filePathFlag?: FilePathArg;
 
-  constructor(defaults: SimpleRecord, options: ParserParams = {}) {
+  constructor(defaults: SimpleRecord, options: ParserOptions = {}) {
     // Merge option keys/flags with user-provided options
     for (const [key, value] of Object.entries(defaults)) {
       const keyOptions = { ...options.options?.[key], _type: typeof value };

@@ -3,13 +3,13 @@ import { displayHelp } from './help';
 import { Options } from './options';
 import {
   HelpOptions,
-  ParserParams,
+  ParserOptions,
   SimpleRecord,
   WithPositionalArgs,
 } from './types';
 
 export { ValidationError } from './error';
-export type { ParserParams, WithPositionalArgs };
+export type { ParserOptions };
 
 /**
  * Parser factory function. Returns a parser that is bound to the
@@ -19,7 +19,7 @@ export type { ParserParams, WithPositionalArgs };
  */
 export function createParser<T extends SimpleRecord>(
   defaultValues: T,
-  params?: ParserParams<T>
+  params?: ParserOptions<T>
 ) {
   const options = new Options(defaultValues, params);
   const parser = new ArgvParser<T>(defaultValues);
@@ -39,10 +39,11 @@ export function createParser<T extends SimpleRecord>(
   }
 
   return {
-    help: function (helpOptions?: HelpOptions): string {
+    help: function ({ title, base }: HelpOptions = {}): string {
       return displayHelp({
         options,
-        ...helpOptions,
+        base,
+        title,
       });
     },
     parse,
