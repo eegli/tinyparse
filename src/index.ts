@@ -32,10 +32,10 @@ export function createParser<T extends SimpleRecord>(
         aliases: options.aliases,
         filePathFlag: options.filePathFlag?.longFlag,
       });
-      const parsed = await parser.parse(transformed, options.options);
+      const parsed = await parser.parse(transformed, options, true);
       return parser.build(parsed, positionals);
     }
-    return parser.parse(input, options.options);
+    return parser.parse(input, options, false);
   }
 
   return {

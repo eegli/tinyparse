@@ -74,4 +74,8 @@ export class Options {
   public entries() {
     return this._opts.entries();
   }
+
+  public get(key: string) {
+    return this._opts.get(key);
+  }
 }
