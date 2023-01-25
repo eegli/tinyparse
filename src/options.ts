@@ -1,17 +1,19 @@
 import {
   FilePathArg,
+  Flag,
+  FlagAlias,
   InternalOptions,
   ParserOptions,
   SimpleRecord,
 } from './types';
-import { decamelize } from './utils';
+import Utils from './utils';
 
 export class Options {
   private readonly _opts: InternalOptions = new Map();
-  private readonly _aliases: Map<string, string> = new Map();
+  private readonly _aliases: Map<FlagAlias, Flag> = new Map();
 
   public readonly shouldDecamelize: boolean;
-  public readonly filePathFlag?: FilePathArg;
+  public readonly filePathArg?: FilePathArg;
 
   constructor(defaults: SimpleRecord, options: ParserOptions = {}) {
     // Merge option keys/flags with user-provided options
@@ -22,7 +24,7 @@ export class Options {
 
     // Global options
     this.shouldDecamelize = !!options.decamelize;
-    this.filePathFlag = options.filePathArg;
+    this.filePathArg = options.filePathArg;
 
     // Create alias map
     this._createAliasMap();
@@ -36,7 +38,7 @@ export class Options {
         opts.shortFlag = shortFlag;
       }
       if (this.shouldDecamelize) {
-        const decamelized = decamelize(key);
+        const decamelized = Utils.decamelize(key);
         if (decamelized !== key) {
           const longFlag = this._makeFlag(decamelized, 'long');
           this._aliases.set(longFlag, key);
@@ -44,34 +46,37 @@ export class Options {
       }
     }
 
-    if (this.filePathFlag) {
-      this.filePathFlag.longFlag = this._makeFlag(
-        this.filePathFlag.longFlag,
-        'long'
+    if (this.filePathArg) {
+      this.filePathArg.longFlag = this._removeFlagPrefix(
+        this.filePathArg.longFlag
       );
     }
-    if (this.filePathFlag?.shortFlag) {
-      this.filePathFlag.shortFlag = this._makeFlag(
-        this.filePathFlag.shortFlag,
-        'short'
+    if (this.filePathArg?.shortFlag) {
+      this.filePathArg.shortFlag = this._removeFlagPrefix(
+        this.filePathArg.shortFlag
       );
     }
   }
 
-  private _makeFlag(flag: string, type: 'long' | 'short') {
+  private _removeFlagPrefix(flag: string): Flag {
+    return flag.trim().replace(/^-+/, '');
+  }
+
+  private _makeFlag(flag: string, type: 'long' | 'short'): FlagAlias {
+    flag = this._removeFlagPrefix(flag);
     const prefix = type === 'long' ? '--' : '-';
-    flag = flag.trim().replace(/^-+/, '');
     return `${prefix}${flag}`;
+  }
+
+  public entries() {
+    return this._opts.entries();
   }
 
   public get aliases() {
     return this._aliases;
   }
+
   public get options() {
     return this._opts;
-  }
-
-  public entries() {
-    return this._opts.entries();
   }
 }

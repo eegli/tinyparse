@@ -170,6 +170,28 @@ describe('Parsing with options', () => {
     await expect(parse(input)).resolves.toStrictEqual(expected);
   });
 
+  it('throws correct decamelized error message depending on input', async () => {
+    const { parse } = createParser(defaultValues, {
+      decamelize: true,
+      options: {
+        stringProp: {
+          required: true,
+        },
+      },
+    });
+    expect.assertions(2);
+    try {
+      await parse([]);
+    } catch (e) {
+      expect(e).toHaveProperty('message', '"string-prop" is required');
+    }
+    try {
+      await parse({});
+    } catch (e) {
+      expect(e).toHaveProperty('message', '"stringProp" is required');
+    }
+  });
+
   it('handles short flags', async () => {
     const { parse } = createParser(defaultValues, {
       decamelize: true,

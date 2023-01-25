@@ -1,22 +1,32 @@
-import { readFileSync } from 'fs';
 import { ValidationError } from './error';
 import _decamelize from './lib/decamelize';
 
+type ReadFileSync = typeof import('fs').readFileSync;
+
 const allowedTypes = new Set(['string', 'number', 'boolean']);
 
-export function isSameType(type: string, reference: string): boolean {
-  return allowedTypes.has(type) && type === reference;
-}
+export default class Utils {
+  public static isSameType(type: string, reference: string): boolean {
+    return allowedTypes.has(type) && type === reference;
+  }
 
-export function decamelize(value: string) {
-  return _decamelize(value, { separator: '-' });
-}
+  public static decamelize(value: string) {
+    return _decamelize(value, { separator: '-' });
+  }
 
-export function parseJSONFile(path: string): [string, unknown][] {
-  try {
-    const file = readFileSync(path, { encoding: 'utf8' });
-    return Object.entries(JSON.parse(file));
-  } catch (error) {
-    throw new ValidationError(`${path} is not a valid JSON file`);
+  public static parseJSONFile(path: string): [string, unknown][] {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const readFileSync = require('fs').readFileSync as ReadFileSync;
+      const file = readFileSync(path, { encoding: 'utf8' });
+      return Object.entries(JSON.parse(file));
+    } catch (error) {
+      throw new ValidationError(`${path} is not a valid JSON file`);
+    }
+  }
+
+  public static getFlagType(value: string): [boolean, boolean] {
+    const isShortFlag = value[0] === '-';
+    return [isShortFlag, isShortFlag && value[1] === '-'];
   }
 }

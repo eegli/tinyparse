@@ -1,6 +1,6 @@
 import { Options } from './options';
 import { HelpOptions } from './types';
-import { decamelize } from './utils';
+import Utils from './utils';
 
 interface InternalHelpOptions extends HelpOptions {
   options: Options;
@@ -32,25 +32,28 @@ export const displayHelp = ({
   sortedOptions.forEach(
     ([name, { description, required, shortFlag, _type }], idx) => {
       const isLast = idx === sortedOptions.length - 1;
-      name = options.shouldDecamelize ? decamelize(name) : name;
+      name = options.shouldDecamelize ? Utils.decamelize(name) : name;
 
       if (optionalFlag && !required) {
         str += 'Optional flags\n';
         optionalFlag = false;
       }
 
-      str += `${tab}${shortFlag ? `${shortFlag}, ` : ''}`;
+      str += tab;
+      if (shortFlag) str += `${shortFlag}, `;
       str += `--${name}`;
       str += ` [${_type}]`;
-      str += description ? `\n${tab}` + description : '';
-      str += isLast ? '' : '\n\n';
+      if (description) str += `\n${tab}${description}`;
+      if (!isLast) str += '\n\n';
     }
   );
 
-  if (options.filePathFlag) {
-    const { longFlag, description } = options.filePathFlag;
-    str += `\n\n${tab}${longFlag} [string]\n`;
-    str += description ? `${tab}${description}\n` : '';
+  if (options.filePathArg) {
+    const { longFlag, shortFlag, description } = options.filePathArg;
+    str += `\n\n${tab}`;
+    if (shortFlag) str += `-${shortFlag}, `;
+    str += `--${longFlag} [string]\n`;
+    if (description) str += `${tab}${description}\n`;
   }
   return str;
 };

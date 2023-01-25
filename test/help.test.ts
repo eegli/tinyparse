@@ -11,7 +11,8 @@ describe('Helper text', () => {
 
     const { help } = createParser(defaultValues, {
       filePathArg: {
-        longFlag: '--config',
+        longFlag: '-config',
+        shortFlag: '-c',
         description: 'The config file to use',
       },
       options: {
@@ -51,7 +52,7 @@ describe('Helper text', () => {
          -wa, --withAuth [boolean]
          Require authentication for this action
 
-         --config [string]
+         -c, --config [string]
          The config file to use
       "
     `);
