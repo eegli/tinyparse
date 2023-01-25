@@ -20,29 +20,28 @@ describe('Options', () => {
       ['b', { _type: 'number' }],
     ]);
   });
-  test('flag conversion', () => {
-    const options = new Options(
-      { one: 0, two: 0 },
-      {
-        options: { one: { shortFlag: '-o' }, two: { shortFlag: 't' } },
-        filePathArg: {
-          longFlag: '--file',
-          shortFlag: 'f',
-        },
-      }
-    );
-    expect(options.filePathFlag).toStrictEqual({
-      longFlag: '--file',
-      shortFlag: '-f',
+  test('file path flag conversion', () => {
+    [
+      ['file', 'f'],
+      ['--file', '--f'],
+      ['-file', '-f'],
+    ].forEach(([longFlag, shortFlag]) => {
+      const options = new Options(
+        {},
+        {
+          filePathArg: {
+            longFlag,
+            shortFlag,
+          },
+        }
+      );
+      expect(options.filePathArg).toStrictEqual({
+        longFlag: 'file',
+        shortFlag: 'f',
+      });
     });
-    expect(options.aliases).toStrictEqual(
-      new Map([
-        ['-o', 'one'],
-        ['-t', 'two'],
-      ])
-    );
   });
-  test('aliases, trims short flags', () => {
+  test('alias construction with flag conversion', () => {
     const options = new Options(
       { firstfirst: 0, secondSecond: 0, Thirdthird: 0 },
       {
@@ -52,19 +51,15 @@ describe('Options', () => {
         },
         decamelize: true,
         filePathArg: {
-          longFlag: '--file',
+          longFlag: ' --file',
         },
       }
     );
     expect(options.shouldDecamelize).toBeTruthy();
-    expect(options.filePathFlag).toStrictEqual({ longFlag: '--file' });
-    expect(options.aliases).toStrictEqual(
-      new Map([
-        ['-f', 'firstfirst'],
-        ['-second', 'secondSecond'],
-        ['--second-second', 'secondSecond'],
-        ['--thirdthird', 'Thirdthird'],
-      ])
-    );
+    expect(options.filePathArg).toStrictEqual({ longFlag: 'file' });
+    expect(options.aliases.get('-f')).toBe('firstfirst');
+    expect(options.aliases.get('-second')).toBe('secondSecond');
+    expect(options.aliases.get('--second-second')).toBe('secondSecond');
+    expect(options.aliases.get('--thirdthird')).toBe('Thirdthird');
   });
 });

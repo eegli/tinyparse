@@ -1,11 +1,12 @@
 import { Parser } from './parser';
-import { PositionalArgs, SimpleRecord, WithPositionalArgs } from './types';
-import { parseJSONFile } from './utils';
-
-type TransformArgs = {
-  aliases: Map<string, string>;
-  filePathFlag?: string;
-};
+import {
+  FilePathArg,
+  FlagAliasMap,
+  PositionalArgs,
+  SimpleRecord,
+  WithPositionalArgs,
+} from './types';
+import Utils from './utils';
 
 export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
   public build(input: T, positionals: string[]): WithPositionalArgs<T> {
@@ -16,7 +17,8 @@ export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
   }
   public transform(
     argv: string[],
-    { aliases, filePathFlag }: TransformArgs
+    aliases: FlagAliasMap,
+    filePathArg?: FilePathArg
   ): [Partial<T>, PositionalArgs] {
     const flagMap = new Map<string, unknown>();
 
@@ -26,7 +28,10 @@ export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
     for (let i = 0; i < argv.length; i++) {
       const curr = argv[i];
 
-      if (!curr.startsWith('-') && isPositional) {
+      // A short flag is also a long flag
+      const [isShortFlag, isLongFlag] = Utils.getFlagType(curr);
+
+      if (!isShortFlag && isPositional) {
         positionals.push(curr);
         continue;
       }
@@ -36,12 +41,12 @@ export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
       let flag = curr;
 
       // Lookup short flag or decamelized alias
-      if (aliases.has(curr)) {
+      const originalFlag = aliases.get(curr);
+      if (originalFlag) {
         // Now flag is the original key
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        flag = aliases.get(curr)!;
+        flag = originalFlag;
         // No alias, it's likely the original, just strip the prefix
-      } else if (curr.startsWith('--')) {
+      } else if (isLongFlag) {
         flag = curr.slice(2);
         // Ignore non-flags
       } else {
@@ -51,8 +56,12 @@ export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
       const flagVal = argv[i + 1];
 
       // Parse a file
-      if (filePathFlag?.slice(2) === flag) {
-        parseJSONFile(flagVal).forEach(([key, content]) =>
+      const maybeFilePath = isLongFlag
+        ? filePathArg?.longFlag
+        : filePathArg?.shortFlag;
+
+      if (maybeFilePath === flag) {
+        Utils.parseJSONFile(flagVal).forEach(([key, content]) =>
           flagMap.set(key, content)
         );
       }

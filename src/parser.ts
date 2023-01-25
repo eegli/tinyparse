@@ -1,7 +1,7 @@
 import { ValidationError } from './error';
 import { Options } from './options';
 import { SimpleRecord, Value } from './types';
-import { decamelize, isSameType } from './utils';
+import Utils from './utils';
 
 enum ErrorType {
   MissingRequired,
@@ -27,7 +27,9 @@ export class Parser<T extends SimpleRecord> {
 
   private _throw(p: ErrorArgs): never {
     const { type } = p;
-    const value = this._shouldDecamelizeError ? decamelize(p.value) : p.value;
+    const value = this._shouldDecamelizeError
+      ? Utils.decamelize(p.value)
+      : p.value;
 
     switch (type) {
       case ErrorType.MissingRequired:
@@ -77,11 +79,11 @@ export class Parser<T extends SimpleRecord> {
       }
 
       const receivedType = typeof flagValue;
-      const customValidator = options.get(flag)?.customValidator;
+      const customValidator = options.options.get(flag)?.customValidator;
 
       let argNameToThrow = flag;
       if (fromArgv && options.shouldDecamelize) {
-        argNameToThrow = decamelize(flag);
+        argNameToThrow = Utils.decamelize(argNameToThrow);
       }
 
       // Custom validation
@@ -98,7 +100,7 @@ export class Parser<T extends SimpleRecord> {
 
       // Default validation (based on types) -  The received type must
       // corresponds to the original type
-      if (isSameType(expectedType, receivedType)) {
+      if (Utils.isSameType(expectedType, receivedType)) {
         config.set(flag, flagValue);
       } else {
         this._throw({

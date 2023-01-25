@@ -1,7 +1,17 @@
+type _ = Record<never, never>;
+
+// Flags do NOT start with a single or double dash
+export type Flag = string & _;
+
+// Flag aliases start with a single or double dash
+export type FlagAlias = string & _;
+
+export type FlagAliasMap = Map<FlagAlias, Flag>;
+
 interface ArgOption {
   required?: boolean;
   description?: string;
-  shortFlag?: string;
+  shortFlag?: Flag;
   customValidator?: {
     isValid: (value: unknown) => boolean;
     errorMessage: (value: unknown) => string;
@@ -13,8 +23,8 @@ export interface InternalArgOption extends ArgOption {
 }
 
 export type FilePathArg = {
-  longFlag: string;
-  shortFlag?: string;
+  longFlag: Flag;
+  shortFlag?: Flag;
   description?: string;
 };
 
@@ -39,7 +49,7 @@ export type PositionalArgs = string[];
 
 export type WithPositionalArgs<T> = T & { _: PositionalArgs };
 
-export type InternalOptions = Map<string, InternalArgOption>;
+export type InternalOptions = Map<Flag, InternalArgOption>;
 
 export type SimpleRecord = Record<string, Value>;
 
