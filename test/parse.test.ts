@@ -234,7 +234,8 @@ describe('Parsing with options', () => {
           required: true,
           customValidator: {
             isValid: (v) => v === 'hello',
-            errorMessage: (v) => `did get "${v}", expected hello`,
+            errorMessage: (v) =>
+              `did get "${v}" for "stringProp", expected hello`,
           },
         },
       },
@@ -244,7 +245,10 @@ describe('Parsing with options', () => {
       await parse({ stringProp: 'goodbye' });
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'did get "goodbye", expected hello');
+      expect(e).toHaveProperty(
+        'message',
+        'did get "goodbye" for "stringProp", expected hello'
+      );
     }
   });
 });
