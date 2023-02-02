@@ -33,6 +33,7 @@
   "scripts": {
     "build": "preconstruct build",
     "build:release": "yarn build && rm -rf _release && yarn pack && mkdir _release && tar zxvf package.tgz --directory _release && rm package.tgz",
+    "docs": "docsify serve docs",
     "format": "prettier --write src test",
     "postinstall": "husky install",
     "lint": "eslint src test --ext .ts",
@@ -40,23 +41,22 @@
     "postpack": "pinst --enable",
     "prepublish": "preconstruct build",
     "test": "jest --verbose",
-    "test:unit": "jest --selectProjects unit",
-    "test:types": "jest --selectProjects types",
-    "test:integration": "yarn build && cd test/integration && npm install -S ../../ && npm test",
     "test:coverage": "jest --coverage",
-    "test:watch": "jest  --verbose --watch",
-    "docs": "docsify serve docs"
+    "test:integration": "yarn build && cd test/integration && npm install -S ../../ && npm test",
+    "test:types": "jest --selectProjects types",
+    "test:unit": "jest --selectProjects unit",
+    "test:watch": "jest  --verbose --watch"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npx lint-staged"
+    }
   },
   "lint-staged": {
     "{src,test}/*.ts": [
       "eslint --cache",
       "prettier --write"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npx lint-staged"
-    }
   },
   "devDependencies": {
     "@babel/preset-env": "^7.20.2",
