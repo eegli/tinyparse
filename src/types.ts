@@ -39,7 +39,7 @@ export interface HelpOptions {
   base?: string;
 }
 
-export type ParserOptions<T extends SimpleRecord = SimpleRecord> = {
+export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
   options?: ArgOptions<T>;
 } & {
   decamelize?: boolean;
@@ -51,6 +51,6 @@ export type WithPositionalArgs<T> = T & { _: PositionalArgs };
 
 export type InternalOptions = Map<Flag, InternalArgOption>;
 
-export type SimpleRecord = Record<string, Value>;
+export type PrimitiveRecord = Record<string, Value>;
 
 export type Value = string | number | boolean;

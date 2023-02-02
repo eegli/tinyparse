@@ -4,7 +4,7 @@ import {
   FlagAlias,
   InternalOptions,
   ParserOptions,
-  SimpleRecord,
+  PrimitiveRecord,
 } from './types';
 import Utils from './utils';
 
@@ -15,7 +15,7 @@ export class Options {
   public readonly shouldDecamelize: boolean;
   public readonly filePathArg?: FilePathArg;
 
-  constructor(defaults: SimpleRecord, options: ParserOptions = {}) {
+  constructor(defaults: PrimitiveRecord, options: ParserOptions = {}) {
     // Merge option keys/flags with user-provided options
     for (const [key, value] of Object.entries(defaults)) {
       const keyOptions = { ...options.options?.[key], _type: typeof value };

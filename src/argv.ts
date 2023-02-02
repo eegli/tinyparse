@@ -3,12 +3,12 @@ import {
   FilePathArg,
   FlagAliasMap,
   PositionalArgs,
-  SimpleRecord,
+  PrimitiveRecord,
   WithPositionalArgs,
 } from './types';
 import Utils from './utils';
 
-export class ArgvParser<T extends SimpleRecord> extends Parser<T> {
+export class ArgvParser<T extends PrimitiveRecord> extends Parser<T> {
   public build(input: T, positionals: string[]): WithPositionalArgs<T> {
     return {
       ...input,

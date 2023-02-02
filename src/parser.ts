@@ -1,9 +1,9 @@
 import { ValidationError } from './error';
 import { Options } from './options';
-import { SimpleRecord, Value } from './types';
+import { PrimitiveRecord, Value } from './types';
 import Utils from './utils';
 
-export class Parser<T extends SimpleRecord> {
+export class Parser<T extends PrimitiveRecord> {
   private readonly _requiredSym = Symbol('isRequired');
   private _shouldDecamelizeError = false;
 
@@ -55,7 +55,8 @@ export class Parser<T extends SimpleRecord> {
         if (customValidator.isValid(flagValue)) {
           config.set(flag, flagValue);
         } else {
-          throw new ValidationError(customValidator.errorMessage(flagValue));
+          const errorMessage = customValidator.errorMessage(flagValue);
+          throw new ValidationError(errorMessage);
         }
       }
 

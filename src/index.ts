@@ -4,7 +4,7 @@ import { Options } from './options';
 import {
   HelpOptions,
   ParserOptions,
-  SimpleRecord,
+  PrimitiveRecord,
   WithPositionalArgs,
 } from './types';
 
@@ -17,7 +17,7 @@ export type { ParserOptions };
  *
  * @export
  */
-export function createParser<T extends SimpleRecord>(
+export function createParser<T extends PrimitiveRecord>(
   defaultValues: T,
   params?: ParserOptions<T>
 ) {
