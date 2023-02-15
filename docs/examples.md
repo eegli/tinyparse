@@ -2,7 +2,7 @@
 
 Here's a full example on how you could build a minimal command line interface with Tinyparse.
 
-Make sure your `package.json`'s `type` field is set to `module` or convert the `import` to a `require` statement (like [here](https://github.com/eegli/tinyparse/tree/examples)).
+Make sure your `package.json`'s `type` field is set to `module` or convert the `import` to a `require` statement.
 
 Then, invoke the script like so:
 
