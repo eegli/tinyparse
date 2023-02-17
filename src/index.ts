@@ -24,19 +24,30 @@ export function createParser<T extends PrimitiveRecord>(
   const options = new Options(defaultValues, params);
   const parser = new ArgvParser<T>(defaultValues);
 
-  async function parse(input?: Partial<T>): Promise<T>;
-  async function parse(input?: string[]): Promise<WithPositionalArgs<T>>;
-  async function parse(input: Partial<T> | string[] = {}): Promise<T> {
+  function internalParse(input: Partial<T> | string[] = {}): T {
     if (Array.isArray(input)) {
       const [transformed, positionals] = parser.transform(
         input,
         options.aliases,
         options.filePathArg
       );
-      const parsed = await parser.parse(transformed, options, true);
+      const parsed = parser.parse(transformed, options, true);
       return parser.build(parsed, positionals);
     }
     return parser.parse(input, options, false);
+  }
+
+  function parseSync(input?: Partial<T>): T;
+  function parseSync(input?: string[]): WithPositionalArgs<T>;
+  function parseSync(input: Partial<T> | string[] = {}): T {
+    return internalParse(input);
+  }
+
+  async function parse(input?: Partial<T>): Promise<T>;
+  async function parse(input?: string[]): Promise<WithPositionalArgs<T>>;
+  // eslint-disable-next-line require-await
+  async function parse(input: Partial<T> | string[] = {}): Promise<T> {
+    return internalParse(input);
   }
 
   return {
@@ -48,5 +59,6 @@ export function createParser<T extends PrimitiveRecord>(
       });
     },
     parse,
+    parseSync,
   };
 }

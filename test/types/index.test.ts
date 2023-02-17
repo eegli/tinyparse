@@ -16,6 +16,14 @@ expectAssignable<Promise<Input>>(
   }).parse()
 );
 
+expectAssignable<Input>(
+  createParser({
+    name: 'eric',
+    age: 11,
+    loggedIn: false,
+  }).parseSync()
+);
+
 expectNotAssignable<Promise<WithPositionalArgs<Input>>>(
   createParser({
     name: 'eric',
