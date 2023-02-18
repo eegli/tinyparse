@@ -17,10 +17,10 @@ test('quickstart example', async () => {
     active: false,
   };
 
-  const { parse } = createParser(defaultValues);
+  const { parse, parseSync } = createParser(defaultValues);
 
   const parsed1 = await parse({ username: 'eegli', active: true });
-  const parsed2 = await parse(['hello', '--username', 'eegli', '--active']);
+  const parsed2 = parseSync(['hello', '--username', 'eegli', '--active']);
 
   assert.deepStrictEqual(parsed1, {
     username: 'eegli',

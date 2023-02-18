@@ -11,10 +11,10 @@ const defaultValues = {
   active: false,
 };
 
-const { parse } = createParser(defaultValues);
+const { parse, parseSync } = createParser(defaultValues);
 
 const parsed1 = await parse({ username: 'eegli', active: true });
-const parsed2 = await parse(['hello', '--username', 'eegli', '--active']);
+const parsed2 = parseSync(['hello', '--username', 'eegli', '--active']);
 
 assert.deepStrictEqual(parsed1, {
   username: 'eegli',
@@ -26,6 +26,8 @@ assert.deepStrictEqual(parsed2, {
   _: ['hello'],
 });
 ```
+
+`createParser` builds both an asynchronous (`parse`) and synchronous (`parseSync`) parser. Apart from their different return types, both functions do the exact same thing.
 
 ## Install
 
