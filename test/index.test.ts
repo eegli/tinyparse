@@ -6,6 +6,7 @@ describe('Lib', () => {
       {
         "help": [Function],
         "parse": [Function],
+        "parseSync": [Function],
       }
     `);
     expect(ValidationError).toBeTruthy();

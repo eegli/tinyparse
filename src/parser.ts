@@ -5,16 +5,10 @@ import Utils from './utils';
 
 export class Parser<T extends PrimitiveRecord> {
   private readonly _requiredSym = Symbol('isRequired');
-  private _shouldDecamelizeError = false;
 
   constructor(private readonly _defaultValues: T) {}
 
-  // eslint-disable-next-line require-await
-  public async parse(
-    input: Partial<T>,
-    options: Options,
-    fromArgv: boolean
-  ): Promise<T> {
+  public parse(input: Partial<T>, options: Options, fromArgv: boolean): T {
     const shouldDecamelize = fromArgv && options.shouldDecamelize;
 
     const formatFlag = (key: string) =>
