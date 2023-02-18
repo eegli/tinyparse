@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
-        run: $HUSKY=0 yarn install --immutable
+        run: HUSKY=0 yarn install --immutable
       - name: Run test
         run: yarn test --coverage --verbose
       - name: Run integration tests
