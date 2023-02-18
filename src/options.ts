@@ -36,12 +36,16 @@ export class Options {
   }
 
   private _ensureAliasDoesNotExist(alias: string) {
-    let existingAlias = this._aliases.get(alias);
-    if (existingAlias) {
-      alias = this._removeFlagPrefix(alias);
-      existingAlias = this._removeFlagPrefix(existingAlias);
+    if (this._aliases.get(alias)) {
+      const [isShortFlag] = Utils.getFlagType(alias);
+      let text;
+      if (isShortFlag) {
+        text = `conflicting short flag: ${alias} has been declared twice`;
+      } else {
+        text = `conflicting long flag: ${alias} has been registered twice`;
+      }
       throw new Error(
-        `Error validating parser config: An option for "${alias}" already exists: "${existingAlias}". This is likely because these options decamelize to the same name or you have set a conflicting flag.`
+        `Error validating config, ${text}. Check your decamelization and custom flag options.`
       );
     }
   }

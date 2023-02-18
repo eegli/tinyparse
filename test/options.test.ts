@@ -22,9 +22,18 @@ describe('Options', () => {
   });
   test('conflicting alias construction', () => {
     expect(
+      () =>
+        new Options(
+          { a: '', b: '' },
+          { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
+        )
+    ).toThrow(
+      'Error validating config, conflicting short flag: -a has been declared twice. Check your decamelization and custom flag options.'
+    );
+    expect(
       () => new Options({ userName: '', 'user-name': '' }, { decamelize: true })
     ).toThrow(
-      'Error validating parser config: An option for "user-name" already exists: "userName". This is likely because these options decamelize to the same name or you have set a conflicting flag.'
+      'Error validating config, conflicting short flag: --user-name has been declared twice. Check your decamelization and custom flag options.'
     );
   });
   test('file path flag conversion', () => {
