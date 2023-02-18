@@ -28,12 +28,12 @@ describe('Options', () => {
           { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
         )
     ).toThrow(
-      'Error validating config, conflicting short flag: -a has been declared twice. Check your decamelization and custom flag options.'
+      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.'
     );
     expect(
       () => new Options({ userName: '', 'user-name': '' }, { decamelize: true })
     ).toThrow(
-      'Error validating config, conflicting short flag: --user-name has been declared twice. Check your decamelization and custom flag options.'
+      'Parser config validation error, conflicting long flag: --user-name has been declared twice. Check your settings for decamelization.'
     );
   });
   test('file path flag conversion', () => {

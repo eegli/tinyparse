@@ -37,15 +37,23 @@ export class Options {
 
   private _ensureAliasDoesNotExist(alias: string) {
     if (this._aliases.get(alias)) {
-      const [isShortFlag] = Utils.getFlagType(alias);
+      const [isShortFlag, isLongFlag] = Utils.getFlagType(alias);
+      const causes = [];
       let text;
-      if (isShortFlag) {
-        text = `conflicting short flag: ${alias} has been declared twice`;
-      } else {
-        text = `conflicting long flag: ${alias} has been registered twice`;
+      if (this.shouldDecamelize) {
+        causes.push('decamelization');
       }
+      if (isLongFlag) {
+        text = `conflicting long flag: ${alias} has been declared twice`;
+      } else if (isShortFlag) {
+        causes.push('short flags');
+        text = `conflicting short flag: ${alias} has been declared twice`;
+      }
+
       throw new Error(
-        `Error validating config, ${text}. Check your decamelization and custom flag options.`
+        `Parser config validation error, ${text}. Check your settings for ${causes.join(
+          ', '
+        )}.`
       );
     }
   }

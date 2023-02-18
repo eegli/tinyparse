@@ -9,7 +9,7 @@ describe('Docs', () => {
         { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
       );
     }).toThrowErrorMatchingInlineSnapshot(
-      `"Error validating config, conflicting short flag: -a has been declared twice. Check your decamelization and custom flag options."`
+      `"Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags."`
     );
   });
   test('cli arguments, positional arguments', async () => {
