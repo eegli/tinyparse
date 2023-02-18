@@ -23,12 +23,12 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
-        run: HUSKY=0 yarn install --immutable
+        run: yarn install --immutable
       - name: Run test
         run: yarn test --coverage --verbose
       - name: Run integration tests
         if: matrix.node == '18'
-        run: yarn test:integration
+        run: HUSKY=0 yarn test:integration
       - name: Run build
         run: yarn build
       - name: Upload coverage to Codecov
