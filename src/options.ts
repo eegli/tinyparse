@@ -37,7 +37,7 @@ export class Options {
 
   private _ensureAliasDoesNotExist(alias: string) {
     if (this._aliases.get(alias)) {
-      const [isShortFlag, isLongFlag] = Utils.getFlagType(alias);
+      const [, isLongFlag] = Utils.getFlagType(alias);
       const causes = [];
       let text;
 
@@ -46,12 +46,9 @@ export class Options {
           causes.push('decamelization');
         }
         text = `conflicting long flag: ${alias} has been declared twice`;
-      } else if (isShortFlag) {
+      } else {
         causes.push('short flags');
         text = `conflicting short flag: ${alias} has been declared twice`;
-      } else {
-        causes.push('unknown');
-        text = `conflicting flag: ${alias} has been declared twice`;
       }
 
       throw new Error(
