@@ -87,5 +87,8 @@
     "yarn": false,
     "branch": "main",
     "testScript": "yarn test:all"
+  },
+  "dependencies": {
+    "@changesets/cli": "^2.26.0"
   }
 }
