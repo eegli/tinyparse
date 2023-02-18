@@ -40,14 +40,18 @@ export class Options {
       const [isShortFlag, isLongFlag] = Utils.getFlagType(alias);
       const causes = [];
       let text;
-      if (this.shouldDecamelize) {
-        causes.push('decamelization');
-      }
+
       if (isLongFlag) {
+        if (this.shouldDecamelize) {
+          causes.push('decamelization');
+        }
         text = `conflicting long flag: ${alias} has been declared twice`;
       } else if (isShortFlag) {
         causes.push('short flags');
         text = `conflicting short flag: ${alias} has been declared twice`;
+      } else {
+        causes.push('unknown');
+        text = `conflicting flag: ${alias} has been declared twice`;
       }
 
       throw new Error(
