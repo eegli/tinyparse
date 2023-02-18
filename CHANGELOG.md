@@ -12,3 +12,7 @@
 
   parsed; // { greeting: "hello" }
   ```
+
+## 0.11.0 and older
+
+Please check the [changelog on GitHub](https://github.com/eegli/tinyparse/releases/tag/v0.11.0)
