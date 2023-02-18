@@ -26,9 +26,7 @@
   "main": "dist/eegli-tinyparse.cjs.js",
   "module": "dist/eegli-tinyparse.esm.js",
   "files": [
-    "dist",
-    "LICENSE",
-    "readme.md"
+    "dist"
   ],
   "scripts": {
     "build": "preconstruct build",
@@ -39,7 +37,7 @@
     "lint": "eslint src test --ext .ts",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
-    "prepublish": "preconstruct build",
+    "release": "yarn build && changeset publish",
     "test": "jest --verbose",
     "test:coverage": "jest --coverage",
     "test:integration": "yarn build && cd test/integration && npm install -S ../../ && npm test",
@@ -56,6 +54,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-typescript": "^7.18.6",
+    "@changesets/cli": "^2.26.0",
     "@preconstruct/cli": "^2.3.0",
     "@tsd/typescript": "^4.9.5",
     "@types/jest": "^29.4.0",
@@ -87,8 +86,5 @@
     "yarn": false,
     "branch": "main",
     "testScript": "yarn test:all"
-  },
-  "dependencies": {
-    "@changesets/cli": "^2.26.0"
   }
 }
