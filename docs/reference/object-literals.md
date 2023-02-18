@@ -21,7 +21,7 @@ expect(parsed.username).toBe('eegli');
 
 <!-- doctest: object literals, rejects -->
 
-This will throw a `ValidationError`- Non-primitive values are not supported.
+In the following example, a `ValidationError` will be thrown because non-primitive values are not supported.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
