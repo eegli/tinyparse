@@ -1,6 +1,8 @@
 # Short Flags
 
-Optionally, short flags can be specified for each argument. They act like an alias for the default long flag. It does not matter how you prefix your short flag alias (with or without a hyphen, or more!). Internally, the flag is always trimmed to start with a single hyphen. `---v`, `--v` and `v` will all be converted and map to `-v`.
+Optionally, short flags can be specified for each argument. They act like an alias for the default long flag. It does not matter how you prefix your short flag alias (with or without a hyphen, or more!). Internally, the flag is always trimmed to start with a _single_ hyphen. `---v`, `--v` and `v` will all be converted and map to `-v`.
+
+Although it is generally recommended that a short flag is actually short, i.e., a single character, Tinyparse does not care about the actual length. However, since short flags are _expected_ to be short, they are _never_ [decamelized](reference/decamelize-variables).
 
 ## Example
 

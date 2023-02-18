@@ -27,6 +27,10 @@ All arguments until the first flag are considered _command arguments_, that is, 
 
 Remember that it's never a good idea to read secrets directly from flags. [Read them from a file instead](https://clig.dev/#arguments-and-flags).
 
+### Internal Validation
+
+Tinyparse guarantees that it will only work with a valid configration.
+
 ### Positional (Command) Arguments
 
 When given an array of strings, Tinyparse will collect all positional/command arguments on the `_` property.
