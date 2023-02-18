@@ -3,8 +3,7 @@
   "type": "module",
   "module": "esnext",
   "scripts": {
-    "test": "node index.test.js",
-    "postinstall": "cd ../../ && husky install"
+    "test": "node index.test.js"
   },
   "dependencies": {
     "@eegli/tinyparse": "file:../.."

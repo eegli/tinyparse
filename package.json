@@ -42,7 +42,7 @@
     "prepublish": "preconstruct build",
     "test": "jest --verbose",
     "test:coverage": "jest --coverage",
-    "test:integration": "yarn build && cd test/integration && npm install -S ../../ && npm test",
+    "test:integration": "yarn build && cd test/integration && npm install -S ../../ && npm test --omit=dev --ignore-scripts",
     "test:types": "jest --selectProjects types",
     "test:unit": "jest --selectProjects unit",
     "test:watch": "jest  --verbose --watch"
