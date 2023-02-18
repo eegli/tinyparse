@@ -20,6 +20,13 @@ describe('Options', () => {
       ['b', { _type: 'number' }],
     ]);
   });
+  test('conflicting alias construction', () => {
+    expect(
+      () => new Options({ userName: '', 'user-name': '' }, { decamelize: true })
+    ).toThrow(
+      'Error validating parser config: An option for "user-name" already exists: "userName". This is likely because these options decamelize to the same name or you have set a conflicting flag.'
+    );
+  });
   test('file path flag conversion', () => {
     [
       ['file', 'f'],

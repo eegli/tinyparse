@@ -8,6 +8,11 @@ import {
 } from './types';
 import Utils from './utils';
 
+enum FlagType {
+  Short,
+  Long,
+}
+
 export class Options {
   private readonly _opts: InternalOptions = new Map();
   private readonly _aliases: Map<FlagAlias, Flag> = new Map();
@@ -30,19 +35,30 @@ export class Options {
     this._createAliasMap();
   }
 
+  private _ensureAliasDoesNotExist(alias: string) {
+    let existingAlias = this._aliases.get(alias);
+    if (existingAlias) {
+      alias = this._removeFlagPrefix(alias);
+      existingAlias = this._removeFlagPrefix(existingAlias);
+      throw new Error(
+        `Error validating parser config: An option for "${alias}" already exists: "${existingAlias}". This is likely because these options decamelize to the same name or you have set a conflicting flag.`
+      );
+    }
+  }
+
   private _createAliasMap() {
     for (const [key, opts] of this._opts) {
       if (opts.shortFlag) {
-        const shortFlag = this._makeFlag(opts.shortFlag, 'short');
-        this._aliases.set(shortFlag, key);
+        const shortFlag = this._makeFlag(opts.shortFlag, FlagType.Short);
         opts.shortFlag = shortFlag;
+        this._ensureAliasDoesNotExist(shortFlag);
+        this._aliases.set(shortFlag, key);
       }
       if (this.shouldDecamelize) {
         const decamelized = Utils.decamelize(key);
-        if (decamelized !== key) {
-          const longFlag = this._makeFlag(decamelized, 'long');
-          this._aliases.set(longFlag, key);
-        }
+        const longFlag = this._makeFlag(decamelized, FlagType.Long);
+        this._ensureAliasDoesNotExist(longFlag);
+        this._aliases.set(longFlag, key);
       }
     }
 
@@ -62,9 +78,9 @@ export class Options {
     return flag.trim().replace(/^-+/, '');
   }
 
-  private _makeFlag(flag: string, type: 'long' | 'short'): FlagAlias {
+  private _makeFlag(flag: string, type: FlagType): FlagAlias {
     flag = this._removeFlagPrefix(flag);
-    const prefix = type === 'long' ? '--' : '-';
+    const prefix = type === FlagType.Long ? '--' : '-';
     return `${prefix}${flag}`;
   }
 
