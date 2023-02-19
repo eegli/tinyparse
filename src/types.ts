@@ -39,7 +39,7 @@ interface ArgOption {
   };
 }
 
-interface InternalArgOption extends ArgOption {
+export interface InternalArgOption extends ArgOption {
   required: boolean;
   longFlag: Flag;
   _type: string;

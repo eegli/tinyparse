@@ -5,6 +5,7 @@ import {
   FlagAliasMap,
   FlagAliasProps,
   FlagType,
+  InternalArgOption,
   InternalOptions,
   ParserOptions,
   PrimitiveRecord,
@@ -121,11 +122,13 @@ export class Options {
     return `${prefix}${flag}`;
   }
 
-  public entries() {
+  // Explicit annotation due to TS4053
+  public entries(): IterableIterator<[Flag, InternalArgOption]> {
     return this._opts.entries();
   }
 
-  public values() {
+  // Explicit annotation due to TS4053
+  public values(): IterableIterator<InternalArgOption> {
     return this._opts.values();
   }
 
