@@ -1,14 +1,15 @@
 import { Options } from '../src/options';
 
 describe('Options', () => {
-  test('key merging', () => {
-    let options = new Options({ a: '', b: false });
+  test('constructor', () => {
+    const options = new Options({ a: '', b: false });
     expect([...options.entries()]).toStrictEqual([
-      ['a', { _type: 'string' }],
-      ['b', { _type: 'boolean' }],
+      ['a', { _type: 'string', longFlag: '--a' }],
+      ['b', { _type: 'boolean', longFlag: '--b' }],
     ]);
-
-    options = new Options(
+  });
+  test('constructor with options', () => {
+    const options = new Options(
       { a: '', b: 0 },
       {
         options: { a: { description: 'void' }, ignoreThis: {} },
@@ -16,8 +17,8 @@ describe('Options', () => {
     );
 
     expect([...options.entries()]).toStrictEqual([
-      ['a', { description: 'void', _type: 'string' }],
-      ['b', { _type: 'number' }],
+      ['a', { description: 'void', _type: 'string', longFlag: '--a' }],
+      ['b', { _type: 'number', longFlag: '--b' }],
     ]);
   });
   test('conflicting alias construction', () => {

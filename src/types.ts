@@ -12,6 +12,7 @@ interface ArgOption {
   required?: boolean;
   description?: string;
   shortFlag?: Flag;
+  longFlag?: Flag;
   customValidator?: {
     isValid: (value: unknown) => boolean;
     errorMessage: (value: unknown) => string;

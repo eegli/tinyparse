@@ -35,6 +35,39 @@ export class Options {
     this._createAliasMap();
   }
 
+  private _createAliasMap() {
+    for (const [key, opts] of this._opts) {
+      if (opts.shortFlag) {
+        const shortFlag = this._makeFlag(opts.shortFlag, FlagType.Short);
+        this._ensureAliasDoesNotExist(shortFlag);
+        opts.shortFlag = shortFlag;
+        this._aliases.set(shortFlag, key);
+      }
+      let longFlag = this._makeFlag(key, FlagType.Long);
+      // Custom long flags take precedence over decamelization settings
+      if (opts.longFlag) {
+        longFlag = this._makeFlag(opts.longFlag, FlagType.Long);
+      } else if (this.shouldDecamelize) {
+        const decamelized = Utils.decamelize(key);
+        longFlag = this._makeFlag(decamelized, FlagType.Long);
+      }
+      this._ensureAliasDoesNotExist(longFlag);
+      opts.longFlag = longFlag;
+      this._aliases.set(longFlag, key);
+    }
+
+    if (this.filePathArg) {
+      this.filePathArg.longFlag = this._removeFlagPrefix(
+        this.filePathArg.longFlag
+      );
+    }
+    if (this.filePathArg?.shortFlag) {
+      this.filePathArg.shortFlag = this._removeFlagPrefix(
+        this.filePathArg.shortFlag
+      );
+    }
+  }
+
   private _ensureAliasDoesNotExist(alias: string) {
     if (this._aliases.get(alias)) {
       const [, isLongFlag] = Utils.getFlagType(alias);
@@ -55,34 +88,6 @@ export class Options {
         `Parser config validation error, ${text}. Check your settings for ${causes.join(
           ', '
         )}.`
-      );
-    }
-  }
-
-  private _createAliasMap() {
-    for (const [key, opts] of this._opts) {
-      if (opts.shortFlag) {
-        const shortFlag = this._makeFlag(opts.shortFlag, FlagType.Short);
-        opts.shortFlag = shortFlag;
-        this._ensureAliasDoesNotExist(shortFlag);
-        this._aliases.set(shortFlag, key);
-      }
-      if (this.shouldDecamelize) {
-        const decamelized = Utils.decamelize(key);
-        const longFlag = this._makeFlag(decamelized, FlagType.Long);
-        this._ensureAliasDoesNotExist(longFlag);
-        this._aliases.set(longFlag, key);
-      }
-    }
-
-    if (this.filePathArg) {
-      this.filePathArg.longFlag = this._removeFlagPrefix(
-        this.filePathArg.longFlag
-      );
-    }
-    if (this.filePathArg?.shortFlag) {
-      this.filePathArg.shortFlag = this._removeFlagPrefix(
-        this.filePathArg.shortFlag
       );
     }
   }
