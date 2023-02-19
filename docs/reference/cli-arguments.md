@@ -101,5 +101,3 @@ const parsed = await parse(['--followers', '8', '--year', '2023']);
 expect(parsed.followers).toBe(8);
 expect(parsed.year).toBe('2023');
 ```
-
-### Order of Resolution

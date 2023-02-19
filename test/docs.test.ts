@@ -41,16 +41,16 @@ describe('Docs', () => {
     expect(parsed.year).toBe('2023');
   });
 
-  test('short flags', async () => {
+  test('custom flags', async () => {
     const { parse } = createParser(
       {
-        user: '',
+        userName: '',
         verbose: false,
       },
       {
         options: {
-          user: {
-            shortFlag: '-u',
+          userName: {
+            longFlag: 'user',
           },
           verbose: {
             shortFlag: 'v',
@@ -58,9 +58,9 @@ describe('Docs', () => {
         },
       }
     );
-    const parsed = await parse(['-v', '-u', 'eegli']);
+    const parsed = await parse(['-v', '--user', 'eegli']);
     expect(parsed.verbose).toBe(true);
-    expect(parsed.user).toBe('eegli');
+    expect(parsed.userName).toBe('eegli');
   });
 
   test('custom validation', async () => {

@@ -4,8 +4,10 @@ A property - or flag - can be marked as required. If a required property is not 
 
 ## Example
 
+<!-- doctest: error handling, rejects for missing args -->
+
 ```ts
-import { createParser } from '@eegli/tinyparse';
+import { createParser, ValidationError } from '@eegli/tinyparse';
 
 const { parse } = createParser(
   { username: '' },
@@ -17,6 +19,4 @@ const { parse } = createParser(
     },
   }
 );
-
-await parse(); // This will throw!
 ```
