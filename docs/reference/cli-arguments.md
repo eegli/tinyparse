@@ -42,8 +42,8 @@ createParser(
 );
 
 // Throws error:
-// "Parser config validation error, conflicting short flag: -a has been declared twice.
-// Check your settings for short flags."
+// "Parser config validation error, conflicting short flag:
+// -a has been declared twice. Check your settings for short flags."
 ```
 
 ### Positional (Command) Arguments

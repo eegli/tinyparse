@@ -8,8 +8,8 @@ describe('Docs', () => {
         { a: '', b: '' },
         { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
       );
-    }).toThrowErrorMatchingInlineSnapshot(
-      `"Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags."`
+    }).toThrowError(
+      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.'
     );
   });
   test('cli arguments, positional arguments', async () => {

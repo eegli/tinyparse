@@ -41,7 +41,6 @@ const { parse } = createParser(
 );
 // Valid date string
 await expect(parse(['--birthDate', '2000-01-01'])).resolves.toBeTruthy();
-
 // What a weird month...
 await expect(parse(['--birthDate', '2000-22'])).rejects.toThrow();
 ```

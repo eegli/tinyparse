@@ -25,7 +25,7 @@ const { parse } = createParser(
     decamelize: true,
   }
 );
-const parsed = await parse(['--user-name', 'eegli']);
 
+const parsed = await parse(['--user-name', 'eegli']);
 expect(parsed.userName).toBe('eegli');
 ```
