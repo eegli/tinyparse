@@ -2,7 +2,7 @@
 
 ![npm](https://img.shields.io/npm/v/@eegli/tinyparse) ![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/eegli/tinyparse/ci.yml?branch=main) [![codecov](https://codecov.io/gh/eegli/tinyparse/branch/main/graph/badge.svg?token=8MFDR4SWYM)](https://codecov.io/gh/eegli/tinyparse) ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/min/@eegli/tinyparse)
 
-> A tiny, type-safe, and flexible utility for parsing & validating command line arguments in Node.js
+> A tiny, type-safe and flexible utility for parsing & validating command line arguments in Node.js
 
 ## What it is
 

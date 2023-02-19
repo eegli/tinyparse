@@ -29,9 +29,9 @@ Remember that it's never a good idea to read secrets directly from flags. [Read 
 
 ### Internal Validation
 
-Tinyparse guarantees that it will only work with a valid configration. In very special cases, it may happen that conflicting options are specified. If that is the case, bootstrapping a parser will fail. It is therefore recommended to include the creation of a parser in tests on your end to make sure it works.
+Tinyparse guarantees that it will only work with a valid configration. In very special cases, it may happen that conflicting options are specified. If that is the case, bootstrapping a parser will fail. It is therefore recommended to test the creation of a parser on your end.
 
-This may be the case if you declare a short flag twice or if two flags decamelize to the same value. The resulting error message should guide you towards a fix:
+This might happen if you declare a short flag twice or if two flags decamelize to the same value. The resulting error message should guide you towards a fix:
 
 <!-- doctest: cli arguments, internal validation -->
 
