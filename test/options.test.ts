@@ -1,24 +1,29 @@
 import { Options } from '../src/options';
+import { FlagType } from '../src/types';
 
 describe('Options', () => {
   test('constructor', () => {
     const options = new Options({ a: '', b: false });
     expect([...options.entries()]).toStrictEqual([
-      ['a', { _type: 'string', longFlag: '--a' }],
-      ['b', { _type: 'boolean', longFlag: '--b' }],
+      ['a', { _type: 'string', longFlag: 'a' }],
+      ['b', { _type: 'boolean', longFlag: 'b' }],
     ]);
   });
   test('constructor with options', () => {
     const options = new Options(
       { a: '', b: 0 },
       {
-        options: { a: { description: 'void' }, ignoreThis: {} },
+        options: {
+          a: { description: 'void' },
+          b: { shortFlag: 'x' },
+          ignoreThis: {},
+        },
       }
     );
 
     expect([...options.entries()]).toStrictEqual([
-      ['a', { description: 'void', _type: 'string', longFlag: '--a' }],
-      ['b', { _type: 'number', longFlag: '--b' }],
+      ['a', { description: 'void', _type: 'string', longFlag: 'a' }],
+      ['b', { _type: 'number', longFlag: 'b', shortFlag: 'x' }],
     ]);
   });
   test('conflicting alias construction', () => {
@@ -56,6 +61,15 @@ describe('Options', () => {
         longFlag: 'file',
         shortFlag: 'f',
       });
+      expect(options.aliases.get('file')).toStrictEqual({
+        flag: 'file',
+        type: FlagType.Long,
+      });
+      expect(options.aliases.get('f')).toStrictEqual({
+        flag: 'f',
+        type: FlagType.Short,
+      });
+      expect(options.aliases.size).toBe(2);
     });
   });
   test('alias construction with flag conversion', () => {
@@ -65,6 +79,7 @@ describe('Options', () => {
         options: {
           firstfirst: { shortFlag: '-f' },
           secondSecond: { shortFlag: '---second' },
+          Thirdthird: { longFlag: 'special-third' },
         },
         decamelize: true,
         filePathArg: {
@@ -74,9 +89,36 @@ describe('Options', () => {
     );
     expect(options.shouldDecamelize).toBeTruthy();
     expect(options.filePathArg).toStrictEqual({ longFlag: 'file' });
-    expect(options.aliases.get('-f')).toBe('firstfirst');
-    expect(options.aliases.get('-second')).toBe('secondSecond');
-    expect(options.aliases.get('--second-second')).toBe('secondSecond');
-    expect(options.aliases.get('--thirdthird')).toBe('Thirdthird');
+
+    expect(options.aliases.get('file')).toStrictEqual({
+      flag: 'file',
+      type: FlagType.Long,
+    });
+
+    expect(options.aliases.get('f')).toStrictEqual({
+      flag: 'firstfirst',
+      type: FlagType.Short,
+    });
+    expect(options.aliases.get('firstfirst')).toStrictEqual({
+      flag: 'firstfirst',
+      type: FlagType.Long,
+    });
+
+    // Rewrite the two unit tests as above
+    expect(options.aliases.get('second')).toStrictEqual({
+      flag: 'secondSecond',
+      type: FlagType.Short,
+    });
+    expect(options.aliases.get('second-second')).toStrictEqual({
+      flag: 'secondSecond',
+      type: FlagType.Long,
+    });
+
+    expect(options.aliases.get('thirdthird')).toBeUndefined();
+    expect(options.aliases.get('special-third')).toStrictEqual({
+      flag: 'Thirdthird',
+      type: FlagType.Long,
+    });
+    expect(options.aliases.size).toBe(1 + 2 + 2 + 1);
   });
 });

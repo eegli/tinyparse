@@ -1,12 +1,23 @@
 type _ = Record<never, never>;
 
+export enum FlagType {
+  Short = 'SHORT',
+  Long = 'LONG',
+}
+
 // Flags do NOT start with a single or double dash
 export type Flag = string & _;
 
 // Flag aliases start with a single or double dash
 export type FlagAlias = string & _;
 
-export type FlagAliasMap = Map<FlagAlias, Flag>;
+export type FlagAliasMap = Map<
+  FlagAlias,
+  {
+    flag: Flag;
+    type: FlagType;
+  }
+>;
 
 interface ArgOption {
   required?: boolean;

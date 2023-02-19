@@ -27,12 +27,15 @@ export class Parser<T extends PrimitiveRecord> {
     for (const flag of requiredFlags) {
       config.set(flag, this._requiredSym);
     }
+    // E.g., ["fooFlag", "barValue"], no dashes
+    for (let [flag, flagValue] of Object.entries(input)) {
+      const maybeAlias = options.aliases.get(flag);
 
-    for (const flagValuePair of Object.entries(input)) {
-      const [flag] = flagValuePair;
-      let [, flagValue] = flagValuePair;
-
-      if (!config.has(flag)) continue;
+      if (maybeAlias) {
+        flag = maybeAlias.flag;
+      } else {
+        continue;
+      }
 
       const expectedType = typeof this._defaultValues[flag];
 

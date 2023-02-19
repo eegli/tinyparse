@@ -2,20 +2,17 @@ import {
   FilePathArg,
   Flag,
   FlagAlias,
+  FlagAliasMap,
+  FlagType,
   InternalOptions,
   ParserOptions,
   PrimitiveRecord,
 } from './types';
 import Utils from './utils';
 
-enum FlagType {
-  Short,
-  Long,
-}
-
 export class Options {
   private readonly _opts: InternalOptions = new Map();
-  private readonly _aliases: Map<FlagAlias, Flag> = new Map();
+  private readonly _aliases: FlagAliasMap = new Map();
 
   public readonly shouldDecamelize: boolean;
   public readonly filePathArg?: FilePathArg;
@@ -37,67 +34,86 @@ export class Options {
 
   private _createAliasMap() {
     for (const [key, opts] of this._opts) {
+      // Short flags should be short, hence no decamelization
       if (opts.shortFlag) {
-        const shortFlag = this._makeFlag(opts.shortFlag, FlagType.Short);
+        const shortFlag = this.stripFlagPrefix(opts.shortFlag);
         this._ensureAliasDoesNotExist(shortFlag);
         opts.shortFlag = shortFlag;
-        this._aliases.set(shortFlag, key);
+        this._aliases.set(shortFlag, {
+          flag: key,
+          type: FlagType.Short,
+        });
       }
-      let longFlag = this._makeFlag(key, FlagType.Long);
+      let longFlag = key;
       // Custom long flags take precedence over decamelization settings
       if (opts.longFlag) {
-        longFlag = this._makeFlag(opts.longFlag, FlagType.Long);
-      } else if (this.shouldDecamelize) {
-        const decamelized = Utils.decamelize(key);
-        longFlag = this._makeFlag(decamelized, FlagType.Long);
+        longFlag = this.stripFlagPrefix(opts.longFlag);
+      }
+      // Only decamelize if no custom long flag is provided AND
+      // decamelize is enabled
+      else if (this.shouldDecamelize) {
+        longFlag = Utils.decamelize(key);
       }
       this._ensureAliasDoesNotExist(longFlag);
       opts.longFlag = longFlag;
-      this._aliases.set(longFlag, key);
+      this._aliases.set(longFlag, {
+        flag: key,
+        type: FlagType.Long,
+      });
     }
 
     if (this.filePathArg) {
-      this.filePathArg.longFlag = this._removeFlagPrefix(
+      this.filePathArg.longFlag = this.stripFlagPrefix(
         this.filePathArg.longFlag
       );
+      this._ensureAliasDoesNotExist(this.filePathArg.longFlag);
+      this._aliases.set(this.filePathArg.longFlag, {
+        flag: this.filePathArg.longFlag,
+        type: FlagType.Long,
+      });
     }
     if (this.filePathArg?.shortFlag) {
-      this.filePathArg.shortFlag = this._removeFlagPrefix(
+      this.filePathArg.shortFlag = this.stripFlagPrefix(
         this.filePathArg.shortFlag
       );
+      this._ensureAliasDoesNotExist(this.filePathArg.shortFlag);
+      this._aliases.set(this.filePathArg.shortFlag, {
+        flag: this.filePathArg.shortFlag,
+        type: FlagType.Short,
+      });
     }
   }
 
   private _ensureAliasDoesNotExist(alias: string) {
-    if (this._aliases.get(alias)) {
-      const [, isLongFlag] = Utils.getFlagType(alias);
-      const causes = [];
-      let text;
+    const existingAlias = this._aliases.get(alias);
+    if (!existingAlias) return;
+    alias = this._makeFlag(alias, existingAlias.type);
+    const causes = [];
+    let text;
 
-      if (isLongFlag) {
-        if (this.shouldDecamelize) {
-          causes.push('decamelization');
-        }
-        text = `conflicting long flag: ${alias} has been declared twice`;
-      } else {
-        causes.push('short flags');
-        text = `conflicting short flag: ${alias} has been declared twice`;
+    if (existingAlias.type === FlagType.Long) {
+      if (this.shouldDecamelize) {
+        causes.push('decamelization');
       }
-
-      throw new Error(
-        `Parser config validation error, ${text}. Check your settings for ${causes.join(
-          ', '
-        )}.`
-      );
+      text = `conflicting long flag: ${alias} has been declared twice`;
+    } else {
+      causes.push('short flags');
+      text = `conflicting short flag: ${alias} has been declared twice`;
     }
+
+    throw new Error(
+      `Parser config validation error, ${text}. Check your settings for ${causes.join(
+        ', '
+      )}.`
+    );
   }
 
-  private _removeFlagPrefix(flag: string): Flag {
+  public stripFlagPrefix(flag: string): Flag {
     return flag.trim().replace(/^-+/, '');
   }
 
   private _makeFlag(flag: string, type: FlagType): FlagAlias {
-    flag = this._removeFlagPrefix(flag);
+    flag = this.stripFlagPrefix(flag);
     const prefix = type === FlagType.Long ? '--' : '-';
     return `${prefix}${flag}`;
   }

@@ -175,7 +175,6 @@ describe('Parsing with options', () => {
       ...defaultValues,
       ...positionalArgs,
       stringProp: 'hello',
-      numProp: 1,
     };
     await expect(parse(input)).resolves.toStrictEqual(expected);
   });

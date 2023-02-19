@@ -40,7 +40,7 @@ export const displayHelp = ({
       }
 
       str += tab;
-      if (shortFlag) str += `${shortFlag}, `;
+      if (shortFlag) str += `-${shortFlag}, `;
       str += `--${name}`;
       str += ` [${_type}]`;
       if (description) str += `\n${tab}${description}`;
