@@ -32,7 +32,7 @@ export class Parser<T extends PrimitiveRecord> {
       const maybeAlias = options.aliases.get(flag);
 
       if (maybeAlias) {
-        flag = maybeAlias.flag;
+        flag = maybeAlias.originalFlag;
       } else {
         continue;
       }

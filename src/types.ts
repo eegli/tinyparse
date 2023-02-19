@@ -1,5 +1,7 @@
 type _ = Record<never, never>;
 
+type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+
 export enum FlagType {
   Short = 'SHORT',
   Long = 'LONG',
@@ -11,13 +13,12 @@ export type Flag = string & _;
 // Flag aliases start with a single or double dash
 export type FlagAlias = string & _;
 
-export type FlagAliasMap = Map<
-  FlagAlias,
-  {
-    flag: Flag;
-    type: FlagType;
-  }
->;
+export type FlagAliasProps = {
+  originalFlag: Flag;
+  flagType: FlagType;
+};
+
+export type FlagAliasMap = Map<FlagAlias, FlagAliasProps>;
 
 interface ArgOption {
   required?: boolean;
@@ -30,7 +31,7 @@ interface ArgOption {
   };
 }
 
-export interface InternalArgOption extends ArgOption {
+interface InternalArgOption extends WithRequired<ArgOption, 'longFlag'> {
   _type: string;
 }
 

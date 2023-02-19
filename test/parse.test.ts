@@ -170,9 +170,9 @@ describe('Parsing with options', () => {
     await expect(parse(input)).resolves.toStrictEqual(expected);
   });
 
-  it('handles decamelization setting', async () => {
+  it('handles decamelization and ignores original', async () => {
     const { parse } = createParser(defaultValues, { decamelize: true });
-    const input = ['--string-prop', 'hello', '--numProp', '1'];
+    const input = ['--string-prop', 'hello', 'stringProp', 'goodbye'];
     const expected = {
       ...defaultValues,
       ...positionalArgs,
@@ -203,7 +203,7 @@ describe('Parsing with options', () => {
     }
   });
 
-  it('handles short flags', async () => {
+  it('handles custom short flags', async () => {
     const { parse } = createParser(defaultValues, {
       decamelize: true,
       options: {
@@ -219,6 +219,47 @@ describe('Parsing with options', () => {
       stringProp: 'hello',
     };
     await expect(parse(input)).resolves.toStrictEqual(expected);
+  });
+
+  it('custom flags take precedence', () => {
+    const variants: Parameters<typeof createParser>[] = [
+      [
+        defaultValues,
+        {
+          options: {
+            stringProp: {
+              longFlag: 'othername',
+            },
+          },
+        },
+      ],
+      [
+        defaultValues,
+        {
+          options: {
+            stringProp: {
+              longFlag: 'othername',
+            },
+          },
+          decamelize: true,
+        },
+      ],
+    ];
+    for (const variant of variants) {
+      const { parseSync } = createParser(...variant);
+
+      const expected = {
+        ...defaultValues,
+        ...positionalArgs,
+        stringProp: 'hello',
+      };
+      expect(
+        parseSync(['--othername', 'hello', '--stringProp', 'goodbye'])
+      ).toStrictEqual(expected);
+      expect(
+        parseSync(['--othername', 'hello', '--string-prop', 'goodbye'])
+      ).toStrictEqual(expected);
+    }
   });
 
   it('rejects for missing required args', async () => {

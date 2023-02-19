@@ -2,13 +2,15 @@
 
 In JavaScript, sane devs follow the camel case convention to name variables. However, CLI flags are typically spelled all lowercase with a `-` separator. By turning on `decamelization`, the parser will look out for the decamelized version of each flag and treat it as an alias.
 
+> Good to know: Enabling `decamelization` is just a shortcut for setting a decamelized long flag manually for each variable.
+
 Tinyparse implements decamelization as follows:
 
 - `userName` → `user-name`
 - `username` → `username`
 - `Username` → `username`
 
-Note that decamelized aliases are only respected for CLI arguments, i.e., array of strings, and not object literals. Only long flags are decamelized. If you specify any [short flag aliases](reference/short-flags), be aware that they are _not_ decamelized.
+Note that decamelized aliases are only respected for CLI arguments, i.e., array of strings, and not object literals. Only long flags are decamelized. If you specify any [short flag aliases](reference/custom-flags), be aware that they are _not_ decamelized.
 
 ## Example
 
