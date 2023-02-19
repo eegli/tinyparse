@@ -57,6 +57,7 @@ expectAssignable<Params>({
       required: true,
       description: 'The name of the user',
       shortFlag: `-n`,
+      longFlag: `--name`,
       customValidator: {
         isValid: () => true,
         errorMessage: () => 'Error',
