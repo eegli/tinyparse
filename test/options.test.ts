@@ -20,6 +20,22 @@ describe('Options', () => {
       ['b', { _type: 'number' }],
     ]);
   });
+  test('conflicting alias construction', () => {
+    expect(
+      () =>
+        new Options(
+          { a: '', b: '' },
+          { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
+        )
+    ).toThrow(
+      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.'
+    );
+    expect(
+      () => new Options({ userName: '', 'user-name': '' }, { decamelize: true })
+    ).toThrow(
+      'Parser config validation error, conflicting long flag: --user-name has been declared twice. Check your settings for decamelization.'
+    );
+  });
   test('file path flag conversion', () => {
     [
       ['file', 'f'],

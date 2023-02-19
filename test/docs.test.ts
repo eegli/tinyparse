@@ -2,6 +2,16 @@ import type { ParserOptions } from '../src';
 import { createParser, ValidationError } from '../src';
 
 describe('Docs', () => {
+  test('cli arguments, internal validation', () => {
+    expect(() => {
+      createParser(
+        { a: '', b: '' },
+        { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
+      );
+    }).toThrowErrorMatchingInlineSnapshot(
+      `"Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags."`
+    );
+  });
   test('cli arguments, positional arguments', async () => {
     const { parse } = createParser({});
     const parsed = await parse(['hello-world']);

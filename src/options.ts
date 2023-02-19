@@ -8,6 +8,11 @@ import {
 } from './types';
 import Utils from './utils';
 
+enum FlagType {
+  Short,
+  Long,
+}
+
 export class Options {
   private readonly _opts: InternalOptions = new Map();
   private readonly _aliases: Map<FlagAlias, Flag> = new Map();
@@ -30,19 +35,43 @@ export class Options {
     this._createAliasMap();
   }
 
+  private _ensureAliasDoesNotExist(alias: string) {
+    if (this._aliases.get(alias)) {
+      const [, isLongFlag] = Utils.getFlagType(alias);
+      const causes = [];
+      let text;
+
+      if (isLongFlag) {
+        if (this.shouldDecamelize) {
+          causes.push('decamelization');
+        }
+        text = `conflicting long flag: ${alias} has been declared twice`;
+      } else {
+        causes.push('short flags');
+        text = `conflicting short flag: ${alias} has been declared twice`;
+      }
+
+      throw new Error(
+        `Parser config validation error, ${text}. Check your settings for ${causes.join(
+          ', '
+        )}.`
+      );
+    }
+  }
+
   private _createAliasMap() {
     for (const [key, opts] of this._opts) {
       if (opts.shortFlag) {
-        const shortFlag = this._makeFlag(opts.shortFlag, 'short');
-        this._aliases.set(shortFlag, key);
+        const shortFlag = this._makeFlag(opts.shortFlag, FlagType.Short);
         opts.shortFlag = shortFlag;
+        this._ensureAliasDoesNotExist(shortFlag);
+        this._aliases.set(shortFlag, key);
       }
       if (this.shouldDecamelize) {
         const decamelized = Utils.decamelize(key);
-        if (decamelized !== key) {
-          const longFlag = this._makeFlag(decamelized, 'long');
-          this._aliases.set(longFlag, key);
-        }
+        const longFlag = this._makeFlag(decamelized, FlagType.Long);
+        this._ensureAliasDoesNotExist(longFlag);
+        this._aliases.set(longFlag, key);
       }
     }
 
@@ -62,9 +91,9 @@ export class Options {
     return flag.trim().replace(/^-+/, '');
   }
 
-  private _makeFlag(flag: string, type: 'long' | 'short'): FlagAlias {
+  private _makeFlag(flag: string, type: FlagType): FlagAlias {
     flag = this._removeFlagPrefix(flag);
-    const prefix = type === 'long' ? '--' : '-';
+    const prefix = type === FlagType.Long ? '--' : '-';
     return `${prefix}${flag}`;
   }
 

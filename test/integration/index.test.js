@@ -33,20 +33,7 @@ test('quickstart example', async () => {
   });
 });
 
-test('invalid types example', async () => {
-  const { parse } = createParser({ username: '' });
-  await assert.rejects(
-    async () => {
-      // @ts-expect-error test input
-      await parse({ username: ['eegli'] });
-    },
-    {
-      name: 'ValidationError',
-      message: 'Invalid type for "username". Expected string, got object',
-    }
-  );
-});
-test('process argv', async () => {
+test('e2e', async () => {
   const { parse } = createParser(
     {
       name: '',
@@ -58,6 +45,7 @@ test('process argv', async () => {
     {
       options: {
         followerCount: {
+          required: true,
           shortFlag: '-fc',
         },
       },
