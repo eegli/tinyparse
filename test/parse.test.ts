@@ -74,14 +74,16 @@ describe('Parsing with options', () => {
     _: [],
   };
 
-  it('parses sync', () => {
-    const { parseSync } = createParser(defaultValues);
+  it('sync and async parsing are equal', async () => {
+    const { parseSync, parse } = createParser(defaultValues);
     const input = ['--stringProp', 'hello'];
     expect(parseSync(input)).toStrictEqual({
       ...defaultValues,
       ...positionalArgs,
       stringProp: 'hello',
     });
+    await expect(parse()).resolves.toStrictEqual(parseSync());
+    await expect(parse(input)).resolves.toStrictEqual(parseSync(input));
   });
 
   it('collects positional arguments', async () => {
