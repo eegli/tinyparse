@@ -5,20 +5,16 @@ describe('Options', () => {
   test('constructor', () => {
     const options = new Options({ a: '', b: false });
     expect([...options.values()]).toEqual([
-      [
-        {
-          _type: 'string',
-          longFlag: 'a',
-          required: false,
-        },
-      ],
-      [
-        {
-          _type: 'boolean',
-          longFlag: 'b',
-          required: false,
-        },
-      ],
+      {
+        _type: 'string',
+        longFlag: 'a',
+        required: false,
+      },
+      {
+        _type: 'boolean',
+        longFlag: 'b',
+        required: false,
+      },
     ]);
   });
   test('constructor with options', () => {
@@ -34,22 +30,18 @@ describe('Options', () => {
     );
 
     expect([...options.values()]).toEqual([
-      [
-        {
-          _type: 'string',
-          required: true,
-          longFlag: 'a',
-          description: 'void',
-        },
-      ],
-      [
-        {
-          _type: 'number',
-          required: false,
-          longFlag: 'longb',
-          shortFlag: 'b',
-        },
-      ],
+      {
+        _type: 'string',
+        required: true,
+        longFlag: 'a',
+        description: 'void',
+      },
+      {
+        _type: 'number',
+        required: false,
+        longFlag: 'longb',
+        shortFlag: 'b',
+      },
     ]);
   });
   test('conflicting alias construction', () => {

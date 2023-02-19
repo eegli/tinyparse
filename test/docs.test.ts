@@ -161,11 +161,11 @@ describe('Docs', () => {
          --age [number]
 
       Optional flags
-         --userName [string]
-         Your custom username
-
          --hasGithubProfile [boolean]
-         Indicate whether you have a Github profile"
+         Indicate whether you have a Github profile
+
+         --userName [string]
+         Your custom username"
     `);
   });
 
@@ -177,6 +177,11 @@ describe('Docs', () => {
       },
       {
         decamelize: true,
+        options: {
+          userName: {
+            longFlag: 'user',
+          },
+        },
       }
     );
     const helpText = help();
@@ -184,9 +189,9 @@ describe('Docs', () => {
       "Usage
 
       Optional flags
-         --user-name [string]
+         --has-github-profile [boolean]
 
-         --has-github-profile [boolean]"
+         --user [string]"
     `);
   });
 
