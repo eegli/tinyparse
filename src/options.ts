@@ -56,7 +56,8 @@ export class Options {
 
       this._opts.set(key, {
         ...userOptions,
-        ...(shortFlag && { shortFlag }),
+        required: !!userOptions.required,
+        shortFlag,
         longFlag,
         _type: typeof value,
       });
@@ -122,6 +123,10 @@ export class Options {
 
   public entries() {
     return this._opts.entries();
+  }
+
+  public values() {
+    return this._opts.values();
   }
 
   public get aliases() {

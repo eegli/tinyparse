@@ -4,9 +4,21 @@ import { FlagType } from '../src/types';
 describe('Options', () => {
   test('constructor', () => {
     const options = new Options({ a: '', b: false });
-    expect([...options.entries()]).toStrictEqual([
-      ['a', { _type: 'string', longFlag: 'a' }],
-      ['b', { _type: 'boolean', longFlag: 'b' }],
+    expect([...options.values()]).toEqual([
+      [
+        {
+          _type: 'string',
+          longFlag: 'a',
+          required: false,
+        },
+      ],
+      [
+        {
+          _type: 'boolean',
+          longFlag: 'b',
+          required: false,
+        },
+      ],
     ]);
   });
   test('constructor with options', () => {
@@ -14,26 +26,26 @@ describe('Options', () => {
       { a: '', b: 0 },
       {
         options: {
-          a: { description: 'void' },
+          a: { required: true, description: 'void' },
           b: { shortFlag: 'b', longFlag: 'longb' },
           ignoreThis: {},
         },
       }
     );
 
-    expect([...options.entries()]).toStrictEqual([
+    expect([...options.values()]).toEqual([
       [
-        'a',
         {
           _type: 'string',
+          required: true,
           longFlag: 'a',
           description: 'void',
         },
       ],
       [
-        'b',
         {
           _type: 'number',
+          required: false,
           longFlag: 'longb',
           shortFlag: 'b',
         },

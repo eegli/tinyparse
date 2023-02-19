@@ -1,6 +1,14 @@
 type _ = Record<never, never>;
 
-type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+type RequiredKeys<T> = {
+  [K in keyof T]-?: object extends Pick<T, K> ? never : K;
+}[keyof T];
+
+export type OnlyRequiredKeys<T> = Pick<T, RequiredKeys<T>>;
+
+export type KeysMatching<T, V> = {
+  [K in keyof T]-?: T[K] extends V ? K : never;
+}[keyof T];
 
 export enum FlagType {
   Short = 'SHORT',
@@ -31,7 +39,9 @@ interface ArgOption {
   };
 }
 
-interface InternalArgOption extends WithRequired<ArgOption, 'longFlag'> {
+interface InternalArgOption extends ArgOption {
+  required: boolean;
+  longFlag: Flag;
   _type: string;
 }
 
