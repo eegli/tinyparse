@@ -11,7 +11,7 @@ export const displayHelp = ({
   title,
   base,
 }: InternalHelpOptions): string => {
-  // Required properties first
+  // Required properties first, then alphabetical
   const sortedOptions = Utils.sort(
     [...options.values()],
     'required',
@@ -29,7 +29,7 @@ export const displayHelp = ({
   if (hasRequiredFlag) str += 'Required flags\n';
 
   let optionalFlag = true;
-  const tab = '   ';
+  const indent = '   ';
 
   for (let idx = 0; idx < sortedOptions.length; idx++) {
     const { description, required, shortFlag, longFlag, _type } =
@@ -41,20 +41,20 @@ export const displayHelp = ({
       optionalFlag = false;
     }
 
-    str += tab;
+    str += indent;
     if (shortFlag) str += `-${shortFlag}, `;
     str += `--${longFlag}`;
     str += ` [${_type}]`;
-    if (description) str += `\n${tab}${description}`;
+    if (description) str += `\n${indent}${description}`;
     if (!isLast) str += '\n\n';
   }
 
   if (options.filePathArg) {
     const { longFlag, shortFlag, description } = options.filePathArg;
-    str += `\n\n${tab}`;
+    str += `\n\n${indent}`;
     if (shortFlag) str += `-${shortFlag}, `;
     str += `--${longFlag} [string]\n`;
-    if (description) str += `${tab}${description}\n`;
+    if (description) str += `${indent}${description}\n`;
   }
   return str;
 };

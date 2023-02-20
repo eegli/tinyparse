@@ -1,4 +1,5 @@
 import {
+  ArgOptions,
   FilePathArg,
   Flag,
   FlagAlias,
@@ -24,9 +25,14 @@ export class Options {
     this.shouldDecamelize = !!options.decamelize;
     this.filePathArg = options.filePathArg;
 
+    this._registerAliases(defaults, options.options);
+    this._registerFilePathArg();
+  }
+
+  private _registerAliases(defaults: PrimitiveRecord, options?: ArgOptions) {
     // Merge option keys/flags with user-provided options
     for (const [key, value] of Object.entries(defaults)) {
-      const userOptions = options.options?.[key] ?? {};
+      const userOptions = options?.[key] ?? {};
       const isCustomLongFlag = !!userOptions.longFlag;
 
       let longFlag = key;
@@ -63,7 +69,9 @@ export class Options {
         _type: typeof value,
       });
     }
+  }
 
+  private _registerFilePathArg() {
     if (this.filePathArg) {
       this.filePathArg.longFlag = this.stripFlagPrefix(
         this.filePathArg.longFlag
@@ -93,17 +101,14 @@ export class Options {
     } else {
       const conflicting = this._makeFlag(key, props.flagType);
 
-      let text;
-      let cause;
+      let text = `conflicting long flag: ${conflicting} has been declared twice`;
+      let cause = 'custom long flags and decamelization';
       if (
         props.flagType === FlagType.Short &&
         props.flagType === FlagType.Short
       ) {
         cause = 'short flags';
         text = `conflicting short flag: ${conflicting} has been declared twice`;
-      } else {
-        cause = 'custom long flags and decamelization';
-        text = `conflicting long flag: ${conflicting} has been declared twice`;
       }
 
       throw new Error(

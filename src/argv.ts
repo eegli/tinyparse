@@ -63,8 +63,7 @@ export class ArgvParser<T extends PrimitiveRecord> extends Parser<T> {
       // Assume boolean flag
       else if (!flagVal || flagVal.startsWith('-')) {
         flagMap.set(flag, true);
-        // Assume number
-        // Assume string
+        // Assume string or number
       } else {
         flagMap.set(flag, flagVal);
       }
