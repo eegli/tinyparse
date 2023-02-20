@@ -35,7 +35,6 @@ const { parse } = createParser(
 );
 
 const parsed = await parse(['--config', 'github.json']);
-
 expect(parsed.username).toBe('eegli');
 expect(parsed.hasGitHubPlus).toBe(false);
 ```

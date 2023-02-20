@@ -24,15 +24,18 @@ export class Parser<T extends PrimitiveRecord> {
 
     // For each required flag, replace its value temporarily
     // with a symbol
-    requiredFlags.forEach((flag) => {
+    for (const flag of requiredFlags) {
       config.set(flag, this._requiredSym);
-    });
+    }
+    // E.g., ["fooFlag", "barValue"], no dashes
+    for (let [flag, flagValue] of Object.entries(input)) {
+      const maybeAlias = options.aliases.get(flag);
 
-    for (const flagValuePair of Object.entries(input)) {
-      const [flag] = flagValuePair;
-      let [, flagValue] = flagValuePair;
-
-      if (!config.has(flag)) continue;
+      if (maybeAlias) {
+        flag = maybeAlias.originalFlag;
+      } else {
+        continue;
+      }
 
       const expectedType = typeof this._defaultValues[flag];
 
@@ -68,12 +71,12 @@ export class Parser<T extends PrimitiveRecord> {
 
     // Check if all required arguments have been defined or if the
     // temporary value is still there
-    requiredFlags.forEach((flag) => {
+    for (const flag of requiredFlags) {
       if (config.get(flag) === this._requiredSym) {
         const value = formatFlag(flag);
         throw new ValidationError(`"${value}" is required`);
       }
-    }, <string[]>[]);
+    }
 
     return Object.fromEntries(config) as T;
   }

@@ -24,11 +24,10 @@ export function createParser<T extends PrimitiveRecord>(
   const options = new Options(defaultValues, params);
   const parser = new ArgvParser<T>(defaultValues);
 
-  function internalParse(input: Partial<T> | string[] = {}): T {
+  function internalParse(input: Partial<T> | string[]): T {
     if (Array.isArray(input)) {
       const [transformed, positionals] = parser.transform(
         input,
-        options.aliases,
         options.filePathArg
       );
       const parsed = parser.parse(transformed, options, true);

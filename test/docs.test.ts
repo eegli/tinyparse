@@ -8,8 +8,8 @@ describe('Docs', () => {
         { a: '', b: '' },
         { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
       );
-    }).toThrowErrorMatchingInlineSnapshot(
-      `"Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags."`
+    }).toThrow(
+      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.'
     );
   });
   test('cli arguments, positional arguments', async () => {
@@ -41,16 +41,16 @@ describe('Docs', () => {
     expect(parsed.year).toBe('2023');
   });
 
-  test('short flags', async () => {
+  test('custom flags', async () => {
     const { parse } = createParser(
       {
-        user: '',
+        userName: '',
         verbose: false,
       },
       {
         options: {
-          user: {
-            shortFlag: '-u',
+          userName: {
+            longFlag: 'user',
           },
           verbose: {
             shortFlag: 'v',
@@ -58,9 +58,9 @@ describe('Docs', () => {
         },
       }
     );
-    const parsed = await parse(['-v', '-u', 'eegli']);
+    const parsed = await parse(['-v', '--user', 'eegli']);
     expect(parsed.verbose).toBe(true);
-    expect(parsed.user).toBe('eegli');
+    expect(parsed.userName).toBe('eegli');
   });
 
   test('custom validation', async () => {
@@ -161,11 +161,11 @@ describe('Docs', () => {
          --age [number]
 
       Optional flags
-         --userName [string]
-         Your custom username
-
          --hasGithubProfile [boolean]
-         Indicate whether you have a Github profile"
+         Indicate whether you have a Github profile
+
+         --userName [string]
+         Your custom username"
     `);
   });
 
@@ -177,6 +177,11 @@ describe('Docs', () => {
       },
       {
         decamelize: true,
+        options: {
+          userName: {
+            longFlag: 'user',
+          },
+        },
       }
     );
     const helpText = help();
@@ -184,9 +189,9 @@ describe('Docs', () => {
       "Usage
 
       Optional flags
-         --user-name [string]
+         --has-github-profile [boolean]
 
-         --has-github-profile [boolean]"
+         --user [string]"
     `);
   });
 

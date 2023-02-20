@@ -1,7 +1,7 @@
 - [Quick start](quickstart.md)
 - [Command Line Arguments](reference/cli-arguments.md)
   - [Required Arguments](reference/required-arguments.md)
-  - [Short Flags](reference/short-flags.md)
+  - [Custom Flags](reference/custom-flags.md)
   - [Custom Validation](reference/custom-validation.md)
   - [Decamelize Variables](reference/decamelize-variables.md)
   - [Reading Files](reference/reading-files.md)

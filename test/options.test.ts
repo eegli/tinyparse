@@ -1,23 +1,47 @@
 import { Options } from '../src/options';
+import { FlagType } from '../src/types';
 
 describe('Options', () => {
-  test('key merging', () => {
-    let options = new Options({ a: '', b: false });
-    expect([...options.entries()]).toStrictEqual([
-      ['a', { _type: 'string' }],
-      ['b', { _type: 'boolean' }],
+  test('constructor', () => {
+    const options = new Options({ a: '', b: false });
+    expect([...options.values()]).toEqual([
+      {
+        _type: 'string',
+        longFlag: 'a',
+        required: false,
+      },
+      {
+        _type: 'boolean',
+        longFlag: 'b',
+        required: false,
+      },
     ]);
-
-    options = new Options(
+  });
+  test('constructor with options', () => {
+    const options = new Options(
       { a: '', b: 0 },
       {
-        options: { a: { description: 'void' }, ignoreThis: {} },
+        options: {
+          a: { required: true, description: 'void' },
+          b: { shortFlag: 'b', longFlag: 'longb' },
+          ignoreThis: {},
+        },
       }
     );
 
-    expect([...options.entries()]).toStrictEqual([
-      ['a', { description: 'void', _type: 'string' }],
-      ['b', { _type: 'number' }],
+    expect([...options.values()]).toEqual([
+      {
+        _type: 'string',
+        required: true,
+        longFlag: 'a',
+        description: 'void',
+      },
+      {
+        _type: 'number',
+        required: false,
+        longFlag: 'longb',
+        shortFlag: 'b',
+      },
     ]);
   });
   test('conflicting alias construction', () => {
@@ -33,7 +57,7 @@ describe('Options', () => {
     expect(
       () => new Options({ userName: '', 'user-name': '' }, { decamelize: true })
     ).toThrow(
-      'Parser config validation error, conflicting long flag: --user-name has been declared twice. Check your settings for decamelization.'
+      'Parser config validation error, conflicting long flag: --user-name has been declared twice. Check your settings for custom long flags and decamelization.'
     );
   });
   test('file path flag conversion', () => {
@@ -55,6 +79,15 @@ describe('Options', () => {
         longFlag: 'file',
         shortFlag: 'f',
       });
+      expect(options.aliases.get('file')).toStrictEqual({
+        originalFlag: 'file',
+        flagType: FlagType.Long,
+      });
+      expect(options.aliases.get('f')).toStrictEqual({
+        originalFlag: 'f',
+        flagType: FlagType.Short,
+      });
+      expect(options.aliases.size).toBe(2);
     });
   });
   test('alias construction with flag conversion', () => {
@@ -64,6 +97,7 @@ describe('Options', () => {
         options: {
           firstfirst: { shortFlag: '-f' },
           secondSecond: { shortFlag: '---second' },
+          Thirdthird: { longFlag: 'special-third' },
         },
         decamelize: true,
         filePathArg: {
@@ -73,9 +107,36 @@ describe('Options', () => {
     );
     expect(options.shouldDecamelize).toBeTruthy();
     expect(options.filePathArg).toStrictEqual({ longFlag: 'file' });
-    expect(options.aliases.get('-f')).toBe('firstfirst');
-    expect(options.aliases.get('-second')).toBe('secondSecond');
-    expect(options.aliases.get('--second-second')).toBe('secondSecond');
-    expect(options.aliases.get('--thirdthird')).toBe('Thirdthird');
+
+    expect(options.aliases.get('file')).toStrictEqual({
+      originalFlag: 'file',
+      flagType: FlagType.Long,
+    });
+
+    expect(options.aliases.get('f')).toStrictEqual({
+      originalFlag: 'firstfirst',
+      flagType: FlagType.Short,
+    });
+    expect(options.aliases.get('firstfirst')).toStrictEqual({
+      originalFlag: 'firstfirst',
+      flagType: FlagType.Long,
+    });
+
+    // Rewrite the two unit tests as above
+    expect(options.aliases.get('second')).toStrictEqual({
+      originalFlag: 'secondSecond',
+      flagType: FlagType.Short,
+    });
+    expect(options.aliases.get('second-second')).toStrictEqual({
+      originalFlag: 'secondSecond',
+      flagType: FlagType.Long,
+    });
+
+    expect(options.aliases.get('thirdthird')).toBeUndefined();
+    expect(options.aliases.get('special-third')).toStrictEqual({
+      originalFlag: 'Thirdthird',
+      flagType: FlagType.Long,
+    });
+    expect(options.aliases.size).toBe(1 + 2 + 2 + 1);
   });
 });

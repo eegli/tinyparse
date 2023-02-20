@@ -1,104 +1,140 @@
 import {
+  ArgOptions,
   FilePathArg,
   Flag,
   FlagAlias,
+  FlagAliasMap,
+  FlagAliasProps,
+  FlagType,
+  InternalArgOption,
   InternalOptions,
   ParserOptions,
   PrimitiveRecord,
 } from './types';
 import Utils from './utils';
 
-enum FlagType {
-  Short,
-  Long,
-}
-
 export class Options {
   private readonly _opts: InternalOptions = new Map();
-  private readonly _aliases: Map<FlagAlias, Flag> = new Map();
+  private readonly _aliases: FlagAliasMap = new Map();
 
   public readonly shouldDecamelize: boolean;
   public readonly filePathArg?: FilePathArg;
 
   constructor(defaults: PrimitiveRecord, options: ParserOptions = {}) {
-    // Merge option keys/flags with user-provided options
-    for (const [key, value] of Object.entries(defaults)) {
-      const keyOptions = { ...options.options?.[key], _type: typeof value };
-      this._opts.set(key, keyOptions);
-    }
-
     // Global options
     this.shouldDecamelize = !!options.decamelize;
     this.filePathArg = options.filePathArg;
 
-    // Create alias map
-    this._createAliasMap();
+    this._registerAliases(defaults, options.options);
+    this._registerFilePathArg();
   }
 
-  private _ensureAliasDoesNotExist(alias: string) {
-    if (this._aliases.get(alias)) {
-      const [, isLongFlag] = Utils.getFlagType(alias);
-      const causes = [];
-      let text;
+  private _registerAliases(defaults: PrimitiveRecord, options?: ArgOptions) {
+    // Merge option keys/flags with user-provided options
+    for (const [key, value] of Object.entries(defaults)) {
+      const userOptions = options?.[key] ?? {};
+      const isCustomLongFlag = !!userOptions.longFlag;
 
-      if (isLongFlag) {
-        if (this.shouldDecamelize) {
-          causes.push('decamelization');
-        }
-        text = `conflicting long flag: ${alias} has been declared twice`;
-      } else {
-        causes.push('short flags');
-        text = `conflicting short flag: ${alias} has been declared twice`;
+      let longFlag = key;
+      let shortFlag: string | undefined;
+
+      if (isCustomLongFlag) {
+        longFlag = this.stripFlagPrefix(userOptions.longFlag as string);
+      } else if (this.shouldDecamelize) {
+        // Only decamelize if no custom long flag is provided AND
+        // decamelize is enabled
+        longFlag = Utils.decamelize(key);
+      }
+
+      this._addAliasIfNotExists(longFlag, {
+        originalFlag: key,
+        flagType: FlagType.Long,
+      });
+
+      // Short flags should be short, hence no decamelization
+      if (userOptions.shortFlag) {
+        shortFlag = this.stripFlagPrefix(userOptions.shortFlag);
+
+        this._addAliasIfNotExists(shortFlag, {
+          originalFlag: key,
+          flagType: FlagType.Short,
+        });
+      }
+
+      this._opts.set(key, {
+        ...userOptions,
+        required: !!userOptions.required,
+        shortFlag,
+        longFlag,
+        _type: typeof value,
+      });
+    }
+  }
+
+  private _registerFilePathArg() {
+    if (this.filePathArg) {
+      this.filePathArg.longFlag = this.stripFlagPrefix(
+        this.filePathArg.longFlag
+      );
+
+      this._addAliasIfNotExists(this.filePathArg.longFlag, {
+        originalFlag: this.filePathArg.longFlag,
+        flagType: FlagType.Long,
+      });
+    }
+    if (this.filePathArg?.shortFlag) {
+      this.filePathArg.shortFlag = this.stripFlagPrefix(
+        this.filePathArg.shortFlag
+      );
+
+      this._addAliasIfNotExists(this.filePathArg.shortFlag, {
+        originalFlag: this.filePathArg.shortFlag,
+        flagType: FlagType.Short,
+      });
+    }
+  }
+
+  private _addAliasIfNotExists(key: string, props: FlagAliasProps) {
+    const existingAlias = this._aliases.get(key);
+    if (!existingAlias) {
+      this.aliases.set(key, props);
+    } else {
+      const conflicting = this._makeFlag(key, props.flagType);
+
+      let text = `conflicting long flag: ${conflicting} has been declared twice`;
+      let cause = 'custom long flags and decamelization';
+      if (
+        props.flagType === FlagType.Short &&
+        props.flagType === FlagType.Short
+      ) {
+        cause = 'short flags';
+        text = `conflicting short flag: ${conflicting} has been declared twice`;
       }
 
       throw new Error(
-        `Parser config validation error, ${text}. Check your settings for ${causes.join(
-          ', '
-        )}.`
+        `Parser config validation error, ${text}. Check your settings for ${cause}.`
       );
     }
   }
 
-  private _createAliasMap() {
-    for (const [key, opts] of this._opts) {
-      if (opts.shortFlag) {
-        const shortFlag = this._makeFlag(opts.shortFlag, FlagType.Short);
-        opts.shortFlag = shortFlag;
-        this._ensureAliasDoesNotExist(shortFlag);
-        this._aliases.set(shortFlag, key);
-      }
-      if (this.shouldDecamelize) {
-        const decamelized = Utils.decamelize(key);
-        const longFlag = this._makeFlag(decamelized, FlagType.Long);
-        this._ensureAliasDoesNotExist(longFlag);
-        this._aliases.set(longFlag, key);
-      }
-    }
-
-    if (this.filePathArg) {
-      this.filePathArg.longFlag = this._removeFlagPrefix(
-        this.filePathArg.longFlag
-      );
-    }
-    if (this.filePathArg?.shortFlag) {
-      this.filePathArg.shortFlag = this._removeFlagPrefix(
-        this.filePathArg.shortFlag
-      );
-    }
-  }
-
-  private _removeFlagPrefix(flag: string): Flag {
+  public stripFlagPrefix(flag: string): Flag {
     return flag.trim().replace(/^-+/, '');
   }
 
   private _makeFlag(flag: string, type: FlagType): FlagAlias {
-    flag = this._removeFlagPrefix(flag);
+    flag = this.stripFlagPrefix(flag);
     const prefix = type === FlagType.Long ? '--' : '-';
     return `${prefix}${flag}`;
   }
 
-  public entries() {
+  // Explicit annotation due to TS4053
+  public entries(): IterableIterator<[Flag, InternalArgOption]> {
     return this._opts.entries();
+  }
+
+  // Explicit annotation due to TS4053
+  public values(): IterableIterator<InternalArgOption> {
+    return this._opts.values();
   }
 
   public get aliases() {

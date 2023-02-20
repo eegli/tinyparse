@@ -57,7 +57,7 @@ describe('Helper text', () => {
       "
     `);
   });
-  it('decamelization handling enabled', () => {
+  it('with decamelization and custom long flag', () => {
     const defaultValues = {
       UserId: '',
       someColor: '',
@@ -65,27 +65,40 @@ describe('Helper text', () => {
     };
     const { help } = createParser(defaultValues, {
       decamelize: true,
+      options: {
+        someColor: {
+          longFlag: 'color',
+        },
+      },
     });
     expect(help()).toMatchInlineSnapshot(`
       "Usage
 
       Optional flags
-         --user-id [string]
+         --color [string]
 
-         --some-color [string]
+         --user-id [string]
 
          --with-auth [boolean]"
     `);
   });
-  it('creates helper text for file flag only', () => {
-    const { help } = createParser(
-      {},
-      { filePathArg: { longFlag: '--config' } }
-    );
-    expect(help()).toMatchInlineSnapshot(`
+  it('file flag helper text only', () => {
+    expect(createParser({}, { filePathArg: { longFlag: '--config' } }).help())
+      .toMatchInlineSnapshot(`
       "Usage
 
          --config [string]
+      "
+    `);
+    expect(
+      createParser(
+        {},
+        { filePathArg: { longFlag: '--config', shortFlag: 'c' } }
+      ).help()
+    ).toMatchInlineSnapshot(`
+      "Usage
+
+         -c, --config [string]
       "
     `);
   });
@@ -102,9 +115,9 @@ describe('Helper text', () => {
       Optional flags
          --id [string]
 
-         --withAuth [boolean]
+         --port [number]
 
-         --port [number]"
+         --withAuth [boolean]"
     `);
   });
 });
