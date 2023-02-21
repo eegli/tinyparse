@@ -11,11 +11,6 @@ export default class Utils {
     return allowedTypes.has(typeof value);
   }
 
-  public static isNumericString(value: unknown): boolean {
-    if (typeof value !== 'string') return false;
-    return !Number.isNaN(+value);
-  }
-
   public static decamelize(value: string) {
     return _decamelize(value, { separator: '-' });
   }

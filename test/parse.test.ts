@@ -202,6 +202,29 @@ describe('Parsing with options', () => {
   });
 });
 
+describe('Numeric conversions', () => {
+  const defaultValues = {
+    username: '',
+    hasGitHubPlus: false,
+    numProp: Infinity,
+  };
+  const parser = new Parser(defaultValues);
+  const inputs = [
+    ['1', 1],
+    [true, true],
+    [false, false],
+    [{}, {}],
+    ['.1', 0.1],
+    ['1.1', 1.1],
+    [undefined, undefined],
+  ];
+  inputs.forEach(([input, output], idx) => {
+    it('test case ' + (idx + 1), () => {
+      expect(parser.tryConvertToNumber(input)).toStrictEqual(output);
+    });
+  });
+});
+
 describe('Appens content from JSON file', () => {
   const defaultValues = {
     username: '',

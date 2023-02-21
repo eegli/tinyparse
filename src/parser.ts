@@ -37,6 +37,13 @@ export class Parser<T extends PrimitiveRecord> {
     return collection;
   }
 
+  // Try to convert a string to a number, otherwise return identity
+  public tryConvertToNumber(value: unknown): unknown {
+    if (typeof value !== 'string') return value;
+    const num = +value;
+    return !Number.isNaN(num) ? num : value;
+  }
+
   public parse(input: Map<string, unknown>, options: Options): T {
     // Append file content to the input
     input = this.appendFromFile(
@@ -74,8 +81,8 @@ export class Parser<T extends PrimitiveRecord> {
 
       // Iif the expected type is a number and not NaN, try to convert
       // the value
-      if (expectedType === 'number' && Utils.isNumericString(flagValue)) {
-        flagValue = Number(flagValue);
+      if (expectedType === 'number') {
+        flagValue = this.tryConvertToNumber(flagValue);
       }
 
       // Custom validation
