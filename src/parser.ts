@@ -16,11 +16,11 @@ export class Parser<T extends PrimitiveRecord> {
     longFlag = longFlag && Utils.makeLongFlag(longFlag);
     shortFlag = shortFlag && Utils.makeShortFlag(shortFlag);
 
-    const flags = [longFlag, shortFlag];
+    const flags = [longFlag, shortFlag].filter(Boolean) as string[];
     if (flags.length === 0) return input;
 
     const filePaths = flags
-      .map((flag) => flag && input.get(flag))
+      .map((flag) => input.get(flag))
       .filter((value) => typeof value === 'string') as string[];
 
     if (filePaths.length === 0) return input;

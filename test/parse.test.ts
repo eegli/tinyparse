@@ -22,7 +22,7 @@ describe('Parsing with options', () => {
 
   it('sync and async parsing are equal', async () => {
     const { parseSync, parse } = createParser(defaultValues);
-    const input = ['--stringProp', 'hello'];
+    const input = ['--stringProp', 'hello', '--unknown'];
     expect(parseSync(input)).toStrictEqual({
       ...defaultValues,
       ...positionalArgs,
@@ -200,6 +200,11 @@ describe('Appens content from JSON file', () => {
   it('identity when no flags are given', () => {
     const input = new Map([['--file', 'test/long.json']]);
     const content = new Parser(defaultValues).appendFromFile(input);
+    expect(content).toStrictEqual(input);
+  });
+  it('identity when invalid flags are given', () => {
+    const input = new Map([['--file', 'test/long.json']]);
+    const content = new Parser(defaultValues).appendFromFile(input, 'long');
     expect(content).toStrictEqual(input);
   });
   it('from long flag', () => {
