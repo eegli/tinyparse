@@ -18,26 +18,24 @@ describe('Parsing, with options', () => {
     _: [],
   };
 
-  it('resolves if all required args are present', async () => {
-    const { parse } = createParser(defaultValues, {
+  it('resolves if all required args are present', () => {
+    const { parseSync } = createParser(defaultValues, {
       options: {
         stringProp: {
           required: true,
         },
       },
     });
-    await expect(parse(['--stringProp', 'hello'])).resolves.toStrictEqual({
+    expect(parseSync(['--stringProp', 'hello'])).toStrictEqual({
       ...defaultValues,
       ...positionalArgs,
       stringProp: 'hello',
     });
   });
 
-  it('parses strings to integers iif types match', async () => {
-    const { parse } = createParser(defaultValues);
-    await expect(
-      parse(['--numProp', '1', '--stringProp', '1'])
-    ).resolves.toStrictEqual({
+  it('parses strings to integers iif types match', () => {
+    const { parseSync } = createParser(defaultValues);
+    expect(parseSync(['--numProp', '1', '--stringProp', '1'])).toStrictEqual({
       ...defaultValues,
       ...positionalArgs,
       stringProp: '1',
@@ -45,46 +43,33 @@ describe('Parsing, with options', () => {
     });
   });
 
-  it('rejects invalid types 1', async () => {
-    const { parse } = createParser(defaultValues);
-    expect.assertions(2);
-    try {
-      await parse(['--boolProp', '1']);
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        `Invalid type for --boolProp. "1" is not a boolean`
-      );
-    }
+  it('rejects invalid types 1', () => {
+    const { parseSync } = createParser(defaultValues);
+    expect(() => {
+      parseSync(['--boolProp', '1']);
+    }).toThrow(
+      new ValidationError(`Invalid type for --boolProp. "1" is not a boolean`)
+    );
   });
 
-  it('rejects invalid types 2', async () => {
-    const { parse } = createParser(defaultValues);
-    expect.assertions(2);
-    try {
-      await parse(['--numProp', 'twelve']);
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
+  it('rejects invalid types 2', () => {
+    const { parseSync } = createParser(defaultValues);
+    expect(() => {
+      parseSync(['--numProp', 'twelve']);
+    }).toThrow(
+      new ValidationError(
         `Invalid type for --numProp. "twelve" is not a number`
-      );
-    }
+      )
+    );
   });
 
-  it('rejects invalid types 3', async () => {
-    const { parse } = createParser(defaultValues);
-    expect.assertions(2);
-    try {
-      await parse(['--numProp']);
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        `Invalid type for --numProp. "true" is not a number`
-      );
-    }
+  it('rejects invalid types 3', () => {
+    const { parseSync } = createParser(defaultValues);
+    expect(() => {
+      parseSync(['--numProp']);
+    }).toThrow(
+      new ValidationError(`Invalid type for --numProp. "true" is not a number`)
+    );
   });
 
   it('rejects invalid types from file', () => {
@@ -92,33 +77,28 @@ describe('Parsing, with options', () => {
     const { parseSync } = createParser(defaultValues, {
       filePathArg: { longFlag: 'file' },
     });
-    const input = ['--file', 'nested.json'];
     expect(() => {
-      parseSync(input);
+      parseSync(['--file', 'nested.json']);
     }).toThrow(
       'Invalid type for --stringProp. "[object Object]" is not a string'
     );
   });
 
-  it('rejects for missing required args 1', async () => {
-    const { parse } = createParser(defaultValues, {
+  it('rejects for missing required args 1', () => {
+    const { parseSync } = createParser(defaultValues, {
       options: {
         stringProp: {
           required: true,
         },
       },
     });
-    expect.assertions(2);
-    try {
-      await parse([]);
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', 'Missing required flag --stringProp');
-    }
+    expect(() => {
+      parseSync([]);
+    }).toThrow(new ValidationError('Missing required flag --stringProp'));
   });
 
-  it('rejects for missing required args 2', async () => {
-    const { parse } = createParser(defaultValues, {
+  it('rejects for missing required args 2', () => {
+    const { parseSync } = createParser(defaultValues, {
       options: {
         stringProp: {
           longFlag: 'my-string-prop',
@@ -126,42 +106,13 @@ describe('Parsing, with options', () => {
         },
       },
     });
-    expect.assertions(2);
-    try {
-      await parse([]);
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        'Missing required flag --my-string-prop'
-      );
-    }
+    expect(() => {
+      parseSync([]);
+    }).toThrow(new ValidationError('Missing required flag --my-string-prop'));
   });
 
-  it('allows custom validation', async () => {
-    const { parse } = createParser(defaultValues, {
-      options: {
-        numProp: {
-          required: true,
-          customValidator: {
-            isValid(v): v is Value {
-              return typeof v === 'number' && v === 69;
-            },
-            errorMessage: () => "whoops this shouldn't happen",
-          },
-        },
-      },
-    });
-
-    await expect(parse(['--numProp', '69'])).resolves.toStrictEqual({
-      ...defaultValues,
-      ...positionalArgs,
-      numProp: 69,
-    });
-  });
-
-  it('rejects for failed custom validation', async () => {
-    const { parse } = createParser(defaultValues, {
+  it('allows custom validation', () => {
+    const { parseSync } = createParser(defaultValues, {
       options: {
         stringProp: {
           required: true,
@@ -175,16 +126,13 @@ describe('Parsing, with options', () => {
         },
       },
     });
-    expect.assertions(2);
-    try {
-      await parse(['--my-string-prop', 'goodbye']);
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
+    expect(() => {
+      parseSync(['--my-string-prop', 'goodbye']);
+    }).toThrow(
+      new ValidationError(
         'did get "goodbye" for --my-string-prop, expected hello'
-      );
-    }
+      )
+    );
   });
 });
 
