@@ -20,5 +20,12 @@ mockFs.readFileSync.mockImplementation((path) => {
       hasGitHubPlus: false,
     });
   }
+  if (path === 'nested.json') {
+    return JSON.stringify({
+      stringProp: {
+        invalid: 'I am nested',
+      },
+    });
+  }
   throw new Error();
 });

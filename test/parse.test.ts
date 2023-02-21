@@ -101,6 +101,19 @@ describe('Parsing with options', () => {
     }
   });
 
+  it('rejects invalid types from file', () => {
+    // FS mocks have been setup in ./test/_setup.ts
+    const { parseSync } = createParser(defaultValues, {
+      filePathArg: { longFlag: 'file' },
+    });
+    const input = ['--file', 'nested.json'];
+    expect(() => {
+      parseSync(input);
+    }).toThrow(
+      'Invalid type for --stringProp. "[object Object]" is not a string'
+    );
+  });
+
   it('rejects for missing required args 1', async () => {
     const { parse } = createParser(defaultValues, {
       options: {
