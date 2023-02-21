@@ -1,6 +1,7 @@
-import { ArgvParser } from './argv';
-import { displayHelp } from './help';
+import { ArgvTransformer } from './argv';
+import { HelpPrinter } from './help';
 import { Options } from './options';
+import { Parser } from './parser';
 import {
   HelpOptions,
   ParserOptions,
@@ -23,11 +24,12 @@ export function createParser<T extends PrimitiveRecord>(
   params?: ParserOptions<T>
 ) {
   const options = new Options(defaultValues, params);
-  const parser = new ArgvParser<T>(defaultValues);
+  const parser = new Parser<T>(options);
+  const helpPrinter = new HelpPrinter(options);
 
   function internalParse(input: string[]): WithPositionalArgs<T> {
-    const [transformed, positionals] = parser.transform(input);
-    const parsed = parser.parse(transformed, options);
+    const [transformed, positionals] = ArgvTransformer.transform(input);
+    const parsed = parser.parse(transformed);
     return parser.build(parsed, positionals);
   }
 
@@ -42,8 +44,7 @@ export function createParser<T extends PrimitiveRecord>(
 
   return {
     help: function ({ title, base }: HelpOptions = {}): string {
-      return displayHelp({
-        options,
+      return helpPrinter.display({
         base,
         title,
       });

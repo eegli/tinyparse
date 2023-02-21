@@ -1,15 +1,8 @@
-import { Parser } from './parser';
-import { PositionalArgs, PrimitiveRecord, WithPositionalArgs } from './types';
+import { PositionalArgs } from './types';
 import Utils from './utils';
 
-export class ArgvParser<T extends PrimitiveRecord> extends Parser<T> {
-  public build(input: T, positionals: string[]): WithPositionalArgs<T> {
-    return {
-      ...input,
-      _: positionals,
-    };
-  }
-  public transform(
+export class ArgvTransformer {
+  public static transform(
     argv: string[]
   ): [Map<string, string | boolean>, PositionalArgs] {
     const flagMap = new Map<string, string | boolean>();

@@ -1,12 +1,12 @@
 import { ValidationError } from './error';
 import { Options } from './options';
-import { PrimitiveRecord, Value } from './types';
+import { PrimitiveRecord, Value, WithPositionalArgs } from './types';
 import Utils from './utils';
 
 export class Parser<T extends PrimitiveRecord> {
   private readonly _requiredSym = Symbol('isRequired');
 
-  constructor(private readonly _defaultValues: T) {}
+  constructor(private readonly _options = new Options()) {}
 
   public appendFromFile<T extends Map<string, unknown>>(
     collection: T,
@@ -44,21 +44,21 @@ export class Parser<T extends PrimitiveRecord> {
     return !Number.isNaN(num) ? num : value;
   }
 
-  public parse(input: Map<string, unknown>, options: Options): T {
+  public parse(input: Map<string, unknown>): T {
     // Append file content to the input
     input = this.appendFromFile(
       input,
-      options.filePathArg?.longFlag,
-      options.filePathArg?.shortFlag
+      this._options.filePathArg?.longFlag,
+      this._options.filePathArg?.shortFlag
     );
 
     const config = new Map<string, Value | symbol>(
-      Object.entries(this._defaultValues)
+      this._options.entries().map(([key, entry]) => [key, entry._value])
     );
 
-    const requiredKeys = Array.from(options.entries()).filter(
-      ([, options]) => options.required
-    );
+    const requiredKeys = this._options
+      .entries()
+      .filter(([, opts]) => opts.required);
 
     // For each required flag, replace its value temporarily
     // with a symbol
@@ -70,14 +70,14 @@ export class Parser<T extends PrimitiveRecord> {
     for (const flagValuePair of input) {
       const [flag] = flagValuePair;
       let [, flagValue] = flagValuePair;
-      const maybeAlias = options.aliases.get(Utils.trimFlag(flag));
+      const maybeAlias = this._options.aliases.get(Utils.trimFlag(flag));
 
       if (!maybeAlias) continue;
 
       const key = maybeAlias.forKey;
-      const expectedType = typeof this._defaultValues[key];
+      const expectedType = typeof this._options.entry(key)?._value;
 
-      const customValidator = options.options.get(key)?.customValidator;
+      const customValidator = this._options.entry(key)?.customValidator;
 
       // Iif the expected type is a number and not NaN, try to convert
       // the value
@@ -120,5 +120,12 @@ export class Parser<T extends PrimitiveRecord> {
     }
 
     return Object.fromEntries(config) as T;
+  }
+
+  public build(input: T, positionals: string[]): WithPositionalArgs<T> {
+    return {
+      ...input,
+      _: positionals,
+    };
   }
 }

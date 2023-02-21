@@ -1,9 +1,8 @@
-import { ArgvParser } from '../src/argv';
+import { ArgvTransformer } from '../src/argv';
 
 describe('Argv transformer', () => {
   it('parses empty', () => {
-    const parser = new ArgvParser({});
-    expect(parser.transform([])).toStrictEqual([new Map(), []]);
+    expect(ArgvTransformer.transform([])).toStrictEqual([new Map(), []]);
   });
 
   const orders = [
@@ -42,8 +41,7 @@ describe('Argv transformer', () => {
   ];
   orders.forEach((argv, idx) => {
     it('works with order ' + idx, () => {
-      const parser = new ArgvParser({});
-      const [transformed, positionals] = parser.transform(argv);
+      const [transformed, positionals] = ArgvTransformer.transform(argv);
 
       expect(Object.fromEntries(transformed)).toStrictEqual({
         '--boolProp1': true,
@@ -55,8 +53,7 @@ describe('Argv transformer', () => {
     });
   });
   it('ignores invalid flags', () => {
-    const parser = new ArgvParser({});
-    const [transformed, positionals] = parser.transform([
+    const [transformed, positionals] = ArgvTransformer.transform([
       'positional_1',
       'positional_2',
       '-short',

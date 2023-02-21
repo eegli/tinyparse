@@ -15,7 +15,7 @@ export class Options {
   public readonly shouldDecamelize: boolean;
   public readonly filePathArg?: FilePathArg;
 
-  constructor(defaults: PrimitiveRecord, options: ParserOptions = {}) {
+  constructor(defaults: PrimitiveRecord = {}, options: ParserOptions = {}) {
     // Global options
     this.shouldDecamelize = !!options.decamelize;
     this.filePathArg = options.filePathArg;
@@ -57,6 +57,7 @@ export class Options {
         shortFlag,
         longFlag,
         _type: typeof value,
+        _value: value,
       });
     }
 
@@ -101,21 +102,25 @@ export class Options {
     }
   }
 
-  // Explicit annotation due to TS4053
-  public entries(): IterableIterator<[string, InternalKeyOptions]> {
-    return this._options.entries();
+  public entry(key: string) {
+    return this._options.get(key);
   }
 
   // Explicit annotation due to TS4053
-  public values(): IterableIterator<InternalKeyOptions> {
-    return this._options.values();
+  public entries(): [string, InternalKeyOptions][] {
+    return [...this._options.entries()];
+  }
+
+  // Explicit annotation due to TS4053
+  public values(): InternalKeyOptions[] {
+    return [...this._options.values()];
   }
 
   public get aliases() {
     return this._aliases;
   }
 
-  public get options() {
-    return this._options;
+  [Symbol.iterator]() {
+    return this._options.entries();
   }
 }

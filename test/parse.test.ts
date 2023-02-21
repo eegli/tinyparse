@@ -20,18 +20,6 @@ describe('Parsing with options', () => {
     _: [],
   };
 
-  it('sync and async parsing are equal', async () => {
-    const { parseSync, parse } = createParser(defaultValues);
-    const input = ['--stringProp', 'hello', '--unknown'];
-    expect(parseSync(input)).toStrictEqual({
-      ...defaultValues,
-      ...positionalArgs,
-      stringProp: 'hello',
-    });
-    await expect(parse()).resolves.toStrictEqual(parseSync());
-    await expect(parse(input)).resolves.toStrictEqual(parseSync(input));
-  });
-
   it('resolves if all required args are present', async () => {
     const { parse } = createParser(defaultValues, {
       options: {
@@ -203,12 +191,7 @@ describe('Parsing with options', () => {
 });
 
 describe('Numeric conversions', () => {
-  const defaultValues = {
-    username: '',
-    hasGitHubPlus: false,
-    numProp: Infinity,
-  };
-  const parser = new Parser(defaultValues);
+  const parser = new Parser();
   const inputs = [
     ['1', 1],
     [true, true],
@@ -235,16 +218,16 @@ describe('Appens content from JSON file', () => {
   // FS mocks have been setup in ./test/_setup.ts
   it('identity when no flags are given', () => {
     const input = new Map([['--file', 'test/long.json']]);
-    const content = new Parser(defaultValues).appendFromFile(input);
+    const content = new Parser().appendFromFile(input);
     expect(content).toStrictEqual(input);
   });
   it('identity when invalid flags are given', () => {
     const input = new Map([['--file', 'test/long.json']]);
-    const content = new Parser(defaultValues).appendFromFile(input, 'long');
+    const content = new Parser().appendFromFile(input, 'long');
     expect(content).toStrictEqual(input);
   });
   it('from long flag', () => {
-    const content = new Parser(defaultValues).appendFromFile(
+    const content = new Parser().appendFromFile(
       new Map([['--file', 'test/long.json']]),
       'file'
     );
@@ -255,7 +238,7 @@ describe('Appens content from JSON file', () => {
     `);
   });
   it('from short flag', () => {
-    const content = new Parser(defaultValues).appendFromFile(
+    const content = new Parser().appendFromFile(
       new Map([['-f', 'test/short.json']]),
       'file',
       'f'
@@ -267,7 +250,7 @@ describe('Appens content from JSON file', () => {
     `);
   });
   it('long flag takes precedence', () => {
-    const content = new Parser(defaultValues).appendFromFile(
+    const content = new Parser().appendFromFile(
       new Map([
         ['-f', 'test/short.json'],
         ['--file', 'test/long.json'],
@@ -283,7 +266,7 @@ describe('Appens content from JSON file', () => {
   });
   it('throws for invalid files', () => {
     expect(() => {
-      new Parser(defaultValues).appendFromFile(
+      new Parser().appendFromFile(
         new Map([['-f', 'test/doesnotexist.json']]),
         'file',
         'f'

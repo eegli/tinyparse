@@ -18,6 +18,10 @@ export type AliasConfig = {
   flagType: FlagType;
 };
 
+export type OptionMap = Map<string, InternalKeyOptions>;
+
+export type AliasMap = Map<string, AliasConfig>;
+
 interface UserKeyOptions {
   required?: boolean;
   description?: string;
@@ -33,6 +37,7 @@ export interface InternalKeyOptions extends UserKeyOptions {
   required: boolean;
   longFlag: string;
   _type: string;
+  _value: Value;
 }
 
 export type FilePathArg = {

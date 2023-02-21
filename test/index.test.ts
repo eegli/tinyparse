@@ -11,4 +11,12 @@ describe('Lib', () => {
     `);
     expect(ValidationError).toBeTruthy();
   });
+  it('sync and async parsing are equal', async () => {
+    const { parseSync, parse } = createParser({
+      x: '',
+    });
+    const input = ['z', '--x', 'x'];
+    await expect(parse()).resolves.toStrictEqual(parseSync());
+    await expect(parse(input)).resolves.toStrictEqual(parseSync(input));
+  });
 });

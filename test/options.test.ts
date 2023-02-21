@@ -4,14 +4,16 @@ import { FlagType } from '../src/types';
 describe('Options', () => {
   test('constructor', () => {
     const options = new Options({ a: '', b: false });
-    expect([...options.values()]).toEqual([
+    expect(options.values()).toEqual([
       {
         _type: 'string',
+        _value: '',
         longFlag: 'a',
         required: false,
       },
       {
         _type: 'boolean',
+        _value: false,
         longFlag: 'b',
         required: false,
       },
@@ -28,16 +30,17 @@ describe('Options', () => {
         },
       }
     );
-
-    expect([...options.values()]).toEqual([
+    expect(options.values()).toEqual([
       {
         _type: 'string',
+        _value: '',
         required: true,
         longFlag: 'a',
         description: 'void',
       },
       {
         _type: 'number',
+        _value: 0,
         required: false,
         longFlag: 'longb',
         shortFlag: 'b',
