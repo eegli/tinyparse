@@ -9,3 +9,4 @@
   - [Error Handling](reference/error-handling.md)
 - [TypeScript](reference/typescript.md)
 - [Examples](examples.md)
+- [Contributing](contributing.md)
