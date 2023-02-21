@@ -13,6 +13,8 @@ A custom validator has the following signature:
   };
 ```
 
+https://github.com/microsoft/TypeScript/issues/14826#issuecomment-288870523
+
 ## Example
 
 <!-- doctest: custom validation -->

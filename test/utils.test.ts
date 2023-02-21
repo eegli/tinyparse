@@ -15,4 +15,9 @@ describe('Utils', () => {
       { key1: false, key2: 'b' },
     ]);
   });
+  test('isNumeric', () => {
+    [Utils.isNumeric(true)].forEach((val) => {
+      expect(val).toBeFalsy();
+    });
+  });
 });

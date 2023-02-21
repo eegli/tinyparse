@@ -1,4 +1,5 @@
 import { expectAssignable, expectNotAssignable, expectType } from 'tsd-lite';
+import type { Value } from '../../src';
 import { createParser } from '../../src';
 import { WithPositionalArgs } from '../../src/types';
 
@@ -8,7 +9,7 @@ type Input = {
   loggedIn: boolean;
 };
 
-expectAssignable<Promise<Input>>(
+expectAssignable<Promise<WithPositionalArgs<Input>>>(
   createParser({
     name: 'eric',
     age: 11,
@@ -16,20 +17,12 @@ expectAssignable<Promise<Input>>(
   }).parse()
 );
 
-expectAssignable<Input>(
+expectAssignable<WithPositionalArgs<Input>>(
   createParser({
     name: 'eric',
     age: 11,
     loggedIn: false,
   }).parseSync()
-);
-
-expectNotAssignable<Promise<WithPositionalArgs<Input>>>(
-  createParser({
-    name: 'eric',
-    age: 11,
-    loggedIn: false,
-  }).parse({})
 );
 
 expectAssignable<Promise<WithPositionalArgs<Input>>>(
@@ -59,7 +52,9 @@ expectAssignable<Params>({
       shortFlag: `-n`,
       longFlag: `--name`,
       customValidator: {
-        isValid: () => true,
+        isValid(v: unknown): v is Value {
+          return typeof v === 'string' && v.length > 0;
+        },
         errorMessage: () => 'Error',
       },
     },

@@ -80,11 +80,11 @@ describe('Options', () => {
         shortFlag: 'f',
       });
       expect(options.aliases.get('file')).toStrictEqual({
-        originalFlag: 'file',
+        forKey: 'file',
         flagType: FlagType.Long,
       });
       expect(options.aliases.get('f')).toStrictEqual({
-        originalFlag: 'f',
+        forKey: 'f',
         flagType: FlagType.Short,
       });
       expect(options.aliases.size).toBe(2);
@@ -109,32 +109,32 @@ describe('Options', () => {
     expect(options.filePathArg).toStrictEqual({ longFlag: 'file' });
 
     expect(options.aliases.get('file')).toStrictEqual({
-      originalFlag: 'file',
+      forKey: 'file',
       flagType: FlagType.Long,
     });
 
     expect(options.aliases.get('f')).toStrictEqual({
-      originalFlag: 'firstfirst',
+      forKey: 'firstfirst',
       flagType: FlagType.Short,
     });
     expect(options.aliases.get('firstfirst')).toStrictEqual({
-      originalFlag: 'firstfirst',
+      forKey: 'firstfirst',
       flagType: FlagType.Long,
     });
 
     // Rewrite the two unit tests as above
     expect(options.aliases.get('second')).toStrictEqual({
-      originalFlag: 'secondSecond',
+      forKey: 'secondSecond',
       flagType: FlagType.Short,
     });
     expect(options.aliases.get('second-second')).toStrictEqual({
-      originalFlag: 'secondSecond',
+      forKey: 'secondSecond',
       flagType: FlagType.Long,
     });
 
     expect(options.aliases.get('thirdthird')).toBeUndefined();
     expect(options.aliases.get('special-third')).toStrictEqual({
-      originalFlag: 'Thirdthird',
+      forKey: 'Thirdthird',
       flagType: FlagType.Long,
     });
     expect(options.aliases.size).toBe(1 + 2 + 2 + 1);

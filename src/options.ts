@@ -1,21 +1,16 @@
 import {
-  ArgOptions,
+  AliasConfig,
   FilePathArg,
-  Flag,
-  FlagAlias,
-  FlagAliasMap,
-  FlagAliasProps,
   FlagType,
-  InternalArgOption,
-  InternalOptions,
+  InternalKeyOptions,
   ParserOptions,
   PrimitiveRecord,
 } from './types';
 import Utils from './utils';
 
 export class Options {
-  private readonly _opts: InternalOptions = new Map();
-  private readonly _aliases: FlagAliasMap = new Map();
+  private readonly _options: Map<string, InternalKeyOptions> = new Map();
+  private readonly _aliases: Map<string, AliasConfig> = new Map();
 
   public readonly shouldDecamelize: boolean;
   public readonly filePathArg?: FilePathArg;
@@ -25,21 +20,16 @@ export class Options {
     this.shouldDecamelize = !!options.decamelize;
     this.filePathArg = options.filePathArg;
 
-    this._registerAliases(defaults, options.options);
-    this._registerFilePathArg();
-  }
-
-  private _registerAliases(defaults: PrimitiveRecord, options?: ArgOptions) {
     // Merge option keys/flags with user-provided options
     for (const [key, value] of Object.entries(defaults)) {
-      const userOptions = options?.[key] ?? {};
+      const userOptions = options.options?.[key] ?? {};
       const isCustomLongFlag = !!userOptions.longFlag;
 
       let longFlag = key;
       let shortFlag: string | undefined;
 
       if (isCustomLongFlag) {
-        longFlag = this.stripFlagPrefix(userOptions.longFlag as string);
+        longFlag = Utils.trimFlag(userOptions.longFlag as string);
       } else if (this.shouldDecamelize) {
         // Only decamelize if no custom long flag is provided AND
         // decamelize is enabled
@@ -47,21 +37,21 @@ export class Options {
       }
 
       this._addAliasIfNotExists(longFlag, {
-        originalFlag: key,
+        forKey: key,
         flagType: FlagType.Long,
       });
 
       // Short flags should be short, hence no decamelization
       if (userOptions.shortFlag) {
-        shortFlag = this.stripFlagPrefix(userOptions.shortFlag);
+        shortFlag = Utils.trimFlag(userOptions.shortFlag);
 
         this._addAliasIfNotExists(shortFlag, {
-          originalFlag: key,
+          forKey: key,
           flagType: FlagType.Short,
         });
       }
 
-      this._opts.set(key, {
+      this._options.set(key, {
         ...userOptions,
         required: !!userOptions.required,
         shortFlag,
@@ -69,43 +59,37 @@ export class Options {
         _type: typeof value,
       });
     }
-  }
 
-  private _registerFilePathArg() {
     if (this.filePathArg) {
-      this.filePathArg.longFlag = this.stripFlagPrefix(
-        this.filePathArg.longFlag
-      );
+      this.filePathArg.longFlag = Utils.trimFlag(this.filePathArg.longFlag);
 
       this._addAliasIfNotExists(this.filePathArg.longFlag, {
-        originalFlag: this.filePathArg.longFlag,
+        forKey: this.filePathArg.longFlag,
         flagType: FlagType.Long,
       });
     }
     if (this.filePathArg?.shortFlag) {
-      this.filePathArg.shortFlag = this.stripFlagPrefix(
-        this.filePathArg.shortFlag
-      );
+      this.filePathArg.shortFlag = Utils.trimFlag(this.filePathArg.shortFlag);
 
       this._addAliasIfNotExists(this.filePathArg.shortFlag, {
-        originalFlag: this.filePathArg.shortFlag,
+        forKey: this.filePathArg.shortFlag,
         flagType: FlagType.Short,
       });
     }
   }
 
-  private _addAliasIfNotExists(key: string, props: FlagAliasProps) {
-    const existingAlias = this._aliases.get(key);
+  private _addAliasIfNotExists(alias: string, aliasConfig: AliasConfig) {
+    const existingAlias = this._aliases.get(alias);
     if (!existingAlias) {
-      this.aliases.set(key, props);
+      this.aliases.set(alias, aliasConfig);
     } else {
-      const conflicting = this._makeFlag(key, props.flagType);
+      const conflicting = Utils.makeFlag(alias, aliasConfig.flagType);
 
       let text = `conflicting long flag: ${conflicting} has been declared twice`;
       let cause = 'custom long flags and decamelization';
       if (
-        props.flagType === FlagType.Short &&
-        props.flagType === FlagType.Short
+        aliasConfig.flagType === FlagType.Short &&
+        aliasConfig.flagType === FlagType.Short
       ) {
         cause = 'short flags';
         text = `conflicting short flag: ${conflicting} has been declared twice`;
@@ -117,24 +101,14 @@ export class Options {
     }
   }
 
-  public stripFlagPrefix(flag: string): Flag {
-    return flag.trim().replace(/^-+/, '');
-  }
-
-  private _makeFlag(flag: string, type: FlagType): FlagAlias {
-    flag = this.stripFlagPrefix(flag);
-    const prefix = type === FlagType.Long ? '--' : '-';
-    return `${prefix}${flag}`;
+  // Explicit annotation due to TS4053
+  public entries(): IterableIterator<[string, InternalKeyOptions]> {
+    return this._options.entries();
   }
 
   // Explicit annotation due to TS4053
-  public entries(): IterableIterator<[Flag, InternalArgOption]> {
-    return this._opts.entries();
-  }
-
-  // Explicit annotation due to TS4053
-  public values(): IterableIterator<InternalArgOption> {
-    return this._opts.values();
+  public values(): IterableIterator<InternalKeyOptions> {
+    return this._options.values();
   }
 
   public get aliases() {
@@ -142,6 +116,6 @@ export class Options {
   }
 
   public get options() {
-    return this._opts;
+    return this._options;
   }
 }

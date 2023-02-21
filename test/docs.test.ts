@@ -1,4 +1,4 @@
-import type { ParserOptions } from '../src';
+import type { ParserOptions, Value } from '../src';
 import { createParser, ValidationError } from '../src';
 
 describe('Docs', () => {
@@ -70,7 +70,7 @@ describe('Docs', () => {
         options: {
           birthDate: {
             customValidator: {
-              isValid(value) {
+              isValid(value): value is Value {
                 if (typeof value !== 'string') return false;
                 return !isNaN(new Date(value).getTime());
               },
@@ -102,12 +102,15 @@ describe('Docs', () => {
   });
 
   test('file reading', async () => {
+    // FS mocks have been setup in ./test/_setup.ts
+
     /*
     Assume that there is a JSON file with the following content in the current directory:
     {
       username: 'eegli', hasGitHubPlus: false,
     }
     */
+
     const { parse } = createParser(
       {
         username: '',
@@ -122,7 +125,7 @@ describe('Docs', () => {
       }
     );
 
-    const parsed = await parse(['--config', 'github.json']);
+    const parsed = await parse(['-c', 'github.json']);
 
     expect(parsed.username).toBe('eegli');
     expect(parsed.hasGitHubPlus).toBe(false);
@@ -211,36 +214,23 @@ describe('Docs', () => {
       await parse(); // Whoops, forgot username!
     } catch (error) {
       if (error instanceof ValidationError) {
-        expect(error.message).toBe('"username" is required');
+        expect(error.message).toBe('Missing required flag --username');
       }
     }
   });
   test('error handling, rejects invalid types', async () => {
     expect.assertions(1);
-    const { parse } = createParser({ username: '' });
+    const { parse } = createParser({ age: 0 });
     try {
-      // @ts-expect-error test input
-      await parse({ username: ['eegli'] });
+      const res = await parse(['--age']);
+      console.log(res);
     } catch (error) {
       if (error instanceof ValidationError) {
         expect(error.message).toBe(
-          'Invalid type for "username". Expected string, got object'
+          'Invalid type for --age. "true" is not a number'
         );
       }
     }
-  });
-  test('object literals, works', async () => {
-    const { parse } = createParser({ username: '' });
-    const parsed = await parse({ username: 'eegli' });
-
-    expect(parsed.username).toBe('eegli');
-  });
-  test('object literals, rejects', async () => {
-    expect.assertions(1);
-    const { parse } = createParser({ username: '' });
-
-    // @ts-expect-error test input
-    await expect(parse({ username: ['eegli'] })).rejects.toThrow();
   });
   // eslint-disable-next-line jest/expect-expect
   test('typescript, bootstrapping', () => {

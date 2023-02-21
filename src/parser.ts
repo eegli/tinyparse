@@ -8,73 +8,107 @@ export class Parser<T extends PrimitiveRecord> {
 
   constructor(private readonly _defaultValues: T) {}
 
-  public parse(input: Partial<T>, options: Options, fromArgv: boolean): T {
-    const shouldDecamelize = fromArgv && options.shouldDecamelize;
+  public appendFromFile<T extends Map<string, unknown>>(
+    input: T,
+    longFlag?: string,
+    shortFlag?: string
+  ): T {
+    longFlag = longFlag && Utils.makeLongFlag(longFlag);
+    shortFlag = shortFlag && Utils.makeShortFlag(shortFlag);
 
-    const formatFlag = (key: string) =>
-      shouldDecamelize ? Utils.decamelize(key) : key;
+    const flags = [longFlag, shortFlag];
+    if (flags.length === 0) return input;
+
+    const filePaths = flags
+      .map((flag) => flag && input.get(flag))
+      .filter((value) => typeof value === 'string') as string[];
+
+    if (filePaths.length === 0) return input;
+
+    // Long flag takes precedence over short flag
+    const filePath = filePaths[0];
+    for (const [key, content] of Utils.parseJSONFile(filePath)) {
+      input.set(Utils.makeLongFlag(key), content);
+    }
+
+    shortFlag && input.delete(Utils.makeShortFlag(shortFlag));
+    longFlag && input.delete(Utils.makeLongFlag(longFlag));
+
+    return input;
+  }
+
+  public parse(input: Map<string, unknown>, options: Options): T {
+    // Append file content to the input
+    input = this.appendFromFile(
+      input,
+      options.filePathArg?.longFlag,
+      options.filePathArg?.shortFlag
+    );
 
     const config = new Map<string, Value | symbol>(
       Object.entries(this._defaultValues)
     );
 
-    const requiredFlags = Array.from(options.entries())
-      .filter(([, options]) => options.required)
-      .map(([key]) => key);
+    const requiredKeys = Array.from(options.entries()).filter(
+      ([, options]) => options.required
+    );
 
     // For each required flag, replace its value temporarily
     // with a symbol
-    for (const flag of requiredFlags) {
-      config.set(flag, this._requiredSym);
+    for (const [key] of requiredKeys) {
+      config.set(key, this._requiredSym);
     }
-    // E.g., ["fooFlag", "barValue"], no dashes
-    for (let [flag, flagValue] of Object.entries(input)) {
-      const maybeAlias = options.aliases.get(flag);
 
-      if (maybeAlias) {
-        flag = maybeAlias.originalFlag;
-      } else {
-        continue;
-      }
+    // E.g., ["--fooFlag", "barValue"]
+    for (const flagValuePair of input) {
+      const [flag] = flagValuePair;
+      let [, flagValue] = flagValuePair;
+      const maybeAlias = options.aliases.get(Utils.trimFlag(flag));
 
-      const expectedType = typeof this._defaultValues[flag];
+      if (!maybeAlias) continue;
 
-      // Iif the expected type is a number, try to convert the value
-      if (expectedType === 'number') {
+      const key = maybeAlias.forKey;
+      const expectedType = typeof this._defaultValues[key];
+
+      const customValidator = options.options.get(key)?.customValidator;
+
+      // Iif the expected type is a number and not NaN, try to convert
+      // the value
+      if (expectedType === 'number' && Utils.isNumeric(flagValue)) {
         flagValue = Number(flagValue);
       }
-
-      const receivedType = typeof flagValue;
-      const customValidator = options.options.get(flag)?.customValidator;
 
       // Custom validation
       if (customValidator) {
         if (customValidator.isValid(flagValue)) {
-          config.set(flag, flagValue);
+          config.set(key, flagValue);
         } else {
-          const errorMessage = customValidator.errorMessage(flagValue);
+          const errorMessage = customValidator.errorMessage(flagValue, flag);
           throw new ValidationError(errorMessage);
         }
       }
 
+      const receivedType = typeof flagValue;
+
       // Default validation (based on types) -  The received type must
       // corresponds to the original type
-      if (Utils.isSameType(expectedType, receivedType)) {
-        config.set(flag, flagValue);
+
+      if (Utils.isValueType(flagValue) && receivedType === expectedType) {
+        config.set(key, flagValue);
       } else {
-        const value = formatFlag(flag);
         throw new ValidationError(
-          `Invalid type for "${value}". Expected ${expectedType}, got ${receivedType}`
+          `Invalid type for ${flag}. "${flagValue}" is not a ${expectedType}`
         );
       }
     }
 
     // Check if all required arguments have been defined or if the
     // temporary value is still there
-    for (const flag of requiredFlags) {
-      if (config.get(flag) === this._requiredSym) {
-        const value = formatFlag(flag);
-        throw new ValidationError(`"${value}" is required`);
+    for (const [key, keyOpts] of requiredKeys) {
+      if (config.get(key) === this._requiredSym) {
+        throw new ValidationError(
+          `Missing required flag --${keyOpts.longFlag}`
+        );
       }
     }
 

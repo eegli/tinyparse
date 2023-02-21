@@ -19,54 +19,53 @@ test('quickstart example', async () => {
 
   const { parse, parseSync } = createParser(defaultValues);
 
-  const parsed1 = await parse({ username: 'eegli', active: true });
-  const parsed2 = parseSync(['hello', '--username', 'eegli', '--active']);
+  const parsed1 = await parse(['hello', '--username', 'eegli', '--active']);
+  const parsed2 = parseSync(['--username', 'eegli', '--active']);
 
   assert.deepStrictEqual(parsed1, {
     username: 'eegli',
     active: true,
+    _: ['hello'],
   });
   assert.deepStrictEqual(parsed2, {
     username: 'eegli',
     active: true,
-    _: ['hello'],
+    _: [],
   });
 });
 
-test('e2e', async () => {
-  const { parse } = createParser(
-    {
-      name: '',
-      hasGithubProfile: false,
-      hasGithubPlus: true,
-      followerCount: 0,
-      birthYear: '',
-    },
-    {
-      options: {
-        followerCount: {
-          required: true,
-          shortFlag: '-fc',
-        },
+test('quickstart detailed example', async () => {
+  const defaultValues = {
+    name: '',
+    hasGithubProfile: false,
+    hasGithubPlus: true,
+    followerCount: 0,
+    birthYear: '',
+  };
+  const { parse } = createParser(defaultValues, {
+    options: {
+      followerCount: {
+        required: true,
+        shortFlag: '-fc',
       },
-    }
-  );
+    },
+  });
   const parsed = await parse([
     'congratulate', // Positional argument
-    '--name',
-    '"Eric Egli"', // Value with spaces
+    '--name', // Long flag
+    '"John Smith"', // Value with spaces
     '--hasGithubProfile', // Boolean flag
-    '--hasGithubPlus',
+    '--hasGithubPlus', // Another boolean flag
     '-fc', // Short flag
     '10', // Will be parsed as number
     'ignoredProperty', // This property is ignored
-    '--birthYear',
+    '--birthYear', // Long flag
     '2018', // Will remain a string
   ]);
 
   assert.deepStrictEqual(parsed, {
     _: ['congratulate'],
-    name: '"Eric Egli"',
+    name: '"John Smith"',
     hasGithubPlus: true,
     hasGithubProfile: true,
     followerCount: 10,

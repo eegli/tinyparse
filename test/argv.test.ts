@@ -3,7 +3,7 @@ import { ArgvParser } from '../src/argv';
 describe('Argv transformer', () => {
   it('parses empty', () => {
     const parser = new ArgvParser({});
-    expect(parser.transform([])).toStrictEqual([{}, []]);
+    expect(parser.transform([])).toStrictEqual([new Map(), []]);
   });
 
   const orders = [
@@ -43,20 +43,20 @@ describe('Argv transformer', () => {
   orders.forEach((argv, idx) => {
     it('works with order ' + idx, () => {
       const parser = new ArgvParser({});
-      expect(parser.transform(argv)).toStrictEqual([
-        {
-          boolProp1: true,
-          stringProp: 'hello from node',
-          numProp: '123',
-          boolProp2: true,
-        },
-        [],
-      ]);
+      const [transformed, positionals] = parser.transform(argv);
+
+      expect(Object.fromEntries(transformed)).toStrictEqual({
+        '--boolProp1': true,
+        '--stringProp': 'hello from node',
+        '--numProp': '123',
+        '--boolProp2': true,
+      });
+      expect(positionals).toStrictEqual([]);
     });
   });
   it('ignores invalid flags', () => {
     const parser = new ArgvParser({});
-    const transformed = parser.transform([
+    const [transformed, positionals] = parser.transform([
       'positional_1',
       'positional_2',
       '-short',
@@ -73,49 +73,21 @@ describe('Argv transformer', () => {
       'thisisignored',
       '--sinlgeQuotes',
       '"-this is a string"',
-      '--doubleQuotes',
+      '-doubleQuotes',
       "'-this is a string'",
+      '--array',
+      '[1,2,3]',
     ]);
-    expect(transformed).toStrictEqual([
-      {
-        secret: '123',
-        password: 'MyPassword',
-        short: 'short',
-        bool: true,
-        'input-message': 'this is a string',
-        sinlgeQuotes: '"-this is a string"',
-        doubleQuotes: "'-this is a string'",
-      },
-      ['positional_1', 'positional_2'],
-    ]);
-  });
-});
-
-describe('Argv transformer with options', () => {
-  it('parses from simple JSON files', () => {
-    const parser = new ArgvParser({});
-    const transformed = parser.transform(
-      ['--config', 'test/config.json'],
-
-      { longFlag: 'config' }
-    );
-    expect(transformed).toStrictEqual([
-      {
-        username: 'eegli',
-        hasGitHubPlus: false,
-      },
-      [],
-    ]);
-  });
-  it('throws for invalid files', () => {
-    const parser = new ArgvParser({});
-
-    expect(() => {
-      parser.transform(
-        ['--config', 'config.json'],
-
-        { longFlag: 'config' }
-      );
-    }).toThrow('config.json is not a valid JSON file');
+    expect(Object.fromEntries(transformed)).toStrictEqual({
+      '--secret': '123',
+      '--password': 'MyPassword',
+      '-short': 'short',
+      '--bool': true,
+      '--input-message': 'this is a string',
+      '--sinlgeQuotes': '"-this is a string"',
+      '-doubleQuotes': "'-this is a string'",
+      '--array': '[1,2,3]',
+    }),
+      expect(positionals).toStrictEqual(['positional_1', 'positional_2']);
   });
 });

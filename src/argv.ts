@@ -1,10 +1,5 @@
 import { Parser } from './parser';
-import {
-  FilePathArg,
-  PositionalArgs,
-  PrimitiveRecord,
-  WithPositionalArgs,
-} from './types';
+import { PositionalArgs, PrimitiveRecord, WithPositionalArgs } from './types';
 import Utils from './utils';
 
 export class ArgvParser<T extends PrimitiveRecord> extends Parser<T> {
@@ -15,10 +10,9 @@ export class ArgvParser<T extends PrimitiveRecord> extends Parser<T> {
     };
   }
   public transform(
-    argv: string[],
-    filePathArg?: FilePathArg
-  ): [Partial<T>, PositionalArgs] {
-    const flagMap = new Map<string, unknown>();
+    argv: string[]
+  ): [Map<string, string | boolean>, PositionalArgs] {
+    const flagMap = new Map<string, string | boolean>();
 
     const positionals: string[] = [];
     let isPositional = true;
@@ -27,7 +21,7 @@ export class ArgvParser<T extends PrimitiveRecord> extends Parser<T> {
       const curr = argv[i];
 
       // A short flag is also a long flag
-      const [isShortFlag, isLongFlag] = Utils.getFlagType(curr);
+      const [isShortFlag] = Utils.getFlagType(curr);
 
       if (!isShortFlag && isPositional) {
         positionals.push(curr);
@@ -37,38 +31,19 @@ export class ArgvParser<T extends PrimitiveRecord> extends Parser<T> {
 
       isPositional = false;
 
-      let flag = curr;
-
-      if (isLongFlag) {
-        flag = curr.slice(2);
-        // Ignore non-flags
-      } else if (isShortFlag) {
-        flag = curr.slice(1);
-      } else {
-        continue;
-      }
+      if (!isShortFlag) continue;
 
       const flagVal = argv[i + 1];
 
-      // Parse a file
-      const maybeFilePath = isLongFlag
-        ? filePathArg?.longFlag
-        : filePathArg?.shortFlag;
-
-      if (maybeFilePath === flag) {
-        Utils.parseJSONFile(flagVal).forEach(([key, content]) =>
-          flagMap.set(key, content)
-        );
-      }
       // Assume boolean flag
-      else if (!flagVal || flagVal.startsWith('-')) {
-        flagMap.set(flag, true);
+      if (!flagVal || flagVal.startsWith('-')) {
+        flagMap.set(curr, true);
         // Assume string or number
       } else {
-        flagMap.set(flag, flagVal);
+        flagMap.set(curr, flagVal);
       }
     }
 
-    return [Object.fromEntries(flagMap) as Partial<T>, positionals];
+    return [flagMap, positionals];
   }
 }
