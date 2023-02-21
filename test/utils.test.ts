@@ -16,8 +16,21 @@ describe('Utils', () => {
     ]);
   });
   test('isNumeric', () => {
-    [Utils.isNumeric(true)].forEach((val) => {
+    [
+      Utils.isNumericString(true),
+      Utils.isNumericString('12a'),
+      Utils.isNumericString('1..1'),
+      Utils.isNumericString(1),
+    ].forEach((val) => {
       expect(val).toBeFalsy();
+    });
+    [
+      Utils.isNumericString('12.'),
+      Utils.isNumericString('.12'),
+      Utils.isNumericString('0'),
+      Utils.isNumericString('-1'),
+    ].forEach((val) => {
+      expect(val).toBeTruthy();
     });
   });
 });

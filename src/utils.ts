@@ -11,7 +11,7 @@ export default class Utils {
     return allowedTypes.has(typeof value);
   }
 
-  public static isNumeric(value: unknown): boolean {
+  public static isNumericString(value: unknown): boolean {
     if (typeof value !== 'string') return false;
     return !Number.isNaN(+value);
   }

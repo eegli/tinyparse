@@ -74,7 +74,7 @@ export class Parser<T extends PrimitiveRecord> {
 
       // Iif the expected type is a number and not NaN, try to convert
       // the value
-      if (expectedType === 'number' && Utils.isNumeric(flagValue)) {
+      if (expectedType === 'number' && Utils.isNumericString(flagValue)) {
         flagValue = Number(flagValue);
       }
 

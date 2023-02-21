@@ -197,7 +197,11 @@ describe('Appens content from JSON file', () => {
   };
 
   // FS mocks have been setup in ./test/_setup.ts
-
+  it('identity when no flags are given', () => {
+    const input = new Map([['--file', 'test/long.json']]);
+    const content = new Parser(defaultValues).appendFromFile(input);
+    expect(content).toStrictEqual(input);
+  });
   it('from long flag', () => {
     const content = new Parser(defaultValues).appendFromFile(
       new Map([['--file', 'test/long.json']]),
