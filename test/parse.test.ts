@@ -3,13 +3,11 @@ import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
 import { Value } from '../src/types';
 
-jest.mock('fs');
-
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe('Parsing with options', () => {
+describe('Parsing, with options', () => {
   const defaultValues = {
     stringProp: '',
     boolProp: false,
@@ -190,7 +188,7 @@ describe('Parsing with options', () => {
   });
 });
 
-describe('Numeric conversions', () => {
+describe('Parsing, numeric conversions', () => {
   const parser = new Parser();
   const inputs = [
     ['1', 1],
@@ -208,13 +206,7 @@ describe('Numeric conversions', () => {
   });
 });
 
-describe('Appens content from JSON file', () => {
-  const defaultValues = {
-    username: '',
-    hasGitHubPlus: false,
-    numProp: Infinity,
-  };
-
+describe('Parsing, file reading', () => {
   // FS mocks have been setup in ./test/_setup.ts
   it('identity when no flags are given', () => {
     const input = new Map([['--file', 'test/long.json']]);

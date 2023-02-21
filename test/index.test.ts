@@ -15,7 +15,7 @@ describe('Lib', () => {
     const { parseSync, parse } = createParser({
       x: '',
     });
-    const input = ['z', '--x', 'x'];
+    const input = ['z', '--x', 'x', '--y'];
     await expect(parse()).resolves.toStrictEqual(parseSync());
     await expect(parse(input)).resolves.toStrictEqual(parseSync(input));
   });

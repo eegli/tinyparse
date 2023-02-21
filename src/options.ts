@@ -119,8 +119,4 @@ export class Options {
   public get aliases() {
     return this._aliases;
   }
-
-  [Symbol.iterator]() {
-    return this._options.entries();
-  }
 }
