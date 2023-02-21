@@ -9,7 +9,7 @@ export class Parser<T extends PrimitiveRecord> {
   constructor(private readonly _defaultValues: T) {}
 
   public appendFromFile<T extends Map<string, unknown>>(
-    input: T,
+    collection: T,
     longFlag?: string,
     shortFlag?: string
   ): T {
@@ -17,24 +17,24 @@ export class Parser<T extends PrimitiveRecord> {
     shortFlag = shortFlag && Utils.makeShortFlag(shortFlag);
 
     const flags = [longFlag, shortFlag].filter(Boolean) as string[];
-    if (flags.length === 0) return input;
+    if (flags.length === 0) return collection;
 
     const filePaths = flags
-      .map((flag) => input.get(flag))
+      .map((flag) => collection.get(flag))
       .filter((value) => typeof value === 'string') as string[];
 
-    if (filePaths.length === 0) return input;
+    if (filePaths.length === 0) return collection;
 
     // Long flag takes precedence over short flag
     const filePath = filePaths[0];
     for (const [key, content] of Utils.parseJSONFile(filePath)) {
-      input.set(Utils.makeLongFlag(key), content);
+      collection.set(Utils.makeLongFlag(key), content);
     }
 
-    shortFlag && input.delete(Utils.makeShortFlag(shortFlag));
-    longFlag && input.delete(Utils.makeLongFlag(longFlag));
+    shortFlag && collection.delete(Utils.makeShortFlag(shortFlag));
+    longFlag && collection.delete(Utils.makeLongFlag(longFlag));
 
-    return input;
+    return collection;
   }
 
   public parse(input: Map<string, unknown>, options: Options): T {
