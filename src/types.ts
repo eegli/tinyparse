@@ -13,14 +13,9 @@ export enum FlagType {
   Long = 'LONG',
 }
 
-export type AliasConfig = {
-  forKey: string;
-  flagType: FlagType;
-};
-
 export type OptionMap = Map<string, InternalKeyOptions>;
 
-export type AliasMap = Map<string, AliasConfig>;
+export type AliasMap = Map<string, string>;
 
 type CustomValidator = {
   isValid: (value: unknown) => value is Value;

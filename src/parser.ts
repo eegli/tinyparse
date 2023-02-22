@@ -10,29 +10,26 @@ export class Parser<T extends PrimitiveRecord> {
 
   public appendFromFile<T extends Map<string, unknown>>(
     collection: T,
-    longFlag?: string,
-    shortFlag?: string
+    ...flags: string[]
   ): T {
-    longFlag = longFlag && Utils.makeLongFlag(longFlag);
-    shortFlag = shortFlag && Utils.makeShortFlag(shortFlag);
-
-    const flags = [longFlag, shortFlag].filter(Boolean) as string[];
     if (flags.length === 0) return collection;
 
     const filePaths = flags
-      .map((flag) => collection.get(flag))
-      .filter((value) => typeof value === 'string') as string[];
+      .map((v) => collection.get(v))
+      .filter((v) => typeof v === 'string') as string[];
 
     if (filePaths.length === 0) return collection;
 
     // Long flag takes precedence over short flag
     const filePath = filePaths[0];
+
     for (const [key, content] of Utils.parseJSONFile(filePath)) {
       collection.set(Utils.makeLongFlag(key), content);
     }
 
-    shortFlag && collection.delete(Utils.makeShortFlag(shortFlag));
-    longFlag && collection.delete(Utils.makeLongFlag(longFlag));
+    for (const flag of flags) {
+      collection.delete(flag);
+    }
 
     return collection;
   }
@@ -46,11 +43,8 @@ export class Parser<T extends PrimitiveRecord> {
 
   public parse(input: Map<string, unknown>): T {
     // Append file content to the input
-    input = this.appendFromFile(
-      input,
-      this._options.filePathArg?.longFlag,
-      this._options.filePathArg?.shortFlag
-    );
+    // File contents may be overridden by user input
+    input = this.appendFromFile(input, ...this._options.filePathFlags);
 
     const config = new Map<string, Value | symbol>(
       this._options.entries().map(([key, entry]) => [key, entry._value])
@@ -69,12 +63,13 @@ export class Parser<T extends PrimitiveRecord> {
     // E.g., ["--fooFlag", "barValue"]
     for (const flagValuePair of input) {
       const [flag] = flagValuePair;
-      let [, flagValue] = flagValuePair;
-      const maybeAlias = this._options.aliases.get(Utils.trimFlag(flag));
+      const maybeAlias = this._options.aliases.get(flag);
 
       if (!maybeAlias) continue;
 
-      const key = maybeAlias.forKey;
+      let [, flagValue] = flagValuePair;
+
+      const key = Utils.trimFlag(maybeAlias);
       const expectedType = typeof this._options.entry(key)?._value;
 
       const customValidator = this._options.entry(key)?.customValidator;
@@ -113,9 +108,7 @@ export class Parser<T extends PrimitiveRecord> {
     // temporary value is still there
     for (const [key, keyOpts] of requiredKeys) {
       if (config.get(key) === this._requiredSym) {
-        throw new ValidationError(
-          `Missing required flag --${keyOpts.longFlag}`
-        );
+        throw new ValidationError(`Missing required flag ${keyOpts.longFlag}`);
       }
     }
 

@@ -37,19 +37,21 @@ export class HelpPrinter {
       }
 
       str += indent;
-      if (shortFlag) str += `-${shortFlag}, `;
-      str += `--${longFlag}`;
+      if (shortFlag) str += `${shortFlag}, `;
+      str += `${longFlag}`;
       str += ` [${_type}]`;
       if (description) str += `\n${indent}${description}`;
       if (!isLast) str += '\n\n';
     }
 
-    const filePathArg = this._options.filePathArg;
-    if (filePathArg) {
-      const { longFlag, shortFlag, description } = filePathArg;
+    const filePathArg = [...this._options.filePathFlags];
+    if (filePathArg.length > 0) {
+      const longFlag = filePathArg[0];
+      const shortFlag = filePathArg[1];
+      const description = this._options.filePathFlagDesc;
       str += `\n\n${indent}`;
-      if (shortFlag) str += `-${shortFlag}, `;
-      str += `--${longFlag} [string]\n`;
+      if (shortFlag) str += `${shortFlag}, `;
+      str += `${longFlag} [string]\n`;
       if (description) str += `${indent}${description}\n`;
     }
     return str;

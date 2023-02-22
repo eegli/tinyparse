@@ -186,10 +186,11 @@ describe('Parsing, file reading', () => {
     const content = new Parser().appendFromFile(input, 'long');
     expect(content).toStrictEqual(input);
   });
-  it('from long flag', () => {
+  it('from valid flag (first)', () => {
     const content = new Parser().appendFromFile(
       new Map([['--file', 'test/long.json']]),
-      'file'
+      '--file',
+      '-f'
     );
     expect(content).toMatchInlineSnapshot(`
       Map {
@@ -197,11 +198,11 @@ describe('Parsing, file reading', () => {
       }
     `);
   });
-  it('from short flag', () => {
+  it('from valid flag (second)', () => {
     const content = new Parser().appendFromFile(
       new Map([['-f', 'test/short.json']]),
-      'file',
-      'f'
+      '--file',
+      '-f'
     );
     expect(content).toMatchInlineSnapshot(`
       Map {
@@ -209,27 +210,13 @@ describe('Parsing, file reading', () => {
       }
     `);
   });
-  it('long flag takes precedence', () => {
-    const content = new Parser().appendFromFile(
-      new Map([
-        ['-f', 'test/short.json'],
-        ['--file', 'test/long.json'],
-      ]),
-      'file',
-      'f'
-    );
-    expect(content).toMatchInlineSnapshot(`
-      Map {
-        "--from" => "long-flag",
-      }
-    `);
-  });
+
   it('throws for invalid files', () => {
     expect(() => {
       new Parser().appendFromFile(
         new Map([['-f', 'test/doesnotexist.json']]),
-        'file',
-        'f'
+        '--file',
+        '-f'
       );
     }).toThrow('test/doesnotexist.json is not a valid JSON file');
   });

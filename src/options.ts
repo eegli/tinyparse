@@ -1,105 +1,93 @@
 import {
-  AliasConfig,
-  FilePathArg,
+  AliasMap,
   FlagType,
   InternalKeyOptions,
+  OptionMap,
   ParserOptions,
   PrimitiveRecord,
 } from './types';
 import Utils from './utils';
 
 export class Options {
-  private readonly _options: Map<string, InternalKeyOptions> = new Map();
-  private readonly _aliases: Map<string, AliasConfig> = new Map();
+  private readonly _options: OptionMap = new Map();
+  private readonly _aliases: AliasMap = new Map();
 
   public readonly shouldDecamelize: boolean;
-  public readonly filePathArg?: FilePathArg;
+  public readonly filePathFlags: Set<string>;
+  public readonly filePathFlagDesc?: string;
 
   constructor(defaults: PrimitiveRecord = {}, options: ParserOptions = {}) {
     // Global options
     this.shouldDecamelize = !!options.decamelize;
-    this.filePathArg = options.filePathArg;
+
+    const { longFlag, shortFlag } = options.filePathArg ?? {};
+
+    this.filePathFlagDesc = options.filePathArg?.description;
+    this.filePathFlags = new Set();
+
+    if (longFlag) {
+      this.filePathFlags.add(Utils.makeLongFlag(longFlag));
+    }
+    if (shortFlag) {
+      this.filePathFlags.add(Utils.makeShortFlag(shortFlag));
+    }
 
     // Merge option keys/flags with user-provided options
     for (const [key, value] of Object.entries(defaults)) {
       const userOptions = options.options?.[key] ?? {};
-      const isCustomLongFlag = !!userOptions.longFlag;
 
       let longFlag = key;
-      let shortFlag: string | undefined;
-
-      if (isCustomLongFlag) {
-        longFlag = Utils.trimFlag(userOptions.longFlag as string);
+      if (userOptions.longFlag) {
+        longFlag = userOptions.longFlag;
       } else if (this.shouldDecamelize) {
         // Only decamelize if no custom long flag is provided AND
         // decamelize is enabled
         longFlag = Utils.decamelize(key);
       }
 
-      this._addAliasIfNotExists(longFlag, {
-        forKey: key,
-        flagType: FlagType.Long,
-      });
+      longFlag = Utils.makeLongFlag(longFlag);
+      this._addAlias(longFlag, FlagType.Long, key);
 
       // Short flags should be short, hence no decamelization
+      let shortFlag: string | undefined;
       if (userOptions.shortFlag) {
-        shortFlag = Utils.trimFlag(userOptions.shortFlag);
-
-        this._addAliasIfNotExists(shortFlag, {
-          forKey: key,
-          flagType: FlagType.Short,
-        });
+        shortFlag = Utils.makeShortFlag(userOptions.shortFlag);
+        this._addAlias(shortFlag, FlagType.Short, key);
       }
-
-      this._options.set(key, {
+      const keyOptions = {
         ...userOptions,
-        required: !!userOptions.required,
-        shortFlag,
         longFlag,
+        required: !!userOptions.required,
         _type: typeof value,
         _value: value,
-      });
-    }
+      };
+      if (shortFlag) keyOptions.shortFlag = shortFlag;
 
-    if (this.filePathArg) {
-      this.filePathArg.longFlag = Utils.trimFlag(this.filePathArg.longFlag);
-
-      this._addAliasIfNotExists(this.filePathArg.longFlag, {
-        forKey: this.filePathArg.longFlag,
-        flagType: FlagType.Long,
-      });
-    }
-    if (this.filePathArg?.shortFlag) {
-      this.filePathArg.shortFlag = Utils.trimFlag(this.filePathArg.shortFlag);
-
-      this._addAliasIfNotExists(this.filePathArg.shortFlag, {
-        forKey: this.filePathArg.shortFlag,
-        flagType: FlagType.Short,
-      });
+      this._options.set(key, keyOptions);
     }
   }
 
-  private _addAliasIfNotExists(alias: string, aliasConfig: AliasConfig) {
-    const existingAlias = this._aliases.get(alias);
-    if (!existingAlias) {
-      this.aliases.set(alias, aliasConfig);
-    } else {
-      const conflicting = Utils.makeFlag(alias, aliasConfig.flagType);
+  private _addAlias(alias: string, flagType: FlagType, forKey: string) {
+    const existingFilePathFlag = this.filePathFlags.has(alias);
+    if (existingFilePathFlag) {
+      throw new Error();
+    }
 
-      let text = `conflicting long flag: ${conflicting} has been declared twice`;
+    const existingAlias = this._aliases.get(alias);
+    if (existingAlias) {
+      let text = `conflicting long flag: ${alias} has been declared twice`;
       let cause = 'custom long flags and decamelization';
-      if (
-        aliasConfig.flagType === FlagType.Short &&
-        aliasConfig.flagType === FlagType.Short
-      ) {
+      if (flagType === FlagType.Short) {
         cause = 'short flags';
-        text = `conflicting short flag: ${conflicting} has been declared twice`;
+        text = `conflicting short flag: ${alias} has been declared twice`;
       }
 
       throw new Error(
         `Parser config validation error, ${text}. Check your settings for ${cause}.`
       );
     }
+
+    this.aliases.set(alias, forKey);
   }
 
   public entry(key: string) {
