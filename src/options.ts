@@ -13,7 +13,7 @@ export class Options {
   private readonly _aliases: AliasMap = new Map();
 
   public readonly shouldDecamelize: boolean;
-  public readonly filePathFlags: Set<string>;
+  public readonly filePathFlags = new Set<string>();
   public readonly filePathFlagDesc?: string;
 
   constructor(defaults: PrimitiveRecord = {}, options: ParserOptions = {}) {
@@ -23,8 +23,6 @@ export class Options {
     const { longFlag, shortFlag } = options.filePathArg ?? {};
 
     this.filePathFlagDesc = options.filePathArg?.description;
-    this.filePathFlags = new Set();
-
     if (longFlag) {
       this.filePathFlags.add(Utils.makeLongFlag(longFlag));
     }
