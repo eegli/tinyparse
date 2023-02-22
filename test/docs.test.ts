@@ -65,19 +65,20 @@ describe('Docs', () => {
     expect(parsed.userName).toBe('eegli');
   });
 
-  test('custom validation', async () => {
-    const { parse } = createParser(
+  test('custom validation', () => {
+    const { parseSync } = createParser(
       { birthDate: '2000-01-01' },
       {
         options: {
           birthDate: {
+            longFlag: 'bday',
             customValidator: {
               isValid(value): value is Value {
                 if (typeof value !== 'string') return false;
                 return !isNaN(new Date(value).getTime());
               },
-              errorMessage(value) {
-                return `Invalid value '${value}' for option 'birthDate'. Expected a valid date string`;
+              errorMessage(value, flag) {
+                return `Invalid value '${value}' for option '${flag}'. Expected a valid date string`;
               },
             },
           },
@@ -85,10 +86,16 @@ describe('Docs', () => {
       }
     );
     // Valid date string
-    await expect(parse(['--birthDate', '2000-01-01'])).resolves.toBeTruthy();
+    expect(() => {
+      parseSync(['--bday', '2000-01-01']);
+    }).toBeTruthy();
 
     // What a weird month...
-    await expect(parse(['--birthDate', '2000-22'])).rejects.toThrow();
+    expect(() => {
+      parseSync(['--bday', '2000-22']);
+    }).toThrow(
+      "Invalid value '2000-22' for option '--bday'. Expected a valid date string"
+    );
   });
 
   test('decamelization', async () => {
@@ -201,7 +208,7 @@ describe('Docs', () => {
   });
 
   test('error handling, rejects for missing args', async () => {
-    expect.assertions(1);
+    expect.assertions(2);
     const { parse } = createParser(
       { username: '' },
       {
@@ -215,23 +222,24 @@ describe('Docs', () => {
     try {
       await parse(); // Whoops, forgot username!
     } catch (error) {
-      if (error instanceof ValidationError) {
-        expect(error.message).toBe('Missing required flag --username');
-      }
+      expect(error).toBeInstanceOf(ValidationError);
+      expect(error).toHaveProperty(
+        'message',
+        'Missing required flag --username'
+      );
     }
   });
   test('error handling, rejects invalid types', async () => {
-    expect.assertions(1);
+    expect.assertions(2);
     const { parse } = createParser({ age: 0 });
     try {
-      const res = await parse(['--age']);
-      console.log(res);
+      await parse(['--age']);
     } catch (error) {
-      if (error instanceof ValidationError) {
-        expect(error.message).toBe(
-          'Invalid type for --age. "true" is not a number'
-        );
-      }
+      expect(error).toBeInstanceOf(ValidationError);
+      expect(error).toHaveProperty(
+        'message',
+        'Invalid type for --age. "true" is not a number'
+      );
     }
   });
   // eslint-disable-next-line jest/expect-expect

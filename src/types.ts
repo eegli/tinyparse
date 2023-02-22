@@ -22,15 +22,17 @@ export type OptionMap = Map<string, InternalKeyOptions>;
 
 export type AliasMap = Map<string, AliasConfig>;
 
+type CustomValidator = {
+  isValid: (value: unknown) => value is Value;
+  errorMessage: (value: unknown, flag: string) => string;
+};
+
 interface UserKeyOptions {
   required?: boolean;
   description?: string;
   shortFlag?: string;
   longFlag?: string;
-  customValidator?: {
-    isValid: (value: unknown) => value is Value;
-    errorMessage: (value: unknown, flag: string) => string;
-  };
+  customValidator?: CustomValidator;
 }
 
 export interface InternalKeyOptions extends UserKeyOptions {

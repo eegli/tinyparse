@@ -1,6 +1,6 @@
 # Quickstart
 
-Tinyparse is made for parsing simple user input. It can process **command line input**, i.e., `process.argv` - an array of strings - and build an object literal from it. The object to parse _into_ may only have `string`, `number` or `boolean` property values.
+Tinyparse is made for parsing simple user input. It can process **command line input**, i.e., `process.argv` - an array of strings - and build an object literal from it. The object to parse _into_ may only have `string`, `number` or `boolean` property values. These three valid types are further denoted as a `Value` type.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -50,7 +50,7 @@ Tinyparse binds a parser to some default values you feed it.
 
 `createParser(defaultValues, options = {})`
 
-- `defaultValues: Record<string, string | number | boolean>`: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
+- `defaultValues: Record<string, Value>`: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
 
 - `options: object`: Options object. You can specify both a _file flag_ (whose flag value will point to a file) and options per key.
 

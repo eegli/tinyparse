@@ -9,7 +9,7 @@ Tinyparse:
 
 All arguments until the first flag are considered _command arguments_, that is, they are _positional_ arguments. Long flags start with two hyphens (`--`), short flags with a single hyphen (`-`). A valid _flag-argument_ pair consists of a _flag_ followed by the _flag argument_, separated by a whitespace. The order of flag-argument pairs does not matter.
 
-- Command arguments are _not_ validated, they are only collected
+- Command arguments are only collected, they are _not_ validated
 - Unknown input that is neither a command argument, a flag or flag argument is ignored
 
 | Example                   | Abstract format                     | Support |
@@ -42,8 +42,8 @@ createParser(
 );
 
 // Throws error:
-// "Parser config validation error, conflicting short flag:
-// -a has been declared twice. Check your settings for short flags."
+// Parser config validation error, conflicting short flag:
+// -a has been declared twice. Check your settings for short flags
 ```
 
 ### Positional (Command) Arguments
