@@ -66,9 +66,12 @@ export class Options {
   }
 
   private _addAlias(alias: string, flagType: FlagType, forKey: string) {
+    // At this point, all file flags have been set
     const existingFilePathFlag = this.filePathFlags.has(alias);
     if (existingFilePathFlag) {
-      throw new Error();
+      throw new Error(
+        `Conflicting flag: ${alias} has already been declared as a file path flag`
+      );
     }
 
     const existingAlias = this._aliases.get(alias);

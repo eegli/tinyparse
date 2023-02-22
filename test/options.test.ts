@@ -64,6 +64,11 @@ describe('Options', () => {
     ).toThrow(
       'Parser config validation error, conflicting long flag: --user-name has been declared twice. Check your settings for custom long flags and decamelization.'
     );
+    expect(
+      () => new Options({ abc: '' }, { filePathArg: { longFlag: 'abc' } })
+    ).toThrow(
+      'Conflicting flag: --abc has already been declared as a file path flag'
+    );
   });
   test('file path flag conversion', () => {
     [
