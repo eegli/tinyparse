@@ -111,7 +111,27 @@ describe('Parsing, with options', () => {
     }).toThrow(new ValidationError('Missing required flag --my-string-prop'));
   });
 
-  it('allows custom validation', () => {
+  it('custom validation, returns', () => {
+    const { parseSync } = createParser(defaultValues, {
+      options: {
+        stringProp: {
+          required: true,
+          longFlag: 'my-string-prop',
+          customValidator: {
+            isValid(v): v is Value {
+              return typeof v === 'string' && v === 'hello';
+            },
+            errorMessage: () => `whaaaat`,
+          },
+        },
+      },
+    });
+    expect(() => {
+      parseSync(['--my-string-prop', 'hello']);
+    }).not.toThrow();
+  });
+
+  it('custom validation, throws', () => {
     const { parseSync } = createParser(defaultValues, {
       options: {
         stringProp: {
