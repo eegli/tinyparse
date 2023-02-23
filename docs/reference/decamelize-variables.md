@@ -10,7 +10,9 @@ Tinyparse implements decamelization as follows:
 - `username` → `username`
 - `Username` → `username`
 
-Note that decamelized aliases are only respected for CLI arguments, i.e., array of strings, and not object literals. Only long flags are decamelized. If you specify any [short flag aliases](reference/custom-flags), be aware that they are _not_ decamelized.
+**Good to know**
+
+- If you specify any [short flag aliases](reference/custom-flags), be aware that they are _never_ decamelized. This is because they are expected to be very short in the first place.
 
 ## Example
 
@@ -25,7 +27,7 @@ const { parse } = createParser(
     decamelize: true,
   }
 );
-
 const parsed = await parse(['--user-name', 'eegli']);
+
 expect(parsed.userName).toBe('eegli');
 ```

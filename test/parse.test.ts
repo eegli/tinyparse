@@ -2,6 +2,7 @@ import { createParser } from '../src';
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
 import { Value } from '../src/types';
+import { mockFs } from './_setup';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -175,7 +176,28 @@ describe('Parsing, numeric conversions', () => {
 });
 
 describe('Parsing, file reading', () => {
-  // FS mocks have been setup in ./test/_setup.ts
+  mockFs.readFileSync.mockImplementation((path) => {
+    if (path === 'test/long.json') {
+      return JSON.stringify({
+        from: 'long-flag',
+      });
+    }
+    if (path === 'test/short.json') {
+      return JSON.stringify({
+        from: 'short-flag',
+      });
+    }
+
+    if (path === 'nested.json') {
+      return JSON.stringify({
+        stringProp: {
+          invalid: 'I am nested',
+        },
+      });
+    }
+    throw new Error();
+  });
+
   it('identity when no flags are given', () => {
     const input = new Map([['--file', 'test/long.json']]);
     const content = new Parser().appendFromFile(input);

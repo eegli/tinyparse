@@ -1,6 +1,6 @@
 # Quickstart
 
-Tinyparse is made for parsing simple user input. It can process **command line input**, i.e., `process.argv` - an array of strings - and build an object literal from it. The object to parse _into_ may only have `string`, `number` or `boolean` property values. These three valid types are further denoted as a `Value` type.
+Tinyparse is made for parsing simple user input. It can process **command line input**, i.e., `process.argv` - an array of strings - and build an object literal from it. The object to parse _into_ may only have `string`, `number` or `boolean` property values. These three primitive types are further denoted as a `Value` type.
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -14,17 +14,14 @@ const defaultValues = {
 const { parse, parseSync } = createParser(defaultValues);
 
 const parsed1 = await parse(['hello', '--username', 'eegli', '--active']);
-const parsed2 = parseSync(['--username', 'eegli', '--active']);
+const parsed2 = parseSync(['hello', '--username', 'eegli', '--active']);
+
+assert.deepStrictEqual(parsed1, parsed2);
 
 assert.deepStrictEqual(parsed1, {
   username: 'eegli',
   active: true,
   _: ['hello'],
-});
-assert.deepStrictEqual(parsed2, {
-  username: 'eegli',
-  active: true,
-  _: [],
 });
 ```
 
@@ -76,15 +73,18 @@ const { parse } = createParser(defaultValues, {
       required: true,
       shortFlag: '-fc',
     },
+    hasGithubProfile: {
+      longFlag: 'github',
+    },
   },
 });
 const parsed = await parse([
   'congratulate', // Positional argument
   '--name', // Long flag
   '"John Smith"', // Value with spaces
-  '--hasGithubProfile', // Boolean flag
+  '--github', // Custom long boolean flag
   '--hasGithubPlus', // Another boolean flag
-  '-fc', // Short flag
+  '-fc', // Custom short flag
   '10', // Will be parsed as number
   'ignoredProperty', // This property is ignored
   '--birthYear', // Long flag

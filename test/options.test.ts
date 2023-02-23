@@ -25,7 +25,7 @@ describe('Options', () => {
       {
         options: {
           a: { required: true, description: 'void' },
-          b: { shortFlag: 'b', longFlag: 'longb' },
+          b: { shortFlag: 'b', longFlag: 'UpAndLoWeRCaSe' },
           ignoreThis: {},
         },
       }
@@ -42,7 +42,7 @@ describe('Options', () => {
       {
         _type: 'number',
         _value: 0,
-        longFlag: '--longb',
+        longFlag: '--UpAndLoWeRCaSe',
         shortFlag: '-b',
         required: false,
       },

@@ -14,4 +14,4 @@ The internals of Tinyparse use a specific terminology.
 | Key value  | A value corresponding to a key in an object literal | Object literal |
 | Flag       | A long or short flag corresponding to a key         | Argv           |
 | Flag value | A value corresponding to a flag                     | Argv           |
-| Alias      | A long or short flag corresponding to a main flag   | Argv           |
+| Alias      | A long or short flag corresponding to another flag  | Argv           |

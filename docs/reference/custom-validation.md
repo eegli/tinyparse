@@ -15,7 +15,10 @@ type CustomValidator = {
 
 Note that, when you're using TypeScript, custom validators need to be [explicitly annotated](https://github.com/microsoft/TypeScript/issues/14826#issuecomment-288870523) using the `Value` type as in the example below.
 
-- More info about type [predicates and narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)
+**Good to know**
+
+- More info about type [predicates and narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates).
+- Vanilla JavaScript users can simply return a boolean.
 
 ## Example
 

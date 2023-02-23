@@ -11,7 +11,7 @@ Missing required arguments.
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';
 
-const { parse } = createParser(
+const { parseSync } = createParser(
   { username: '' },
   {
     options: {
@@ -21,12 +21,10 @@ const { parse } = createParser(
     },
   }
 );
-try {
-  await parse(); // Whoops, forgot username!
-} catch (error) {
-  expect(error).toBeInstanceOf(ValidationError);
-  expect(error).toHaveProperty('message', 'Missing required flag --username');
-}
+
+expect(() => {
+  parseSync(); // Whoops, forgot username!
+}).toThrow(new ValidationError('Missing required flag --username'));
 ```
 
 Invalid types.
@@ -36,14 +34,11 @@ Invalid types.
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';
 
-const { parse } = createParser({ age: 0 });
-try {
-  await parse(['--age']);
-} catch (error) {
-  expect(error).toBeInstanceOf(ValidationError);
-  expect(error).toHaveProperty(
-    'message',
-    'Invalid type for --age. "true" is not a number'
-  );
-}
+const { parseSync } = createParser({ age: 0 });
+
+expect(() => {
+  parseSync(['--age']);
+}).toThrow(
+  new ValidationError('Invalid type for --age. "true" is not a number')
+);
 ```

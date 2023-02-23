@@ -34,7 +34,7 @@ export class Parser<T extends PrimitiveRecord> {
     return collection;
   }
 
-  // Try to convert a string to a number, otherwise return identity
+  // Try to convert a string to a number. If the result is NaN, return identity
   public tryConvertToNumber(value: unknown): unknown {
     if (typeof value !== 'string') return value;
     const num = +value;

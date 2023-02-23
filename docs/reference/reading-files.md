@@ -1,29 +1,32 @@
 # Reading Files
 
-Tinyparse supports reading and parsing JSON files natively. The path to a JSON file relative to the current directory must be specified with a long flag and, optionally, with a short flag. The description is used for the [help command](reference/printing-arguments).
+Tinyparse supports reading and parsing JSON files natively. The path to a JSON file relative to the current directory must be specified with a long flag and, optionally, with a short flag. The description is used for the [help printer](reference/printing-arguments).
+
+**Good to know**
+
+- Reading from files is the only way to set booleans to `false` that are `true` by default, see the first example.
 
 ## Example
 
-Assume that there is a JSON file with the following content in the current directory:
+For the following examples, assume there are two JSON files in the current directory:
 
 ```js
+// github.json
 {
-  "username": "eegli",
-  "hasGitHubPlus": false
+  "userName": "eegli",
+  "hasGitHubPlus": true
 }
 ```
 
-Tinyparse supports reading and parsing JSON files natively.
-
-<!-- doctest: file reading -->
+<!-- doctest: file readin, valid -->
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
 
-const { parse } = createParser(
+const { parseSync } = createParser(
   {
-    username: '',
-    hasGitHubPlus: true,
+    userName: '',
+    hasGitHubPlus: false,
   },
   {
     filePathArg: {
@@ -34,7 +37,40 @@ const { parse } = createParser(
   }
 );
 
-const parsed = await parse(['-c', 'github.json']);
-expect(parsed.username).toBe('eegli');
-expect(parsed.hasGitHubPlus).toBe(false);
+const parsed = parseSync(['-c', 'github.json']);
+
+expect(parsed.userName).toBe('eegli');
+expect(parsed.hasGitHubPlus).toBe(true);
+```
+
+If the file contains non-`Value` values, i.e., arrays or object literals, parsing fails.
+
+```js
+// github-bad.json - nested
+{
+  "userName": {
+    "name": "eegli"
+  }
+}
+```
+
+<!-- doctest: file readin, invalid -->
+
+```ts
+import { createParser } from '@eegli/tinyparse';
+
+const { parseSync } = createParser(
+  {
+    userName: '',
+  },
+  {
+    filePathArg: {
+      longFlag: '--config',
+    },
+  }
+);
+
+expect(() => {
+  parseSync(['--config', 'bad-github.json']);
+}).toThrow(`Invalid type for --userName. "[object Object]" is not a string`);
 ```

@@ -1,5 +1,6 @@
 import type { ParserOptions, Value } from '../src';
 import { createParser, ValidationError } from '../src';
+import { mockFs } from './_setup';
 
 describe('Docs', () => {
   test('cli arguments, internal validation', () => {
@@ -9,9 +10,7 @@ describe('Docs', () => {
         { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
       );
     }).toThrow(
-      new ValidationError(
-        'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.'
-      )
+      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.'
     );
   });
   test('cli arguments, positional arguments', async () => {
@@ -110,20 +109,21 @@ describe('Docs', () => {
     expect(parsed.userName).toBe('eegli');
   });
 
-  test('file reading', async () => {
-    // FS mocks have been setup in ./test/_setup.ts
-
-    /*
-    Assume that there is a JSON file with the following content in the current directory:
-    {
-      username: 'eegli', hasGitHubPlus: false,
-    }
-    */
-
-    const { parse } = createParser(
+  test('file reading, valid', () => {
+    const file = {
+      userName: 'eegli',
+      hasGitHubPlus: true,
+    };
+    mockFs.readFileSync.mockImplementationOnce((path) => {
+      if (path === 'github.json') {
+        return JSON.stringify(file);
+      }
+      throw new Error();
+    });
+    const { parseSync } = createParser(
       {
-        username: '',
-        hasGitHubPlus: true,
+        userName: '',
+        hasGitHubPlus: false,
       },
       {
         filePathArg: {
@@ -134,10 +134,39 @@ describe('Docs', () => {
       }
     );
 
-    const parsed = await parse(['-c', 'github.json']);
+    const parsed = parseSync(['-c', 'github.json']);
 
-    expect(parsed.username).toBe('eegli');
-    expect(parsed.hasGitHubPlus).toBe(false);
+    expect(parsed.userName).toBe('eegli');
+    expect(parsed.hasGitHubPlus).toBe(true);
+  });
+  test('file reading, invalid', () => {
+    const file = {
+      userName: {
+        name: 'eegli',
+      },
+    };
+    mockFs.readFileSync.mockImplementationOnce((path) => {
+      if (path === 'bad-github.json') {
+        return JSON.stringify(file);
+      }
+      throw new Error();
+    });
+    const { parseSync } = createParser(
+      {
+        userName: '',
+      },
+      {
+        filePathArg: {
+          longFlag: '--config',
+        },
+      }
+    );
+
+    expect(() => {
+      parseSync(['--config', 'bad-github.json']);
+    }).toThrow(
+      `Invalid type for --userName. "[object Object]" is not a string`
+    );
   });
   test('printing args, without decamelization', () => {
     const { help } = createParser(
@@ -207,9 +236,8 @@ describe('Docs', () => {
     `);
   });
 
-  test('error handling, rejects for missing args', async () => {
-    expect.assertions(2);
-    const { parse } = createParser(
+  test('error handling, rejects for missing args', () => {
+    const { parseSync } = createParser(
       { username: '' },
       {
         options: {
@@ -219,28 +247,19 @@ describe('Docs', () => {
         },
       }
     );
-    try {
-      await parse(); // Whoops, forgot username!
-    } catch (error) {
-      expect(error).toBeInstanceOf(ValidationError);
-      expect(error).toHaveProperty(
-        'message',
-        'Missing required flag --username'
-      );
-    }
+
+    expect(() => {
+      parseSync(); // Whoops, forgot username!
+    }).toThrow(new ValidationError('Missing required flag --username'));
   });
-  test('error handling, rejects invalid types', async () => {
-    expect.assertions(2);
-    const { parse } = createParser({ age: 0 });
-    try {
-      await parse(['--age']);
-    } catch (error) {
-      expect(error).toBeInstanceOf(ValidationError);
-      expect(error).toHaveProperty(
-        'message',
-        'Invalid type for --age. "true" is not a number'
-      );
-    }
+  test('error handling, rejects invalid types', () => {
+    const { parseSync } = createParser({ age: 0 });
+
+    expect(() => {
+      parseSync(['--age']);
+    }).toThrow(
+      new ValidationError('Invalid type for --age. "true" is not a number')
+    );
   });
   // eslint-disable-next-line jest/expect-expect
   test('typescript, bootstrapping', () => {
