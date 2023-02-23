@@ -8,8 +8,7 @@ Although it is generally recommended that a short flag is actually short, i.e., 
 
 **Good to know**
 
-- Since short flags are expected to be short, they are never [decamelized](reference/decamelize-variables).
-- Custom long flags are never decamelized.
+- Enabling global [decamelization](reference/decamelize-variables) has no effect on custom long and short flags, only on the default long flag creation.
 - Every key can have at most two aliases (one long and one short flag). That means, if the key `userName` gets `name` as custom long flag, arguments such as `--userName` will be ignored.
 
 ## Example

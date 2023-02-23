@@ -1,69 +1,14 @@
 import { createParser } from '../src';
 import { ValidationError } from '../src/error';
+import { Parser } from '../src/parser';
+import { Value } from '../src/types';
+import { mockFs } from './_setup';
 
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe('Object literal parsing', () => {
-  const defaultValues = {
-    stringProp: 'string',
-    boolProp: false,
-    numProp: 999,
-  };
-
-  const { parse } = createParser(defaultValues);
-
-  it('returns default config if no args', async () => {
-    const c1 = await parse();
-    expect(c1).toStrictEqual(defaultValues);
-  });
-
-  it('overwrites default values', async () => {
-    const c1 = await parse({
-      stringProp: 'hello',
-      boolProp: true,
-      numProp: 69,
-    });
-    expect(c1).toStrictEqual({
-      stringProp: 'hello',
-      boolProp: true,
-      numProp: 69,
-    });
-    const c2 = await parse({
-      stringProp: 'hello',
-    });
-    expect(c2).toStrictEqual({
-      ...defaultValues,
-
-      stringProp: 'hello',
-    });
-  });
-
-  it('ignores unknown args', async () => {
-    const c = await parse({
-      unknownProp: 'hello',
-    } as unknown as typeof defaultValues);
-    expect(c).toStrictEqual({
-      ...defaultValues,
-    });
-  });
-
-  it('rejects invalid types', async () => {
-    expect.assertions(2);
-    try {
-      await parse({ boolProp: {} } as unknown as typeof defaultValues);
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        'Invalid type for "boolProp". Expected boolean, got object'
-      );
-    }
-  });
-});
-
-describe('Parsing with options', () => {
+describe('Parsing, with options', () => {
   const defaultValues = {
     stringProp: '',
     boolProp: false,
@@ -74,233 +19,227 @@ describe('Parsing with options', () => {
     _: [],
   };
 
-  it('sync and async parsing are equal', async () => {
-    const { parseSync, parse } = createParser(defaultValues);
-    const input = ['--stringProp', 'hello'];
-    expect(parseSync(input)).toStrictEqual({
-      ...defaultValues,
-      ...positionalArgs,
-      stringProp: 'hello',
-    });
-    await expect(parse()).resolves.toStrictEqual(parseSync());
-    await expect(parse(input)).resolves.toStrictEqual(parseSync(input));
-  });
-
-  it('collects positional arguments', async () => {
-    const { parse } = createParser(defaultValues);
-    const input1 = ['arg1', '--stringProp', 'hello', 'arg3'];
-    const input2 = ['arg1', 'arg2', '--stringProp', 'hello', 'arg3'];
-
-    const expected1 = {
-      ...defaultValues,
-      _: ['arg1'],
-      stringProp: 'hello',
-    };
-    const expected2 = {
-      ...defaultValues,
-      _: ['arg1', 'arg2'],
-      stringProp: 'hello',
-    };
-    await expect(parse(input1)).resolves.toStrictEqual(expected1);
-    await expect(parse(input2)).resolves.toStrictEqual(expected2);
-  });
-
-  it('resolves if all required args are present', async () => {
-    const { parse } = createParser(defaultValues, {
+  it('resolves if all required args are present', () => {
+    const { parseSync } = createParser(defaultValues, {
       options: {
         stringProp: {
           required: true,
         },
       },
     });
-    const input1 = { stringProp: 'hello' };
-    const input2 = ['--stringProp', 'hello'];
-    const expected1 = {
-      ...defaultValues,
-      stringProp: 'hello',
-    };
-    const expected2 = {
+    expect(parseSync(['--stringProp', 'hello'])).toStrictEqual({
       ...defaultValues,
       ...positionalArgs,
       stringProp: 'hello',
-    };
-
-    await expect(parse(input1)).resolves.toStrictEqual(expected1);
-    await expect(parse(input2)).resolves.toStrictEqual(expected2);
-  });
-
-  it('allows custom validation', async () => {
-    const { parse } = createParser(defaultValues, {
-      options: {
-        numProp: {
-          required: true,
-          customValidator: {
-            isValid: (v) => typeof v === 'number' && v === 0,
-            errorMessage: () => "whoops this shouldn't happen",
-          },
-        },
-      },
     });
-    const input1 = ['--numProp', '0'];
-    const input2 = { numProp: 0 };
-
-    const expected1 = {
-      ...defaultValues,
-      ...positionalArgs,
-      numProp: 0,
-    };
-    const expected2 = {
-      ...defaultValues,
-      numProp: 0,
-    };
-
-    await expect(parse(input1)).resolves.toStrictEqual(expected1);
-    await expect(parse(input2)).resolves.toStrictEqual(expected2);
   });
 
-  it('parses strings to integers iif types match', async () => {
-    const { parse } = createParser(defaultValues);
-    const input = ['--numProp', '1', '--stringProp', '1'];
-    const expected = {
+  it('parses strings to integers iif types match', () => {
+    const { parseSync } = createParser(defaultValues);
+    expect(parseSync(['--numProp', '1', '--stringProp', '1'])).toStrictEqual({
       ...defaultValues,
       ...positionalArgs,
       stringProp: '1',
       numProp: 1,
-    };
-    await expect(parse(input)).resolves.toStrictEqual(expected);
+    });
   });
 
-  it('handles decamelization and ignores original', async () => {
-    const { parse } = createParser(defaultValues, { decamelize: true });
-    const input = ['--string-prop', 'hello', 'stringProp', 'goodbye'];
-    const expected = {
-      ...defaultValues,
-      ...positionalArgs,
-      stringProp: 'hello',
-    };
-    await expect(parse(input)).resolves.toStrictEqual(expected);
+  it('rejects invalid types 1', () => {
+    const { parseSync } = createParser(defaultValues);
+    expect(() => {
+      parseSync(['--boolProp', '1']);
+    }).toThrow(
+      new ValidationError(`Invalid type for --boolProp. "1" is not a boolean`)
+    );
   });
 
-  it('throws correct decamelized error message depending on input', async () => {
-    const { parse } = createParser(defaultValues, {
-      decamelize: true,
+  it('rejects invalid types 2', () => {
+    const { parseSync } = createParser(defaultValues);
+    expect(() => {
+      parseSync(['--numProp', 'twelve']);
+    }).toThrow(
+      new ValidationError(
+        `Invalid type for --numProp. "twelve" is not a number`
+      )
+    );
+  });
+
+  it('rejects invalid types 3', () => {
+    const { parseSync } = createParser(defaultValues);
+    expect(() => {
+      parseSync(['--numProp']);
+    }).toThrow(
+      new ValidationError(`Invalid type for --numProp. "true" is not a number`)
+    );
+  });
+
+  it('rejects invalid types from file', () => {
+    // FS mocks have been setup in ./test/_setup.ts
+    const { parseSync } = createParser(defaultValues, {
+      filePathArg: { longFlag: 'file' },
+    });
+    expect(() => {
+      parseSync(['--file', 'nested.json']);
+    }).toThrow(
+      'Invalid type for --stringProp. "[object Object]" is not a string'
+    );
+  });
+
+  it('rejects for missing required args 1', () => {
+    const { parseSync } = createParser(defaultValues, {
       options: {
         stringProp: {
           required: true,
         },
       },
     });
-    expect.assertions(2);
-    try {
-      await parse([]);
-    } catch (e) {
-      expect(e).toHaveProperty('message', '"string-prop" is required');
-    }
-    try {
-      await parse({});
-    } catch (e) {
-      expect(e).toHaveProperty('message', '"stringProp" is required');
-    }
+    expect(() => {
+      parseSync([]);
+    }).toThrow(new ValidationError('Missing required flag --stringProp'));
   });
 
-  it('handles custom short flags', async () => {
-    const { parse } = createParser(defaultValues, {
-      decamelize: true,
+  it('rejects for missing required args 2', () => {
+    const { parseSync } = createParser(defaultValues, {
       options: {
         stringProp: {
-          shortFlag: 's',
-        },
-      },
-    });
-    const input = ['--string-prop', 'hello'];
-    const expected = {
-      ...defaultValues,
-      ...positionalArgs,
-      stringProp: 'hello',
-    };
-    await expect(parse(input)).resolves.toStrictEqual(expected);
-  });
-
-  it('custom flags take precedence', () => {
-    const variants: Parameters<typeof createParser>[] = [
-      [
-        defaultValues,
-        {
-          options: {
-            stringProp: {
-              longFlag: 'othername',
-            },
-          },
-        },
-      ],
-      [
-        defaultValues,
-        {
-          options: {
-            stringProp: {
-              longFlag: 'othername',
-            },
-          },
-          decamelize: true,
-        },
-      ],
-    ];
-    for (const variant of variants) {
-      const { parseSync } = createParser(...variant);
-
-      const expected = {
-        ...defaultValues,
-        ...positionalArgs,
-        stringProp: 'hello',
-      };
-      expect(
-        parseSync(['--othername', 'hello', '--stringProp', 'goodbye'])
-      ).toStrictEqual(expected);
-      expect(
-        parseSync(['--othername', 'hello', '--string-prop', 'goodbye'])
-      ).toStrictEqual(expected);
-    }
-  });
-
-  it('rejects for missing required args', async () => {
-    const { parse } = createParser(defaultValues, {
-      options: {
-        stringProp: {
+          longFlag: 'my-string-prop',
           required: true,
         },
       },
     });
-    expect.assertions(2);
-    try {
-      await parse({});
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty('message', '"stringProp" is required');
-    }
+    expect(() => {
+      parseSync([]);
+    }).toThrow(new ValidationError('Missing required flag --my-string-prop'));
   });
 
-  it('rejects for failed custom validation', async () => {
-    const { parse } = createParser(defaultValues, {
+  it('custom validation, returns', () => {
+    const { parseSync } = createParser(defaultValues, {
       options: {
         stringProp: {
           required: true,
+          longFlag: 'my-string-prop',
           customValidator: {
-            isValid: (v) => v === 'hello',
-            errorMessage: (v) =>
-              `did get "${v}" for "stringProp", expected hello`,
+            isValid(v): v is Value {
+              return typeof v === 'string' && v === 'hello';
+            },
+            errorMessage: () => `whaaaat`,
           },
         },
       },
     });
-    expect.assertions(2);
-    try {
-      await parse({ stringProp: 'goodbye' });
-    } catch (e) {
-      expect(e).toBeInstanceOf(ValidationError);
-      expect(e).toHaveProperty(
-        'message',
-        'did get "goodbye" for "stringProp", expected hello'
-      );
+    expect(() => {
+      parseSync(['--my-string-prop', 'hello']);
+    }).not.toThrow();
+  });
+
+  it('custom validation, throws', () => {
+    const { parseSync } = createParser(defaultValues, {
+      options: {
+        stringProp: {
+          required: true,
+          longFlag: 'my-string-prop',
+          customValidator: {
+            isValid(v): v is Value {
+              return typeof v === 'string' && v === 'hello';
+            },
+            errorMessage: (v, f) => `did get "${v}" for ${f}, expected hello`,
+          },
+        },
+      },
+    });
+    expect(() => {
+      parseSync(['--my-string-prop', 'goodbye']);
+    }).toThrow(
+      new ValidationError(
+        'did get "goodbye" for --my-string-prop, expected hello'
+      )
+    );
+  });
+});
+
+describe('Parsing, numeric conversions', () => {
+  const parser = new Parser();
+  const inputs = [
+    ['1', 1],
+    [true, true],
+    [false, false],
+    [{}, {}],
+    ['.1', 0.1],
+    ['1.1', 1.1],
+    [undefined, undefined],
+  ];
+  inputs.forEach(([input, output], idx) => {
+    it('test case ' + (idx + 1), () => {
+      expect(parser.tryConvertToNumber(input)).toStrictEqual(output);
+    });
+  });
+});
+
+describe('Parsing, file reading', () => {
+  mockFs.readFileSync.mockImplementation((path) => {
+    if (path === 'test/long.json') {
+      return JSON.stringify({
+        from: 'long-flag',
+      });
     }
+    if (path === 'test/short.json') {
+      return JSON.stringify({
+        from: 'short-flag',
+      });
+    }
+
+    if (path === 'nested.json') {
+      return JSON.stringify({
+        stringProp: {
+          invalid: 'I am nested',
+        },
+      });
+    }
+    throw new Error();
+  });
+
+  it('identity when no flags are given', () => {
+    const input = new Map([['--file', 'test/long.json']]);
+    const content = new Parser().appendFromFile(input);
+    expect(content).toStrictEqual(input);
+  });
+  it('identity when invalid flags are given', () => {
+    const input = new Map([['--file', 'test/long.json']]);
+    const content = new Parser().appendFromFile(input, 'long');
+    expect(content).toStrictEqual(input);
+  });
+  it('from valid flag (first)', () => {
+    const content = new Parser().appendFromFile(
+      new Map([['--file', 'test/long.json']]),
+      '--file',
+      '-f'
+    );
+    expect(content).toMatchInlineSnapshot(`
+      Map {
+        "--from" => "long-flag",
+      }
+    `);
+  });
+  it('from valid flag (second)', () => {
+    const content = new Parser().appendFromFile(
+      new Map([['-f', 'test/short.json']]),
+      '--file',
+      '-f'
+    );
+    expect(content).toMatchInlineSnapshot(`
+      Map {
+        "--from" => "short-flag",
+      }
+    `);
+  });
+
+  it('throws for invalid files', () => {
+    expect(() => {
+      new Parser().appendFromFile(
+        new Map([['-f', 'test/doesnotexist.json']]),
+        '--file',
+        '-f'
+      );
+    }).toThrow('test/doesnotexist.json is not a valid JSON file');
   });
 });

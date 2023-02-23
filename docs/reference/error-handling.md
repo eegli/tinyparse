@@ -1,6 +1,6 @@
 # Error Handling
 
-If the parser encounters an _invalid value_, i.e., something that is _not_ of type `string | number | boolean`, it throws an error with a reason. Similarly, a `ValidationError` is thrown for _missing required arguments_. You can use it to inspect what has gone wrong.
+If the parser encounters an _invalid value_, i.e., something that is _not_ of type `Value` `(string | number | boolean)`, it throws an error with a reason. Similarly, a `ValidationError` is thrown for _missing required arguments_. You can use it to inspect what has gone wrong.
 
 ## Examples
 
@@ -11,7 +11,7 @@ Missing required arguments.
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';
 
-const { parse } = createParser(
+const { parseSync } = createParser(
   { username: '' },
   {
     options: {
@@ -21,13 +21,10 @@ const { parse } = createParser(
     },
   }
 );
-try {
-  await parse(); // Whoops, forgot username!
-} catch (error) {
-  if (error instanceof ValidationError) {
-    expect(error.message).toBe('"username" is required');
-  }
-}
+
+expect(() => {
+  parseSync(); // Whoops, forgot username!
+}).toThrow(new ValidationError('Missing required flag --username'));
 ```
 
 Invalid types.
@@ -37,14 +34,11 @@ Invalid types.
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';
 
-const { parse } = createParser({ username: '' });
-try {
-  await parse({ username: ['eegli'] });
-} catch (error) {
-  if (error instanceof ValidationError) {
-    expect(error.message).toBe(
-      'Invalid type for "username". Expected string, got object'
-    );
-  }
-}
+const { parseSync } = createParser({ age: 0 });
+
+expect(() => {
+  parseSync(['--age']);
+}).toThrow(
+  new ValidationError('Invalid type for --age. "true" is not a number')
+);
 ```

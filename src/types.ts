@@ -1,5 +1,3 @@
-type _ = Record<never, never>;
-
 type RequiredKeys<T> = {
   [K in keyof T]-?: object extends Pick<T, K> ? never : K;
 }[keyof T];
@@ -15,46 +13,34 @@ export enum FlagType {
   Long = 'LONG',
 }
 
-// Flags do NOT start with a single or double dash
-export type Flag = string & _;
+export type OptionMap = Map<string, InternalKeyOptions>;
 
-// Flag aliases start with a single or double dash
-export type FlagAlias = string & _;
+export type AliasMap = Map<string, string>;
 
-export type FlagAliasProps = {
-  originalFlag: Flag;
-  flagType: FlagType;
+type CustomValidator = {
+  isValid: (value: unknown) => value is Value;
+  errorMessage: (value: unknown, flag: string) => string;
 };
 
-export type FlagAliasMap = Map<FlagAlias, FlagAliasProps>;
-
-interface ArgOption {
+interface UserKeyOptions {
   required?: boolean;
   description?: string;
-  shortFlag?: Flag;
-  longFlag?: Flag;
-  customValidator?: {
-    isValid: (value: unknown) => boolean;
-    errorMessage: (value: unknown) => string;
-  };
+  shortFlag?: string;
+  longFlag?: string;
+  customValidator?: CustomValidator;
 }
 
-export interface InternalArgOption extends ArgOption {
+export interface InternalKeyOptions extends UserKeyOptions {
   required: boolean;
-  longFlag: Flag;
+  longFlag: string;
   _type: string;
+  _value: Value;
 }
 
 export type FilePathArg = {
-  longFlag: Flag;
-  shortFlag?: Flag;
+  longFlag: string;
+  shortFlag?: string;
   description?: string;
-};
-
-export type ArgOptions<
-  O extends Record<string, unknown> = Record<string, ArgOption>
-> = {
-  [K in Extract<keyof O, string>]?: ArgOption;
 };
 
 export interface HelpOptions {
@@ -62,8 +48,14 @@ export interface HelpOptions {
   base?: string;
 }
 
+type KeyOptions<
+  O extends Record<string, unknown> = Record<string, UserKeyOptions>
+> = {
+  [K in Extract<keyof O, string>]?: UserKeyOptions;
+};
+
 export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
-  options?: ArgOptions<T>;
+  options?: KeyOptions<T>;
 } & {
   decamelize?: boolean;
   filePathArg?: FilePathArg;
@@ -71,8 +63,6 @@ export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
 export type PositionalArgs = string[];
 
 export type WithPositionalArgs<T> = T & { _: PositionalArgs };
-
-export type InternalOptions = Map<Flag, InternalArgOption>;
 
 export type PrimitiveRecord = Record<string, Value>;
 

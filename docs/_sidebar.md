@@ -7,6 +7,6 @@
   - [Reading Files](reference/reading-files.md)
   - [Printing Arguments](reference/printing-arguments.md)
   - [Error Handling](reference/error-handling.md)
-- [Parsing Object Literals](reference/object-literals.md)
 - [TypeScript](reference/typescript.md)
 - [Examples](examples.md)
+- [Contributing](contributing.md)

@@ -1,5 +1,6 @@
-import type { ParserOptions } from '../src';
+import type { ParserOptions, Value } from '../src';
 import { createParser, ValidationError } from '../src';
+import { mockFs } from './_setup';
 
 describe('Docs', () => {
   test('cli arguments, internal validation', () => {
@@ -63,19 +64,20 @@ describe('Docs', () => {
     expect(parsed.userName).toBe('eegli');
   });
 
-  test('custom validation', async () => {
-    const { parse } = createParser(
+  test('custom validation', () => {
+    const { parseSync } = createParser(
       { birthDate: '2000-01-01' },
       {
         options: {
           birthDate: {
+            longFlag: 'bday',
             customValidator: {
-              isValid(value) {
+              isValid(value): value is Value {
                 if (typeof value !== 'string') return false;
                 return !isNaN(new Date(value).getTime());
               },
-              errorMessage(value) {
-                return `Invalid value '${value}' for option 'birthDate'. Expected a valid date string`;
+              errorMessage(value, flag) {
+                return `Invalid value '${value}' for option '${flag}'. Expected a valid date string`;
               },
             },
           },
@@ -83,10 +85,16 @@ describe('Docs', () => {
       }
     );
     // Valid date string
-    await expect(parse(['--birthDate', '2000-01-01'])).resolves.toBeTruthy();
+    expect(() => {
+      parseSync(['--bday', '2000-01-01']);
+    }).toBeTruthy();
 
     // What a weird month...
-    await expect(parse(['--birthDate', '2000-22'])).rejects.toThrow();
+    expect(() => {
+      parseSync(['--bday', '2000-22']);
+    }).toThrow(
+      "Invalid value '2000-22' for option '--bday'. Expected a valid date string"
+    );
   });
 
   test('decamelization', async () => {
@@ -101,17 +109,21 @@ describe('Docs', () => {
     expect(parsed.userName).toBe('eegli');
   });
 
-  test('file reading', async () => {
-    /*
-    Assume that there is a JSON file with the following content in the current directory:
-    {
-      username: 'eegli', hasGitHubPlus: false,
-    }
-    */
-    const { parse } = createParser(
+  test('file reading, valid', () => {
+    const file = {
+      userName: 'eegli',
+      hasGitHubPlus: true,
+    };
+    mockFs.readFileSync.mockImplementationOnce((path) => {
+      if (path === 'github.json') {
+        return JSON.stringify(file);
+      }
+      throw new Error();
+    });
+    const { parseSync } = createParser(
       {
-        username: '',
-        hasGitHubPlus: true,
+        userName: '',
+        hasGitHubPlus: false,
       },
       {
         filePathArg: {
@@ -122,10 +134,39 @@ describe('Docs', () => {
       }
     );
 
-    const parsed = await parse(['--config', 'github.json']);
+    const parsed = parseSync(['-c', 'github.json']);
 
-    expect(parsed.username).toBe('eegli');
-    expect(parsed.hasGitHubPlus).toBe(false);
+    expect(parsed.userName).toBe('eegli');
+    expect(parsed.hasGitHubPlus).toBe(true);
+  });
+  test('file reading, invalid', () => {
+    const file = {
+      userName: {
+        name: 'eegli',
+      },
+    };
+    mockFs.readFileSync.mockImplementationOnce((path) => {
+      if (path === 'bad-github.json') {
+        return JSON.stringify(file);
+      }
+      throw new Error();
+    });
+    const { parseSync } = createParser(
+      {
+        userName: '',
+      },
+      {
+        filePathArg: {
+          longFlag: '--config',
+        },
+      }
+    );
+
+    expect(() => {
+      parseSync(['--config', 'bad-github.json']);
+    }).toThrow(
+      `Invalid type for --userName. "[object Object]" is not a string`
+    );
   });
   test('printing args, without decamelization', () => {
     const { help } = createParser(
@@ -195,9 +236,8 @@ describe('Docs', () => {
     `);
   });
 
-  test('error handling, rejects for missing args', async () => {
-    expect.assertions(1);
-    const { parse } = createParser(
+  test('error handling, rejects for missing args', () => {
+    const { parseSync } = createParser(
       { username: '' },
       {
         options: {
@@ -207,40 +247,19 @@ describe('Docs', () => {
         },
       }
     );
-    try {
-      await parse(); // Whoops, forgot username!
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        expect(error.message).toBe('"username" is required');
-      }
-    }
-  });
-  test('error handling, rejects invalid types', async () => {
-    expect.assertions(1);
-    const { parse } = createParser({ username: '' });
-    try {
-      // @ts-expect-error test input
-      await parse({ username: ['eegli'] });
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        expect(error.message).toBe(
-          'Invalid type for "username". Expected string, got object'
-        );
-      }
-    }
-  });
-  test('object literals, works', async () => {
-    const { parse } = createParser({ username: '' });
-    const parsed = await parse({ username: 'eegli' });
 
-    expect(parsed.username).toBe('eegli');
+    expect(() => {
+      parseSync(); // Whoops, forgot username!
+    }).toThrow(new ValidationError('Missing required flag --username'));
   });
-  test('object literals, rejects', async () => {
-    expect.assertions(1);
-    const { parse } = createParser({ username: '' });
+  test('error handling, rejects invalid types', () => {
+    const { parseSync } = createParser({ age: 0 });
 
-    // @ts-expect-error test input
-    await expect(parse({ username: ['eegli'] })).rejects.toThrow();
+    expect(() => {
+      parseSync(['--age']);
+    }).toThrow(
+      new ValidationError('Invalid type for --age. "true" is not a number')
+    );
   });
   // eslint-disable-next-line jest/expect-expect
   test('typescript, bootstrapping', () => {

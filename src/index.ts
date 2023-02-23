@@ -1,6 +1,7 @@
-import { ArgvParser } from './argv';
-import { displayHelp } from './help';
+import { ArgvTransformer } from './argv';
+import { HelpPrinter } from './help';
 import { Options } from './options';
+import { Parser } from './parser';
 import {
   HelpOptions,
   ParserOptions,
@@ -9,6 +10,7 @@ import {
 } from './types';
 
 export { ValidationError } from './error';
+export type { Value } from './types';
 export type { ParserOptions };
 
 /**
@@ -22,37 +24,23 @@ export function createParser<T extends PrimitiveRecord>(
   params?: ParserOptions<T>
 ) {
   const options = new Options(defaultValues, params);
-  const parser = new ArgvParser<T>(defaultValues);
+  const parser = new Parser<T>(options);
+  const helpPrinter = new HelpPrinter(options);
 
-  function internalParse(input: Partial<T> | string[]): T {
-    if (Array.isArray(input)) {
-      const [transformed, positionals] = parser.transform(
-        input,
-        options.filePathArg
-      );
-      const parsed = parser.parse(transformed, options, true);
-      return parser.build(parsed, positionals);
-    }
-    return parser.parse(input, options, false);
+  function parseSync(input: string[] = []): WithPositionalArgs<T> {
+    const [transformed, positionals] = ArgvTransformer.transform(input);
+    const parsed = parser.parse(transformed);
+    return parser.build(parsed, positionals);
   }
 
-  function parseSync(input?: Partial<T>): T;
-  function parseSync(input?: string[]): WithPositionalArgs<T>;
-  function parseSync(input: Partial<T> | string[] = {}): T {
-    return internalParse(input);
-  }
-
-  async function parse(input?: Partial<T>): Promise<T>;
-  async function parse(input?: string[]): Promise<WithPositionalArgs<T>>;
   // eslint-disable-next-line require-await
-  async function parse(input: Partial<T> | string[] = {}): Promise<T> {
-    return internalParse(input);
+  async function parse(input: string[] = []): Promise<WithPositionalArgs<T>> {
+    return parseSync(input);
   }
 
   return {
     help: function ({ title, base }: HelpOptions = {}): string {
-      return displayHelp({
-        options,
+      return helpPrinter.display({
         base,
         title,
       });
