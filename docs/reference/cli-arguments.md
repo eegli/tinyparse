@@ -7,7 +7,7 @@ Tinyparse:
 - Collects **command arguments**
 - Parses and validates **long and short flag arguments**
 
-All arguments until the first flag are considered _command arguments_, that is, they are _positional_ arguments. Long flags start with two hyphens (`--`), short flags with a single hyphen (`-`). A valid _flag-argument_ pair consists of a _flag_ followed by the _flag argument_, separated by a whitespace. The order of flag-argument pairs does not matter.
+All arguments until the first flag are considered _command arguments_, that is, they are _positional_ arguments. Long flags start with two hyphens (`--`), short flags with a single hyphen (`-`). A valid _flag-argument_ pair consists of a _flag_ followed by the _flag argument_, separated by a whitespace or equal sign. The order of flag-argument pairs does not matter.
 
 - Command arguments are only collected, they are _not_ validated
 - Unknown input that is neither a command argument, a flag or flag argument is ignored

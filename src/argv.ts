@@ -11,13 +11,13 @@ export class ArgvTransformer {
     let isPositional = true;
 
     for (let i = 0; i < argv.length; i++) {
-      const curr = argv[i];
+      const arg = argv[i];
 
       // A short flag is also a long flag
-      const [isShortFlag] = Utils.getFlagType(curr);
+      const isShortFlag = Utils.isShortFlag(arg);
 
       if (!isShortFlag && isPositional) {
-        positionals.push(curr);
+        positionals.push(arg);
         // Collect positionals
         continue;
       }
@@ -26,14 +26,19 @@ export class ArgvTransformer {
 
       if (!isShortFlag) continue;
 
-      const flagVal = argv[i + 1];
+      const splitted = Utils.splitAtFirst(arg, '=');
+
+      const [flag] = splitted;
+      let [, flagVal] = splitted;
+
+      if (!flagVal) flagVal = argv[i + 1];
 
       // Assume boolean flag
-      if (!flagVal || flagVal.startsWith('-')) {
-        flagMap.set(curr, true);
+      if (!flagVal || Utils.isShortFlag(flagVal)) {
+        flagMap.set(flag, true);
         // Assume string or number
       } else {
-        flagMap.set(curr, flagVal);
+        flagMap.set(flag, flagVal);
       }
     }
 

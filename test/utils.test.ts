@@ -15,4 +15,8 @@ describe('Utils', () => {
       { key1: false, key2: 'b' },
     ]);
   });
+  test('string splitting', () => {
+    expect(Utils.splitAtFirst('a.b.c', '.')).toEqual(['a', 'b.c']);
+    expect(Utils.splitAtFirst('a.b.c', 'x')).toEqual(['a.b.c', undefined]);
+  });
 });

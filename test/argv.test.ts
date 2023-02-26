@@ -8,8 +8,7 @@ describe('Argv transformer', () => {
   const orders = [
     [
       '--boolProp1',
-      '--stringProp',
-      'hello from node',
+      '--stringProp=hello from node',
       '--numProp',
       '123',
       '--boolProp2',
@@ -19,8 +18,7 @@ describe('Argv transformer', () => {
       'hello from node',
       '--boolProp1',
       '--boolProp2',
-      '--numProp',
-      '123',
+      '--numProp=123',
     ],
     [
       '--boolProp1',
