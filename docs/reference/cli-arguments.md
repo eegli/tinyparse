@@ -62,7 +62,7 @@ expect(parsed).toStrictEqual({ _: ['hello-world'] });
 
 Standalone flags are considered **booleans flags**. If they are encountered, their value will be set to `true`. This means that it is _not_ possible to set something to `false` via a flag.
 
-Tinyparse is opinionated about default values. It assumes that any option that can be set by a flag is `false` by default but can be set to `true`.
+Tinyparse is opinionated about default values. It assumes that any boolean option that can be set by a flag is `false` by default but can be set to `true`.
 
 <!-- doctest: boolean flags 1 -->
 
