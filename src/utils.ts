@@ -26,10 +26,17 @@ export default class Utils {
     }
   }
 
-  public static getFlagType(value: string): [boolean, boolean] {
-    const isShortFlag = value[0] === '-';
-    return [isShortFlag, isShortFlag && value[1] === '-'];
+  public static splitAtFirst(
+    str: string,
+    sep: string
+  ): [string, string | undefined] {
+    const i = str.indexOf(sep);
+    if (i === -1) return [str, undefined];
+
+    return [str.substring(0, i), str.substring(i + 1)];
   }
+
+  public static isShortFlag = (value: string): boolean => value[0] === '-';
 
   public static trimFlag(flag: string): string {
     return flag.trim().replace(/^-+/, '');
