@@ -59,9 +59,9 @@ describe('Docs', () => {
         },
       }
     );
-    const parsed = await parse(['-v', '--user', 'eegli']);
+    const parsed = await parse(['-v', '--user=john']);
     expect(parsed.verbose).toBe(true);
-    expect(parsed.userName).toBe('eegli');
+    expect(parsed.userName).toBe('john');
   });
 
   test('custom validation', () => {

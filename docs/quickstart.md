@@ -2,6 +2,8 @@
 
 Tinyparse is made for parsing simple user input. It can process **command line input**, i.e., `process.argv` - an array of strings - and build an object literal from it. The object to parse _into_ may only have `string`, `number` or `boolean` property values. These three primitive types are further denoted as a `Value` type.
 
+CLI arguments can either be separated by a whitespace or an equal sign.
+
 ```ts
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
@@ -13,13 +15,13 @@ const defaultValues = {
 
 const { parse, parseSync } = createParser(defaultValues);
 
-const parsed1 = await parse(['hello', '--username', 'eegli', '--active']);
-const parsed2 = parseSync(['hello', '--username', 'eegli', '--active']);
+const parsed1 = await parse(['hello', '--username', 'john', '--active']);
+const parsed2 = parseSync(['hello', '--username=john', '--active']);
 
 assert.deepStrictEqual(parsed1, parsed2);
 
 assert.deepStrictEqual(parsed1, {
-  username: 'eegli',
+  username: 'john',
   active: true,
   _: ['hello'],
 });

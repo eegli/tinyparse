@@ -9,7 +9,7 @@ A property - or flag - can be marked as required. If a required property is not 
 ```ts
 import { createParser } from '@eegli/tinyparse';
 
-const { parse } = createParser(
+const { parseSync } = createParser(
   { username: '' },
   {
     options: {
@@ -19,4 +19,8 @@ const { parse } = createParser(
     },
   }
 );
+
+expect(() => {
+  parseSync(); // Whoops, forgot username!
+}).toThrow('Missing required flag --username');
 ```
