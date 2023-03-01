@@ -1,24 +1,10 @@
 import { Options } from '../src/options';
 
 describe('Options', () => {
-  test('constructor', () => {
-    const options = new Options({ a: '', b: false });
-    expect(Object.fromEntries(options.flagOptions)).toEqual({
-      a: {
-        type: 'string',
-        isRequired: false,
-        longFlag: '--a',
-      },
-      b: {
-        type: 'boolean',
-        isRequired: false,
-        longFlag: '--b',
-      },
-    });
-    expect(Object.fromEntries(options.aliases)).toEqual({
-      '--a': 'a',
-      '--b': 'b',
-    });
+  test('constructor without args', () => {
+    const options = new Options();
+    expect(options.flagOptions.size).toBe(0);
+    expect(options.aliases.size).toBe(0);
     expect(options.filePathFlags.size).toBe(0);
   });
   test('constructor with options', () => {

@@ -151,29 +151,39 @@ describe('Parsing, file reading', () => {
   it('identity for missing and invalid flags are given', () => {
     expect(
       new Parser()
-        .input(M({ file: 'test.json' }))
-        .extendFromFile('no-file')
-        .collect()
-    ).toStrictEqual({ file: 'test.json' });
-    expect(
-      new Parser()
-        .input(M({ file: 'test.json' }))
+        .input(M({ file: '' }))
         .extendFromFile()
         .collect()
-    ).toStrictEqual({ file: 'test.json' });
+    ).toStrictEqual({ file: '' });
+    expect(
+      new Parser()
+        .input(M({ file: '' }))
+        .extendFromFile('no-file')
+        .collect()
+    ).toStrictEqual({ file: '' });
   });
   it('reads file path from flag and collects', () => {
     expect(
       new Parser()
         .input(M({ file: 'test.json' }))
-        .extendFromFile('file', 'invalid')
+        .extendFromFile('file')
         .validate(M({ str: { type: STR } }))
         .collect()
     ).toStrictEqual({
       str: 'hello from a file',
     });
   });
-
+  it('does not overwrite user input', () => {
+    expect(
+      new Parser()
+        .input(M({ file: 'test.json', str: 'hello from the cli' }))
+        .extendFromFile('file')
+        .validate(M({ str: { type: STR } }))
+        .collect()
+    ).toStrictEqual({
+      str: 'hello from the cli',
+    });
+  });
   it('throws for invalid files', () => {
     expect(() => {
       new Parser()
