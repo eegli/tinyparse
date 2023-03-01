@@ -42,17 +42,19 @@ describe('Parsing, with options', () => {
 
   it('rejects invalid types 2', () => {
     expect(() => {
-      new Parser().input(M({ x: 'twelve' })).validate(M({ x: { type: NUM } }));
+      new Parser()
+        .input(M({ xyz: 'twelve' }))
+        .validate(M({ xyz: { type: NUM } }));
     }).toThrow(
-      new ValidationError(`Invalid type for x. "twelve" is not a number`)
+      new ValidationError(`Invalid type for xyz. "twelve" is not a number`)
     );
   });
 
   it('rejects invalid types 3', () => {
     expect(() => {
-      new Parser().input(M({ x: true })).validate(M({ x: { type: NUM } }));
+      new Parser().input(M({ abc: true })).validate(M({ abc: { type: NUM } }));
     }).toThrow(
-      new ValidationError(`Invalid type for x. "true" is not a number`)
+      new ValidationError(`Invalid type for abc. "true" is not a number`)
     );
   });
 
@@ -78,8 +80,8 @@ describe('Parsing, with options', () => {
 
   it('rejects for missing required args', () => {
     expect(() => {
-      new Parser().validate(M({ x: { type: BOOL, isRequired: true } }));
-    }).toThrow(new ValidationError('Missing required argument x'));
+      new Parser().validate(M({ '-x': { type: BOOL, isRequired: true } }));
+    }).toThrow(new ValidationError('Missing required argument -x'));
   });
 
   it('custom validation, returns', () => {
@@ -92,7 +94,7 @@ describe('Parsing, with options', () => {
               isValid(v: unknown): v is Value {
                 return typeof v === NUM && v === 1;
               },
-              errorMessage: () => `whaaaat`,
+              errorMessage: () => 'whaaaat',
             },
           },
         })

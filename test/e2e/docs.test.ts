@@ -1,6 +1,6 @@
-import type { ParserOptions, Value } from '../src';
-import { createParser, ValidationError } from '../src';
-import { mockFs } from './_setup';
+import type { ParserOptions, Value } from '../../src';
+import { createParser, ValidationError } from '../../src';
+import { mockFs } from '../_setup';
 
 describe('Docs', () => {
   test('cli arguments, internal validation', () => {
