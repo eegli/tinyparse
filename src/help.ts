@@ -1,37 +1,46 @@
-import { Options } from './options';
-import { HelpOptions } from './types';
+import { FlagOption, FlagOptions } from './types';
 import Utils from './utils';
 
 export class HelpPrinter {
-  constructor(private readonly _options: Options) {}
+  private _options: FlagOption[];
+  private _filePathFlags: string[] = [];
+  private _filePathFlagDescription?: string;
 
-  public display({ title, base }: HelpOptions) {
+  constructor(options: FlagOptions) {
     // Required properties first, then alphabetical
-    const sortedOptions = Utils.sort(
-      [...this._options.values()],
-      'required',
-      'longFlag'
-    );
+    this._options = Utils.sort([...options.values()], 'isRequired', 'longFlag');
+  }
 
+  public withFilePathFlags(...filePathFlags: string[]) {
+    this._filePathFlags = [...filePathFlags];
+    return this;
+  }
+
+  public withFilePathDescription(filePathDescription?: string) {
+    this._filePathFlagDescription = filePathDescription;
+    return this;
+  }
+
+  public print(title?: string, base?: string) {
     let str = title || 'Usage';
 
     if (base) str += `\n\n${base}`;
 
-    if (sortedOptions.length > 0) str += '\n\n';
+    if (this._options.length > 0) str += '\n\n';
 
     // Maybe no option is required
-    const hasRequiredFlag = sortedOptions[0]?.required;
+    const hasRequiredFlag = this._options[0]?.isRequired;
     if (hasRequiredFlag) str += 'Required flags\n';
 
     let optionalFlag = true;
     const indent = '   ';
 
-    for (let idx = 0; idx < sortedOptions.length; idx++) {
-      const { description, required, shortFlag, longFlag, _type } =
-        sortedOptions[idx];
-      const isLast = idx === sortedOptions.length - 1;
+    for (let idx = 0; idx < this._options.length; idx++) {
+      const { description, isRequired, shortFlag, longFlag, type } =
+        this._options[idx];
+      const isLast = idx === this._options.length - 1;
 
-      if (optionalFlag && !required) {
+      if (optionalFlag && !isRequired) {
         str += 'Optional flags\n';
         optionalFlag = false;
       }
@@ -39,16 +48,16 @@ export class HelpPrinter {
       str += indent;
       if (shortFlag) str += `${shortFlag}, `;
       str += `${longFlag}`;
-      str += ` [${_type}]`;
+      str += ` [${type}]`;
       if (description) str += `\n${indent}${description}`;
       if (!isLast) str += '\n\n';
     }
 
-    const filePathArg = [...this._options.filePathFlags];
-    if (filePathArg.length > 0) {
-      const longFlag = filePathArg[0];
-      const shortFlag = filePathArg[1];
-      const description = this._options.filePathFlagDesc;
+    if (this._filePathFlags.length > 0) {
+      const longFlag = this._filePathFlags[0];
+      const shortFlag = this._filePathFlags[1];
+      const description = this._filePathFlagDescription;
+
       str += `\n\n${indent}`;
       if (shortFlag) str += `${shortFlag}, `;
       str += `${longFlag} [string]\n`;

@@ -3,20 +3,22 @@ import { Options } from '../src/options';
 describe('Options', () => {
   test('constructor', () => {
     const options = new Options({ a: '', b: false });
-    expect(options.values()).toEqual([
-      {
-        _type: 'string',
-        _value: '',
-        required: false,
+    expect(Object.fromEntries(options.flagOptions)).toEqual({
+      a: {
+        type: 'string',
+        isRequired: false,
         longFlag: '--a',
       },
-      {
-        _type: 'boolean',
-        _value: false,
+      b: {
+        type: 'boolean',
+        isRequired: false,
         longFlag: '--b',
-        required: false,
       },
-    ]);
+    });
+    expect(Object.fromEntries(options.aliases)).toEqual({
+      '--a': 'a',
+      '--b': 'b',
+    });
     expect(options.filePathFlags.size).toBe(0);
   });
   test('constructor with options', () => {
@@ -30,23 +32,26 @@ describe('Options', () => {
         },
       }
     );
-    expect(options.values()).toEqual([
-      {
-        _type: 'string',
-        _value: '',
+    expect(Object.fromEntries(options.flagOptions)).toEqual({
+      a: {
+        type: 'string',
+        isRequired: true,
         longFlag: '--a',
-        shortFlag: undefined,
-        required: true,
         description: 'void',
       },
-      {
-        _type: 'number',
-        _value: 0,
+      b: {
+        type: 'number',
+        isRequired: false,
         longFlag: '--UpAndLoWeRCaSe',
         shortFlag: '-b',
-        required: false,
       },
-    ]);
+    });
+    expect(Object.fromEntries(options.aliases)).toEqual({
+      '--UpAndLoWeRCaSe': 'b',
+      '-b': 'b',
+      '--a': 'a',
+    });
+
     expect(options.filePathFlags.size).toBe(0);
   });
   test('conflicting alias construction', () => {
@@ -104,7 +109,6 @@ describe('Options', () => {
         },
       }
     );
-    expect(options.shouldDecamelize).toBeTruthy();
 
     expect(options.filePathFlags.size).toBe(2);
 

@@ -1,38 +1,14 @@
 import { ValidationError } from './error';
-import { Options } from './options';
-import { PrimitiveRecord, Value, WithPositionalArgs } from './types';
+import {
+  AliasMap,
+  FlagOptions,
+  PrimitiveRecord,
+  WithPositionalArgs,
+} from './types';
 import Utils from './utils';
 
 export class Parser<T extends PrimitiveRecord> {
-  private readonly _requiredSym = Symbol('isRequired');
-
-  constructor(private readonly _options = new Options()) {}
-
-  public appendFromFile<T extends Map<string, unknown>>(
-    collection: T,
-    ...flags: string[]
-  ): T {
-    if (flags.length === 0) return collection;
-
-    const filePaths = flags
-      .map((v) => collection.get(v))
-      .filter((v) => typeof v === 'string') as string[];
-
-    if (filePaths.length === 0) return collection;
-
-    // Long flag takes precedence over short flag
-    const filePath = filePaths[0];
-
-    for (const [key, content] of Utils.parseJSONFile(filePath)) {
-      collection.set(Utils.makeLongFlag(key), content);
-    }
-
-    for (const flag of flags) {
-      collection.delete(flag);
-    }
-
-    return collection;
-  }
+  private _current: Map<string, unknown> = new Map();
 
   // Try to convert a string to a number. If the result is NaN, return identity
   public tryConvertToNumber(value: unknown): unknown {
@@ -41,84 +17,109 @@ export class Parser<T extends PrimitiveRecord> {
     return !Number.isNaN(num) ? num : value;
   }
 
-  public parse(input: Map<string, unknown>): T {
-    // Append file content to the input
-    // File contents may be overridden by user input
-    input = this.appendFromFile(input, ...this._options.filePathFlags);
+  public input(input: Map<string, unknown>): this {
+    // New state on new input
+    this._current = new Map();
+    for (const [key, value] of input) {
+      this._current.set(key, value);
+    }
+    return this;
+  }
 
-    const config = new Map<string, Value | symbol>(
-      this._options.entries().map(([key, entry]) => [key, entry._value])
-    );
+  // Append file content to the input
+  // File contents may be overridden by user input
+  public extendFromFile(...flags: string[]): this {
+    if (flags.length === 0) return this;
 
-    const requiredKeys = this._options
-      .entries()
-      .filter(([, opts]) => opts.required);
+    const filePaths = flags
+      .map((v) => this._current.get(v))
+      .filter((v) => typeof v === 'string') as string[];
 
-    // For each required flag, replace its value temporarily
-    // with a symbol
-    for (const [key] of requiredKeys) {
-      config.set(key, this._requiredSym);
+    if (filePaths.length === 0) return this;
+
+    // Long flag takes precedence over short flag
+    const filePath = filePaths[0];
+
+    for (const [key, content] of Utils.parseJSONFile(filePath)) {
+      // Do not override CLI input
+      if (this._current.has(key)) continue;
+      this._current.set(key, content);
     }
 
-    // E.g., ["--fooFlag", "barValue"]
-    for (const flagValuePair of input) {
-      const [flag] = flagValuePair;
-      const maybeAlias = this._options.aliases.get(flag);
+    for (const flag of flags) {
+      this._current.delete(flag);
+    }
 
-      if (!maybeAlias) continue;
+    return this;
+  }
 
-      let [, flagValue] = flagValuePair;
+  public validate(options: FlagOptions, aliases: AliasMap = new Map()): this {
+    const requiredKeys = [...options.entries()].reduce((acc, [key, value]) => {
+      if (value?.isRequired) acc.add(key);
+      return acc;
+    }, new Set<string>());
 
-      const key = Utils.trimFlag(maybeAlias);
-      const expectedType = typeof this._options.entry(key)?._value;
+    for (const kvPair of this._current) {
+      const [flag] = kvPair;
+      // Preserve original flag
+      let key = flag;
 
-      const customValidator = this._options.entry(key)?.customValidator;
+      // Resolve alias
+      const maybeAlias = aliases.get(flag);
+      if (maybeAlias) key = maybeAlias;
+
+      // Lookup options
+      const keyOptions = options.get(key);
+
+      if (!keyOptions) {
+        // Invalid/unknown key
+        this._current.delete(key);
+        continue;
+      }
+      let [, value] = kvPair;
+      const { type: expectedType, validator } = keyOptions;
 
       // Iif the expected type is a number and not NaN, try to convert
       // the value
       if (expectedType === 'number') {
-        flagValue = this.tryConvertToNumber(flagValue);
+        value = this.tryConvertToNumber(value);
       }
 
-      // Custom validation
-      if (customValidator) {
-        if (customValidator.isValid(flagValue)) {
-          config.set(key, flagValue);
+      const receivedType = typeof value;
+
+      if (validator) {
+        if (validator.isValid(value)) {
+          this._current.set(key, value);
         } else {
-          const errorMessage = customValidator.errorMessage(flagValue, flag);
-          throw new ValidationError(errorMessage);
+          throw new ValidationError(validator.errorMessage(value, flag));
+        }
+      } else {
+        if (Utils.isValueType(value) && receivedType === expectedType) {
+          this._current.set(key, value);
+        } else {
+          throw new ValidationError(
+            `Invalid type for ${flag}. "${value}" is not a ${expectedType}`
+          );
         }
       }
-
-      const receivedType = typeof flagValue;
-
-      // Default validation (based on types) -  The received type must
-      // corresponds to the original type
-
-      if (Utils.isValueType(flagValue) && receivedType === expectedType) {
-        config.set(key, flagValue);
-      } else {
-        throw new ValidationError(
-          `Invalid type for ${flag}. "${flagValue}" is not a ${expectedType}`
-        );
-      }
+      requiredKeys.delete(key);
     }
 
-    // Check if all required arguments have been defined or if the
-    // temporary value is still there
-    for (const [key, keyOpts] of requiredKeys) {
-      if (config.get(key) === this._requiredSym) {
-        throw new ValidationError(`Missing required flag ${keyOpts.longFlag}`);
-      }
+    for (const key of requiredKeys) {
+      throw new ValidationError(`Missing required argument ${key}`);
     }
 
-    return Object.fromEntries(config) as T;
+    return this;
   }
 
-  public build(input: T, positionals: string[]): WithPositionalArgs<T> {
+  public collectWithPositionals(positionals: string[]): WithPositionalArgs<T> {
     return {
-      ...input,
+      ...this.collect(),
       _: positionals,
     };
+  }
+
+  public collect(): T {
+    return Object.fromEntries(this._current) as T;
   }
 }

@@ -1,6 +1,6 @@
 import { ValidationError } from './error';
 import _decamelize from './lib/decamelize';
-import { FlagType, KeysMatching, OnlyRequiredKeys, Value } from './types';
+import { KeysMatching, OnlyRequiredKeys, Value } from './types';
 
 type ReadFileSync = typeof import('fs').readFileSync;
 
@@ -36,24 +36,20 @@ export default class Utils {
     return [str.substring(0, i), str.substring(i + 1)];
   }
 
-  public static isShortFlag = (value: string): boolean => value[0] === '-';
+  public static isShortFlag(value: string) {
+    return value[0] === '-';
+  }
 
   public static trimFlag(flag: string): string {
     return flag.trim().replace(/^-+/, '');
   }
 
-  public static makeFlag(flag: string, type: FlagType): string {
-    flag = this.trimFlag(flag);
-    const prefix = type === FlagType.Long ? '--' : '-';
-    return `${prefix}${flag}`;
-  }
-
   public static makeLongFlag(flag: string): string {
-    return this.makeFlag(flag, FlagType.Long);
+    return `--${this.trimFlag(flag)}`;
   }
 
   public static makeShortFlag(flag: string): string {
-    return this.makeFlag(flag, FlagType.Short);
+    return `-${this.trimFlag(flag)}`;
   }
 
   public static sort<T>(

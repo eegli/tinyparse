@@ -164,9 +164,7 @@ describe('Docs', () => {
 
     expect(() => {
       parseSync(['--config', 'bad-github.json']);
-    }).toThrow(
-      `Invalid type for --userName. "[object Object]" is not a string`
-    );
+    }).toThrow(`Invalid type for userName. "[object Object]" is not a string`);
   });
   test('printing args, without decamelization', () => {
     const { help } = createParser(
@@ -250,7 +248,7 @@ describe('Docs', () => {
 
     expect(() => {
       parseSync(); // Whoops, forgot username!
-    }).toThrow(new ValidationError('Missing required flag --username'));
+    }).toThrow(new ValidationError('Missing required argument username'));
   });
   test('error handling, rejects invalid types', () => {
     const { parseSync } = createParser({ age: 0 });
