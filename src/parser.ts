@@ -8,15 +8,19 @@ import {
 } from './types';
 import Utils from './utils';
 
+type InputState = Map<
+  string,
+  {
+    value: unknown;
+    // Keep track of how the input was received for error reporting
+    receivedAs: string;
+  }
+>;
+
 export class Parser<T extends PrimitiveRecord> {
-  private _input: Map<
-    string,
-    {
-      value: unknown;
-      // Keep track of how the input was received for error reporting
-      receivedAs: string;
-    }
-  > = new Map();
+  private _argvInput: InputState = new Map();
+  private _fileInput: InputState = new Map();
+
   private _output: Map<string, Value> = new Map();
 
   // Try to convert a string to a number. If the result is NaN, return identity
@@ -31,10 +35,11 @@ export class Parser<T extends PrimitiveRecord> {
     aliases: AliasMap = new Map()
   ): this {
     // New state on new input
-    this._input = new Map();
+    this._argvInput = new Map();
+
     for (const [key, value] of input) {
       const maybeAlias = aliases.get(key);
-      this._input.set(maybeAlias ?? key, {
+      this._argvInput.set(maybeAlias ?? key, {
         value,
         receivedAs: key,
       });
@@ -45,10 +50,12 @@ export class Parser<T extends PrimitiveRecord> {
   // Append file content to the input
   // File contents may be overridden by user input
   public withFileInput(...flags: string[]): this {
+    this._fileInput = new Map();
+
     if (flags.length === 0) return this;
 
     const filePaths = flags
-      .map((v) => this._input.get(v)?.value)
+      .map((v) => this._argvInput.get(v)?.value)
       .filter((v) => typeof v === 'string') as string[];
 
     if (filePaths.length === 0) return this;
@@ -57,17 +64,15 @@ export class Parser<T extends PrimitiveRecord> {
     const filePath = filePaths[0];
 
     for (const [key, content] of Utils.parseJSONFile(filePath)) {
-      // Skip if key already exists
-      if (this._input.has(key)) continue;
-
-      this._input.set(key, {
+      this._fileInput.set(key, {
         value: content,
         receivedAs: key,
       });
     }
 
+    // The file flags are not part of the output
     for (const flag of flags) {
-      this._input.delete(flag);
+      this._argvInput.delete(flag);
     }
 
     return this;
@@ -76,10 +81,12 @@ export class Parser<T extends PrimitiveRecord> {
   public validate(options: FlagOptions): this {
     this._output = new Map();
 
+    // Go through all expected keys and try to find them in the input
     for (const option of options) {
       const [key, keyOptions] = option;
 
-      const entry = this._input.get(key);
+      // Try from argv input, then file input
+      const entry = this._argvInput.get(key) ?? this._fileInput.get(key);
 
       if (!entry) {
         if (keyOptions?.isRequired) {
