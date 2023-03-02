@@ -4,6 +4,7 @@ Tinyparse supports reading and parsing JSON files natively. The path to a JSON f
 
 **Good to know**
 
+- CLI input - i.e., user input - **always** overrides file input!
 - Reading from files is the only way to set booleans to `false` that are `true` by default, see the first example.
 - When a command contains a short and long flag that both point to different files, the long flag takes precedence
 
@@ -44,7 +45,7 @@ expect(parsed.userName).toBe('eegli');
 expect(parsed.hasGitHubPlus).toBe(true);
 ```
 
-If the file contains non-`Value` values, i.e., arrays or object literals, parsing fails.
+If the file contains non-`Value` values, i.e., arrays or object literals, parsing fails as it would for other invalid values.
 
 ```js
 // github-bad.json - nested
