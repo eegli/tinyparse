@@ -45,7 +45,7 @@ test('quickstart advanced example', async () => {
     options: {
       followerCount: {
         required: true,
-        shortFlag: '-fc',
+        shortFlag: 'fc',
       },
       hasGithubProfile: {
         longFlag: 'github',
