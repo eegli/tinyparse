@@ -1,5 +1,16 @@
 # @eegli/tinyparse
 
+## 0.14.0
+
+### Minor Changes
+
+- fa70f34: Arguments can now also separated by an equal sign instead of a whitespace. The following two are equivalent:
+
+  ```ts
+  parse(['--username=john']);
+  parse(['--username', 'john']);
+  ```
+
 ## 0.13.0
 
 ### Minor Changes
