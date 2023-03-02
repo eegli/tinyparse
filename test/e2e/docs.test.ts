@@ -1,6 +1,6 @@
-import type { ParserOptions, Value } from '../src';
-import { createParser, ValidationError } from '../src';
-import { mockFs } from './_setup';
+import type { ParserOptions, Value } from '../../src';
+import { createParser, ValidationError } from '../../src';
+import { mockFs } from '../_setup';
 
 describe('Docs', () => {
   test('cli arguments, internal validation', () => {
@@ -18,12 +18,14 @@ describe('Docs', () => {
     const parsed = await parse(['hello-world']);
     expect(parsed).toStrictEqual({ _: ['hello-world'] });
   });
+
   test('cli arguments, boolean flags 1', async () => {
     const { parse } = createParser({
       verbose: false,
     });
     const parsed = await parse(['--verbose']);
     expect(parsed.verbose).toBe(true);
+    expect(parsed).toStrictEqual({ verbose: true, _: [] });
   });
   test('cli arguments, boolean flags 2', async () => {
     const { parse } = createParser({
@@ -164,9 +166,7 @@ describe('Docs', () => {
 
     expect(() => {
       parseSync(['--config', 'bad-github.json']);
-    }).toThrow(
-      `Invalid type for --userName. "[object Object]" is not a string`
-    );
+    }).toThrow(`Invalid type for userName. "[object Object]" is not a string`);
   });
   test('printing args, without decamelization', () => {
     const { help } = createParser(
@@ -250,7 +250,7 @@ describe('Docs', () => {
 
     expect(() => {
       parseSync(); // Whoops, forgot username!
-    }).toThrow(new ValidationError('Missing required flag --username'));
+    }).toThrow(new ValidationError('Missing required argument username'));
   });
   test('error handling, rejects invalid types', () => {
     const { parseSync } = createParser({ age: 0 });

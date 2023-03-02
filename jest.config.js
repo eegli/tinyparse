@@ -23,6 +23,14 @@ module.exports = {
     },
     {
       displayName: {
+        color: 'yellow',
+        name: 'e2e',
+      },
+      testMatch: ['<rootDir>/test/e2e/*.test.ts'],
+      setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
+    },
+    {
+      displayName: {
         color: 'magenta',
         name: 'types',
       },

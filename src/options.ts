@@ -1,25 +1,14 @@
-import {
-  AliasMap,
-  FlagType,
-  InternalKeyOptions,
-  OptionMap,
-  ParserOptions,
-  PrimitiveRecord,
-} from './types';
+import { AliasMap, FlagOptions, ParserOptions, PrimitiveRecord } from './types';
 import Utils from './utils';
 
 export class Options {
-  private readonly _options: OptionMap = new Map();
-  private readonly _aliases: AliasMap = new Map();
+  public readonly aliases: AliasMap = new Map();
+  public readonly flagOptions: FlagOptions = new Map();
 
-  public readonly shouldDecamelize: boolean;
   public readonly filePathFlags = new Set<string>();
   public readonly filePathFlagDesc?: string;
 
   constructor(defaults: PrimitiveRecord = {}, options: ParserOptions = {}) {
-    // Global options
-    this.shouldDecamelize = !!options.decamelize;
-
     const { longFlag, shortFlag } = options.filePathArg ?? {};
 
     this.filePathFlagDesc = options.filePathArg?.description;
@@ -33,39 +22,39 @@ export class Options {
     // Merge option keys/flags with user-provided options
     for (const [key, value] of Object.entries(defaults)) {
       const userOptions = options.options?.[key] ?? {};
+      const isRequired = !!userOptions.required;
 
       let longFlag = key;
       if (userOptions.longFlag) {
         longFlag = userOptions.longFlag;
-      } else if (this.shouldDecamelize) {
+      } else if (options.decamelize) {
         // Only decamelize if no custom long flag is provided AND
         // decamelize is enabled
         longFlag = Utils.decamelize(key);
       }
 
       longFlag = Utils.makeLongFlag(longFlag);
-      this._addAlias(longFlag, FlagType.Long, key);
+      this._addAlias(longFlag, 'long', key);
 
       // Short flags should be short, hence no decamelization
       let shortFlag: string | undefined;
       if (userOptions.shortFlag) {
         shortFlag = Utils.makeShortFlag(userOptions.shortFlag);
-        this._addAlias(shortFlag, FlagType.Short, key);
+        this._addAlias(shortFlag, 'short', key);
       }
-      const keyOptions = {
-        ...userOptions,
-        longFlag,
-        required: !!userOptions.required,
-        _type: typeof value,
-        _value: value,
-      };
-      if (shortFlag) keyOptions.shortFlag = shortFlag;
 
-      this._options.set(key, keyOptions);
+      this.flagOptions.set(key, {
+        longFlag,
+        shortFlag,
+        isRequired,
+        validator: userOptions.customValidator,
+        description: userOptions.description,
+        type: typeof value,
+      });
     }
   }
 
-  private _addAlias(alias: string, flagType: FlagType, forKey: string) {
+  private _addAlias(alias: string, flagType: 'long' | 'short', forKey: string) {
     // At this point, all file flags have been set
     const existingFilePathFlag = this.filePathFlags.has(alias);
     if (existingFilePathFlag) {
@@ -74,11 +63,11 @@ export class Options {
       );
     }
 
-    const existingAlias = this._aliases.get(alias);
+    const existingAlias = this.aliases.get(alias);
     if (existingAlias) {
       let text = `conflicting long flag: ${alias} has been declared twice`;
       let cause = 'custom long flags and decamelization';
-      if (flagType === FlagType.Short) {
+      if (flagType === 'short') {
         cause = 'short flags';
         text = `conflicting short flag: ${alias} has been declared twice`;
       }
@@ -89,23 +78,5 @@ export class Options {
     }
 
     this.aliases.set(alias, forKey);
-  }
-
-  public entry(key: string) {
-    return this._options.get(key);
-  }
-
-  // Explicit annotation due to TS4053
-  public entries(): [string, InternalKeyOptions][] {
-    return [...this._options.entries()];
-  }
-
-  // Explicit annotation due to TS4053
-  public values(): InternalKeyOptions[] {
-    return [...this._options.values()];
-  }
-
-  public get aliases() {
-    return this._aliases;
   }
 }

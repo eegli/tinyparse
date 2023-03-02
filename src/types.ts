@@ -8,33 +8,27 @@ export type KeysMatching<T, V> = {
   [K in keyof T]-?: T[K] extends V ? K : never;
 }[keyof T];
 
-export enum FlagType {
-  Short = 'SHORT',
-  Long = 'LONG',
-}
-
-export type OptionMap = Map<string, InternalKeyOptions>;
-
 export type AliasMap = Map<string, string>;
+
+export type FlagOptions = Map<string, FlagOption>;
 
 type CustomValidator = {
   isValid: (value: unknown) => value is Value;
   errorMessage: (value: unknown, flag: string) => string;
 };
 
-interface UserKeyOptions {
-  required?: boolean;
-  description?: string;
-  shortFlag?: string;
-  longFlag?: string;
-  customValidator?: CustomValidator;
+export enum FlagType {
+  LONG,
+  SHORT,
 }
 
-export interface InternalKeyOptions extends UserKeyOptions {
-  required: boolean;
+export interface FlagOption {
   longFlag: string;
-  _type: string;
-  _value: Value;
+  shortFlag?: string;
+  isRequired: boolean;
+  description?: string;
+  validator?: CustomValidator;
+  type: string;
 }
 
 export type FilePathArg = {
@@ -46,6 +40,14 @@ export type FilePathArg = {
 export interface HelpOptions {
   title?: string;
   base?: string;
+}
+
+interface UserKeyOptions {
+  required?: boolean;
+  description?: string;
+  shortFlag?: string;
+  longFlag?: string;
+  customValidator?: CustomValidator;
 }
 
 type KeyOptions<

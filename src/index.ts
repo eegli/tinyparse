@@ -24,13 +24,18 @@ export function createParser<T extends PrimitiveRecord>(
   params?: ParserOptions<T>
 ) {
   const options = new Options(defaultValues, params);
-  const parser = new Parser<T>(options);
-  const helpPrinter = new HelpPrinter(options);
+
+  const helpPrinter = new HelpPrinter(options.flagOptions)
+    .withFilePathFlags(...options.filePathFlags)
+    .withFilePathDescription(options.filePathFlagDesc);
 
   function parseSync(input: string[] = []): WithPositionalArgs<T> {
     const [transformed, positionals] = ArgvTransformer.transform(input);
-    const parsed = parser.parse(transformed);
-    return parser.build(parsed, positionals);
+    return new Parser<T>()
+      .withArgvInput(transformed, options.aliases)
+      .withFileInput(...options.filePathFlags)
+      .validate(options.flagOptions)
+      .collectWithPositionals(positionals);
   }
 
   // eslint-disable-next-line require-await
@@ -38,13 +43,12 @@ export function createParser<T extends PrimitiveRecord>(
     return parseSync(input);
   }
 
+  function help({ title, base }: HelpOptions = {}): string {
+    return helpPrinter.print(title, base);
+  }
+
   return {
-    help: function ({ title, base }: HelpOptions = {}): string {
-      return helpPrinter.display({
-        base,
-        title,
-      });
-    },
+    help,
     parse,
     parseSync,
   };

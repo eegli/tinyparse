@@ -1,4 +1,3 @@
-import { createParser } from '../src';
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
 import { Value } from '../src/types';
@@ -8,152 +7,132 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+const M = (args: object) => new Map(Object.entries(args));
+const NUM = typeof 0;
+const STR = typeof '';
+const BOOL = typeof true;
+
 describe('Parsing, with options', () => {
-  const defaultValues = {
-    stringProp: '',
-    boolProp: false,
-    numProp: Infinity,
-  };
-
-  const positionalArgs = {
-    _: [],
-  };
-
   it('resolves if all required args are present', () => {
-    const { parseSync } = createParser(defaultValues, {
-      options: {
-        stringProp: {
-          required: true,
-        },
-      },
-    });
-    expect(parseSync(['--stringProp', 'hello'])).toStrictEqual({
-      ...defaultValues,
-      ...positionalArgs,
-      stringProp: 'hello',
+    const result = new Parser()
+      .withArgvInput(M({ str: 'hello' }))
+      .validate(M({ str: { type: STR, isRequired: true } }))
+      .collect();
+    expect(result).toStrictEqual({
+      str: 'hello',
     });
   });
 
   it('parses strings to integers iif types match', () => {
-    const { parseSync } = createParser(defaultValues);
-    expect(parseSync(['--numProp', '1', '--stringProp', '1'])).toStrictEqual({
-      ...defaultValues,
-      ...positionalArgs,
-      stringProp: '1',
-      numProp: 1,
+    const result = new Parser()
+      .withArgvInput(M({ num: 1, str: '1' }))
+      .validate(M({ str: { type: STR }, num: { type: NUM } }))
+      .collect();
+    expect(result).toStrictEqual({
+      str: '1',
+      num: 1,
+    });
+  });
+
+  it('resolves aliases', () => {
+    const result = new Parser()
+      .withArgvInput(M({ '--num': 1 }), M({ '--num': 'num' }))
+      .validate(M({ num: { type: NUM } }))
+      .collect();
+    expect(result).toStrictEqual({
+      num: 1,
     });
   });
 
   it('rejects invalid types 1', () => {
-    const { parseSync } = createParser(defaultValues);
     expect(() => {
-      parseSync(['--boolProp', '1']);
-    }).toThrow(
-      new ValidationError(`Invalid type for --boolProp. "1" is not a boolean`)
-    );
+      new Parser()
+        .withArgvInput(M({ x: 1 }))
+        .validate(M({ x: { type: BOOL } }));
+    }).toThrow(new ValidationError(`Invalid type for x. "1" is not a boolean`));
   });
 
   it('rejects invalid types 2', () => {
-    const { parseSync } = createParser(defaultValues);
     expect(() => {
-      parseSync(['--numProp', 'twelve']);
+      new Parser()
+        .withArgvInput(M({ xyz: 'twelve' }))
+        .validate(M({ xyz: { type: NUM } }));
     }).toThrow(
-      new ValidationError(
-        `Invalid type for --numProp. "twelve" is not a number`
-      )
+      new ValidationError(`Invalid type for xyz. "twelve" is not a number`)
     );
   });
 
   it('rejects invalid types 3', () => {
-    const { parseSync } = createParser(defaultValues);
     expect(() => {
-      parseSync(['--numProp']);
+      new Parser()
+        .withArgvInput(M({ abc: true }))
+        .validate(M({ abc: { type: NUM } }));
     }).toThrow(
-      new ValidationError(`Invalid type for --numProp. "true" is not a number`)
+      new ValidationError(`Invalid type for abc. "true" is not a number`)
     );
   });
 
   it('rejects invalid types from file', () => {
-    // FS mocks have been setup in ./test/_setup.ts
-    const { parseSync } = createParser(defaultValues, {
-      filePathArg: { longFlag: 'file' },
+    mockFs.readFileSync.mockImplementationOnce((path) => {
+      if (path === 'nested.json') {
+        return JSON.stringify({
+          str: {
+            nested: true,
+          },
+        });
+      }
+      throw new Error();
     });
+
     expect(() => {
-      parseSync(['--file', 'nested.json']);
-    }).toThrow(
-      'Invalid type for --stringProp. "[object Object]" is not a string'
-    );
+      new Parser()
+        .withArgvInput(M({ file: 'nested.json' }))
+        .withFileInput('file')
+        .validate(M({ str: { type: STR } }));
+    }).toThrow('Invalid type for str. "[object Object]" is not a string');
   });
 
-  it('rejects for missing required args 1', () => {
-    const { parseSync } = createParser(defaultValues, {
-      options: {
-        stringProp: {
-          required: true,
-        },
-      },
-    });
+  it('rejects for missing required args', () => {
     expect(() => {
-      parseSync([]);
-    }).toThrow(new ValidationError('Missing required flag --stringProp'));
-  });
-
-  it('rejects for missing required args 2', () => {
-    const { parseSync } = createParser(defaultValues, {
-      options: {
-        stringProp: {
-          longFlag: 'my-string-prop',
-          required: true,
-        },
-      },
-    });
-    expect(() => {
-      parseSync([]);
-    }).toThrow(new ValidationError('Missing required flag --my-string-prop'));
+      new Parser().validate(M({ '-x': { type: BOOL, isRequired: true } }));
+    }).toThrow(new ValidationError('Missing required argument -x'));
   });
 
   it('custom validation, returns', () => {
-    const { parseSync } = createParser(defaultValues, {
-      options: {
-        stringProp: {
-          required: true,
-          longFlag: 'my-string-prop',
-          customValidator: {
-            isValid(v): v is Value {
-              return typeof v === 'string' && v === 'hello';
-            },
-            errorMessage: () => `whaaaat`,
-          },
-        },
-      },
-    });
     expect(() => {
-      parseSync(['--my-string-prop', 'hello']);
+      new Parser().withArgvInput(M({ x: 1 })).validate(
+        M({
+          x: {
+            type: STR,
+            validator: {
+              isValid(v: unknown): v is Value {
+                return typeof v === NUM && v === 1;
+              },
+              errorMessage: () => 'whaaaat',
+            },
+          },
+        })
+      );
     }).not.toThrow();
   });
 
   it('custom validation, throws', () => {
-    const { parseSync } = createParser(defaultValues, {
-      options: {
-        stringProp: {
-          required: true,
-          longFlag: 'my-string-prop',
-          customValidator: {
-            isValid(v): v is Value {
-              return typeof v === 'string' && v === 'hello';
-            },
-            errorMessage: (v, f) => `did get "${v}" for ${f}, expected hello`,
-          },
-        },
-      },
-    });
     expect(() => {
-      parseSync(['--my-string-prop', 'goodbye']);
-    }).toThrow(
-      new ValidationError(
-        'did get "goodbye" for --my-string-prop, expected hello'
-      )
-    );
+      new Parser().withArgvInput(M({ x: 'goodbye' })).validate(
+        M({
+          x: {
+            type: STR,
+            validator: {
+              isValid(v: unknown): v is Value {
+                return typeof v === STR && v === 'hello';
+              },
+              errorMessage: (v: unknown, f: string) =>
+                `did get "${v}" for ${f}, expected hello`,
+            },
+          },
+        })
+      );
+    }).toThrow(new ValidationError('did get "goodbye" for x, expected hello'));
   });
 });
 
@@ -177,69 +156,64 @@ describe('Parsing, numeric conversions', () => {
 
 describe('Parsing, file reading', () => {
   mockFs.readFileSync.mockImplementation((path) => {
-    if (path === 'test/long.json') {
+    if (path === 'test.json') {
       return JSON.stringify({
-        from: 'long-flag',
-      });
-    }
-    if (path === 'test/short.json') {
-      return JSON.stringify({
-        from: 'short-flag',
-      });
-    }
-
-    if (path === 'nested.json') {
-      return JSON.stringify({
-        stringProp: {
-          invalid: 'I am nested',
-        },
+        str: 'hello from a file',
       });
     }
     throw new Error();
   });
 
-  it('identity when no flags are given', () => {
-    const input = new Map([['--file', 'test/long.json']]);
-    const content = new Parser().appendFromFile(input);
-    expect(content).toStrictEqual(input);
+  it('identity for missing and invalid flags are given', () => {
+    expect(
+      new Parser()
+        .withArgvInput(M({ file: '' }))
+        .withFileInput()
+        .collect()
+    ).toStrictEqual({});
+    expect(
+      new Parser()
+        .withArgvInput(M({ file: '' }))
+        .withFileInput('no-file')
+        .collect()
+    ).toStrictEqual({});
   });
-  it('identity when invalid flags are given', () => {
-    const input = new Map([['--file', 'test/long.json']]);
-    const content = new Parser().appendFromFile(input, 'long');
-    expect(content).toStrictEqual(input);
+  it('reads file path from flag and collects', () => {
+    expect(
+      new Parser()
+        .withArgvInput(M({ file: 'test.json' }))
+        .withFileInput('file')
+        .validate(M({ str: { type: STR } }))
+        .collect()
+    ).toStrictEqual({
+      str: 'hello from a file',
+    });
   });
-  it('from valid flag (first)', () => {
-    const content = new Parser().appendFromFile(
-      new Map([['--file', 'test/long.json']]),
-      '--file',
-      '-f'
-    );
-    expect(content).toMatchInlineSnapshot(`
-      Map {
-        "--from" => "long-flag",
-      }
-    `);
+  it('does not overwrite user input', () => {
+    expect(
+      new Parser()
+        .withArgvInput(M({ file: 'test.json' }))
+        .withFileInput('file')
+        .validate(M({ str: { type: STR } }))
+        .collect()
+    ).toStrictEqual({
+      str: 'hello from a file',
+    });
+    expect(
+      new Parser()
+        .withArgvInput(M({ file: 'test.json', str: 'hello from the cli' }))
+        .withFileInput('file')
+        .validate(M({ str: { type: STR } }))
+        .collect()
+    ).toStrictEqual({
+      str: 'hello from the cli',
+    });
   });
-  it('from valid flag (second)', () => {
-    const content = new Parser().appendFromFile(
-      new Map([['-f', 'test/short.json']]),
-      '--file',
-      '-f'
-    );
-    expect(content).toMatchInlineSnapshot(`
-      Map {
-        "--from" => "short-flag",
-      }
-    `);
-  });
-
   it('throws for invalid files', () => {
     expect(() => {
-      new Parser().appendFromFile(
-        new Map([['-f', 'test/doesnotexist.json']]),
-        '--file',
-        '-f'
-      );
-    }).toThrow('test/doesnotexist.json is not a valid JSON file');
+      new Parser()
+        .withArgvInput(M({ file: 'doesnotexist.json' }))
+        .withFileInput('file');
+    }).toThrow('doesnotexist.json is not a valid JSON file');
   });
 });
