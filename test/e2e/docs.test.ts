@@ -3,6 +3,14 @@ import { createParser, ValidationError } from '../../src';
 import { mockFs } from '../_setup';
 
 describe('Docs', () => {
+  test('cli arguments, keeps defaults', async () => {
+    const { parse } = createParser({ hello: 'world' });
+    let parsed = await parse();
+    expect(parsed).toStrictEqual({ _: [], hello: 'world' });
+
+    parsed = await parse(['--hello', 'john']);
+    expect(parsed).toStrictEqual({ _: [], hello: 'john' });
+  });
   test('cli arguments, internal validation', () => {
     expect(() => {
       createParser(
@@ -18,24 +26,15 @@ describe('Docs', () => {
     const parsed = await parse(['hello-world']);
     expect(parsed).toStrictEqual({ _: ['hello-world'] });
   });
-  test('cli arguments, keeps defaults', async () => {
-    // TODO docs
-    const { parse } = createParser({ a: 'hello', b: 'world' });
-    const parsed = await parse(['--a', 'hello']);
-    expect(parsed).toStrictEqual({ _: [], a: 'hello', b: 'world' });
-  });
+
   test('cli arguments, boolean flags 1', async () => {
-    const { parse } = createParser({
-      verbose: false,
-    });
+    const { parse } = createParser({ verbose: false });
     const parsed = await parse(['--verbose']);
     expect(parsed.verbose).toBe(true);
     expect(parsed).toStrictEqual({ verbose: true, _: [] });
   });
   test('cli arguments, boolean flags 2', async () => {
-    const { parse } = createParser({
-      verbose: true,
-    });
+    const { parse } = createParser({ verbose: true });
     const parsed = await parse(['--verbose']);
     expect(parsed.verbose).toBe(true);
   });

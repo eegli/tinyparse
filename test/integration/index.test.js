@@ -33,12 +33,12 @@ test('quickstart example', async () => {
 
 test('quickstart advanced example', async () => {
   const defaultValues = {
-    unchanged: 'unchanged',
     name: '',
     hasGithubProfile: false,
     hasGithubPlus: true,
     followerCount: 0,
     birthYear: '',
+    unchanged: 'unchanged',
   };
   const { parse } = createParser(defaultValues, {
     options: {
@@ -66,11 +66,11 @@ test('quickstart advanced example', async () => {
 
   assert.deepStrictEqual(parsed, {
     _: ['congratulate'],
-    unchanged: 'unchanged',
     name: '"John Smith"',
     hasGithubPlus: true,
     hasGithubProfile: true,
     followerCount: 10,
     birthYear: '2018',
+    unchanged: 'unchanged',
   });
 });

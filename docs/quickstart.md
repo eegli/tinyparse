@@ -68,6 +68,7 @@ const defaultValues = {
   hasGithubPlus: true,
   followerCount: 0,
   birthYear: '',
+  unchanged: 'unchanged',
 };
 const { parse } = createParser(defaultValues, {
   options: {
@@ -100,5 +101,6 @@ assert.deepStrictEqual(parsed, {
   hasGithubProfile: true,
   followerCount: 10,
   birthYear: '2018',
+  unchanged: 'unchanged',
 });
 ```

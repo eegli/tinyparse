@@ -1,14 +1,20 @@
-import { FlagOption, FlagOptions } from './types';
-import Utils from './utils';
+import { FlagOption } from './types';
 
 export class HelpPrinter {
   private _options: FlagOption[];
   private _filePathFlags: string[] = [];
   private _filePathFlagDescription?: string;
 
-  constructor(options: FlagOptions) {
+  constructor(options: Map<string, FlagOption>) {
     // Required properties first, then alphabetical
-    this._options = Utils.sort([...options.values()], 'isRequired', 'longFlag');
+    this._options = [...options.values()].sort((a, b) => {
+      if (!!a['isRequired'] < !!b['isRequired']) return 1;
+      if (!!a['isRequired'] > !!b['isRequired']) return -1;
+      if (a['longFlag'] < b['longFlag']) return -1;
+      if (a['longFlag'] > b['longFlag']) return 1;
+      // This never happens since long flags are unique
+      return 0;
+    });
   }
 
   public withFilePathFlags(...filePathFlags: string[]) {

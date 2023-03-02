@@ -1,11 +1,6 @@
+import { Collector } from './collector';
 import { ValidationError } from './error';
-import {
-  AliasMap,
-  FlagOptions,
-  PrimitiveRecord,
-  Value,
-  WithPositionalArgs,
-} from './types';
+import { BaseFlagOption, PrimitiveRecord, Value } from './types';
 import Utils from './utils';
 
 type InputState = Map<
@@ -17,27 +12,14 @@ type InputState = Map<
   }
 >;
 
-class Collector<T extends PrimitiveRecord> {
-  constructor(private readonly defaults: T) {}
-  public collectWithPositionals(positionals: string[]): WithPositionalArgs<T> {
-    return {
-      ...this.collect(),
-      _: positionals,
-    };
-  }
-
-  public collect(): T {
-    return this.defaults;
-  }
-}
-
 export class Parser<T extends PrimitiveRecord> {
   private _argvInput: InputState = new Map();
   private _fileInput: InputState = new Map();
 
-  constructor(private readonly _options: FlagOptions = new Map()) {}
+  constructor(private readonly _options: Map<string, BaseFlagOption>) {}
 
-  // Try to convert a string to a number. If the result is NaN, return identity
+  // Try to convert a string to a number. If the result is NaN, return
+  // identity
   public tryConvertToNumber(value: unknown): unknown {
     if (typeof value !== 'string') return value;
     const num = +value;
@@ -46,7 +28,7 @@ export class Parser<T extends PrimitiveRecord> {
 
   public withArgvInput(
     input: Map<string, unknown>,
-    aliases: AliasMap = new Map()
+    aliases: Map<string, string> = new Map()
   ): this {
     // New state on new input
     this._argvInput.clear();
@@ -138,6 +120,6 @@ export class Parser<T extends PrimitiveRecord> {
       }
     }
 
-    return new Collector(Object.fromEntries(output) as T);
+    return new Collector<T>(Object.fromEntries(output) as T);
   }
 }
