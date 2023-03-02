@@ -95,7 +95,8 @@ export class Parser<T extends PrimitiveRecord> {
         continue;
       }
 
-      const { type: expectedType, validator } = keyOptions;
+      const customValidator = keyOptions?.validator;
+      const expectedType = keyOptions.type;
 
       // Iif the expected type is a number and not NaN, try to convert
       // the value
@@ -103,12 +104,12 @@ export class Parser<T extends PrimitiveRecord> {
         entry.value = this.tryConvertToNumber(entry.value);
       }
 
-      if (validator) {
-        if (validator.isValid(entry.value)) {
+      if (customValidator) {
+        if (customValidator.isValid(entry.value)) {
           this._output.set(key, entry.value);
         } else {
           throw new ValidationError(
-            validator.errorMessage(entry.value, entry.receivedAs)
+            customValidator.errorMessage(entry.value, entry.receivedAs)
           );
         }
       } else {

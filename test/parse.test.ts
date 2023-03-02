@@ -192,6 +192,15 @@ describe('Parsing, file reading', () => {
   it('does not overwrite user input', () => {
     expect(
       new Parser()
+        .withArgvInput(M({ file: 'test.json' }))
+        .withFileInput('file')
+        .validate(M({ str: { type: STR } }))
+        .collect()
+    ).toStrictEqual({
+      str: 'hello from a file',
+    });
+    expect(
+      new Parser()
         .withArgvInput(M({ file: 'test.json', str: 'hello from the cli' }))
         .withFileInput('file')
         .validate(M({ str: { type: STR } }))
