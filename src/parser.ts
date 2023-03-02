@@ -35,7 +35,7 @@ export class Parser<T extends PrimitiveRecord> {
     aliases: AliasMap = new Map()
   ): this {
     // New state on new input
-    this._argvInput = new Map();
+    this._argvInput.clear();
 
     for (const [key, value] of input) {
       const maybeAlias = aliases.get(key);
@@ -50,7 +50,7 @@ export class Parser<T extends PrimitiveRecord> {
   // Append file content to the input
   // File contents may be overridden by user input
   public withFileInput(...flags: string[]): this {
-    this._fileInput = new Map();
+    this._fileInput.clear();
 
     if (flags.length === 0) return this;
 
@@ -79,7 +79,7 @@ export class Parser<T extends PrimitiveRecord> {
   }
 
   public validate(options: FlagOptions): this {
-    this._output = new Map();
+    this._output.clear();
 
     // Go through all expected keys and try to find them in the input
     for (const option of options) {
