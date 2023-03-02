@@ -24,17 +24,17 @@ export function createParser<T extends PrimitiveRecord>(
   params?: ParserOptions<T>
 ) {
   const options = new Options(defaultValues, params);
-
+  const parser = new Parser<T>(options.flagOptions);
   const helpPrinter = new HelpPrinter(options.flagOptions)
     .withFilePathFlags(...options.filePathFlags)
     .withFilePathDescription(options.filePathFlagDesc);
 
   function parseSync(input: string[] = []): WithPositionalArgs<T> {
     const [transformed, positionals] = ArgvTransformer.transform(input);
-    return new Parser<T>()
+    return parser
       .withArgvInput(transformed, options.aliases)
       .withFileInput(...options.filePathFlags)
-      .validate(options.flagOptions)
+      .parse()
       .collectWithPositionals(positionals);
   }
 

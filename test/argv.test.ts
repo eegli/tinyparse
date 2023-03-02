@@ -1,7 +1,7 @@
 import { ArgvTransformer } from '../src/argv';
 
 describe('Argv transformer', () => {
-  it('parses empty', () => {
+  test('parses empty', () => {
     expect(ArgvTransformer.transform([])).toStrictEqual([new Map(), []]);
   });
 
@@ -38,7 +38,7 @@ describe('Argv transformer', () => {
     ],
   ];
   orders.forEach((argv, idx) => {
-    it('works with order ' + idx, () => {
+    test('works with order ' + idx, () => {
       const [transformed, positionals] = ArgvTransformer.transform(argv);
 
       expect(Object.fromEntries(transformed)).toStrictEqual({
@@ -50,7 +50,7 @@ describe('Argv transformer', () => {
       expect(positionals).toStrictEqual([]);
     });
   });
-  it('ignores invalid flags', () => {
+  test('ignores invalid flags', () => {
     const [transformed, positionals] = ArgvTransformer.transform([
       'positional_1',
       'positional_2',

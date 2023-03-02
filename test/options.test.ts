@@ -20,13 +20,13 @@ describe('Options', () => {
     );
     expect(Object.fromEntries(options.flagOptions)).toEqual({
       a: {
-        type: 'string',
+        value: '',
         isRequired: true,
         longFlag: '--a',
         description: 'void',
       },
       b: {
-        type: 'number',
+        value: 0,
         isRequired: false,
         longFlag: '--UpAndLoWeRCaSe',
         shortFlag: '-b',

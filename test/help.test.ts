@@ -1,7 +1,7 @@
 import { createParser } from '../src';
 
 describe('Helper text', () => {
-  it('creates helper text with descriptions', () => {
+  test('creates helper text with descriptions', () => {
     const defaultValues = {
       UserId: '',
       color: '',
@@ -57,7 +57,7 @@ describe('Helper text', () => {
       "
     `);
   });
-  it('with decamelization and custom long flag', () => {
+  test('with decamelization and custom long flag', () => {
     const defaultValues = {
       UserId: '',
       someColor: '',
@@ -82,7 +82,7 @@ describe('Helper text', () => {
          --with-auth [boolean]"
     `);
   });
-  it('file flag helper text only', () => {
+  test('file flag helper text only', () => {
     expect(createParser({}, { filePathArg: { longFlag: '--config' } }).help())
       .toMatchInlineSnapshot(`
       "Usage
@@ -102,7 +102,7 @@ describe('Helper text', () => {
       "
     `);
   });
-  it('creates helper text with no descriptions', () => {
+  test('creates helper text with no descriptions', () => {
     const defaultValues = {
       id: '',
       withAuth: false,

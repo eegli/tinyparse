@@ -1,7 +1,7 @@
 import { createParser, ValidationError } from '../src/index';
 
 describe('Lib', () => {
-  it('exports are defined', () => {
+  test('exports are defined', () => {
     expect(createParser({})).toMatchInlineSnapshot(`
       {
         "help": [Function],
@@ -11,7 +11,7 @@ describe('Lib', () => {
     `);
     expect(ValidationError).toBeTruthy();
   });
-  it('sync and async parsing are equal', async () => {
+  test('sync and async parsing are equal', async () => {
     const { parseSync, parse } = createParser({
       x: '',
     });

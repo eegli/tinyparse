@@ -1,34 +1,20 @@
-type RequiredKeys<T> = {
-  [K in keyof T]-?: object extends Pick<T, K> ? never : K;
-}[keyof T];
-
-export type OnlyRequiredKeys<T> = Pick<T, RequiredKeys<T>>;
-
-export type KeysMatching<T, V> = {
-  [K in keyof T]-?: T[K] extends V ? K : never;
-}[keyof T];
-
-export type AliasMap = Map<string, string>;
-
-export type FlagOptions = Map<string, FlagOption>;
-
 type CustomValidator = {
   isValid: (value: unknown) => value is Value;
   errorMessage: (value: unknown, flag: string) => string;
 };
 
-export enum FlagType {
-  LONG,
-  SHORT,
+// The parser requires a subset of options to work
+export interface BaseFlagOption {
+  isRequired?: boolean;
+  validator?: CustomValidator;
+  value: Value;
 }
 
-export interface FlagOption {
+// All options for a flag
+export interface FlagOption extends BaseFlagOption {
   longFlag: string;
   shortFlag?: string;
-  isRequired: boolean;
   description?: string;
-  validator?: CustomValidator;
-  type: string;
 }
 
 export type FilePathArg = {

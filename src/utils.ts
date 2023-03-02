@@ -1,6 +1,6 @@
 import { ValidationError } from './error';
 import _decamelize from './lib/decamelize';
-import { KeysMatching, OnlyRequiredKeys, Value } from './types';
+import { Value } from './types';
 
 type ReadFileSync = typeof import('fs').readFileSync;
 
@@ -50,19 +50,5 @@ export default class Utils {
 
   public static makeShortFlag(flag: string): string {
     return `-${this.trimFlag(flag)}`;
-  }
-
-  public static sort<T>(
-    array: T[],
-    first: KeysMatching<OnlyRequiredKeys<T>, boolean>,
-    second: KeysMatching<OnlyRequiredKeys<T>, string>
-  ) {
-    return array.sort((a, b) => {
-      if (a[first] < b[first]) return 1;
-      if (a[first] > b[first]) return -1;
-      if (a[second] < b[second]) return -1;
-      if (a[second] > b[second]) return 1;
-      return 0;
-    });
   }
 }

@@ -27,6 +27,21 @@ All arguments until the first flag are considered _command arguments_, that is, 
 
 Remember that it's never a good idea to read secrets directly from flags. [Read them from a file instead](https://clig.dev/#arguments-and-flags).
 
+### Providing Defaults
+
+By default, the parser will try to find a matching key (or flag) in the input. If it can't find one, it will fall back to the default values it was initially provided with. An error for missing input is only thrown if the property is set as [`required`](reference/required-arguments.md)
+
+<!-- doctest: cli arguments, keeps defaults -->
+
+```ts
+const { parse } = createParser({ hello: 'world' });
+let parsed = await parse();
+expect(parsed).toStrictEqual({ _: [], hello: 'world' });
+
+parsed = await parse(['--hello', 'john']);
+expect(parsed).toStrictEqual({ _: [], hello: 'john' });
+```
+
 ### Internal Validation
 
 Tinyparse guarantees that it will only work with a valid configration. In very special cases, it may happen that conflicting options are specified. If that is the case, bootstrapping a parser will fail. It is therefore recommended to test the creation of a parser on your end.
@@ -67,9 +82,7 @@ Tinyparse is opinionated about default values. It assumes that any boolean optio
 <!-- doctest: boolean flags 1 -->
 
 ```ts
-const { parse } = createParser({
-  verbose: false,
-});
+const { parse } = createParser({ verbose: false });
 const parsed = await parse(['--verbose']);
 expect(parsed.verbose).toBe(true);
 ```
@@ -79,9 +92,7 @@ Here, nothing changes:
 <!-- doctest: boolean flags 2 -->
 
 ```ts
-const { parse } = createParser({
-  verbose: true,
-});
+const { parse } = createParser({ verbose: true });
 const parsed = await parse(['--verbose']);
 expect(parsed.verbose).toBe(true);
 ```

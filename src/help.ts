@@ -1,14 +1,20 @@
-import { FlagOption, FlagOptions } from './types';
-import Utils from './utils';
+import { FlagOption } from './types';
 
 export class HelpPrinter {
   private _options: FlagOption[];
   private _filePathFlags: string[] = [];
   private _filePathFlagDescription?: string;
 
-  constructor(options: FlagOptions) {
+  constructor(options: Map<string, FlagOption>) {
     // Required properties first, then alphabetical
-    this._options = Utils.sort([...options.values()], 'isRequired', 'longFlag');
+    this._options = [...options.values()].sort((a, b) => {
+      if (!!a['isRequired'] < !!b['isRequired']) return 1;
+      if (!!a['isRequired'] > !!b['isRequired']) return -1;
+      if (a['longFlag'] < b['longFlag']) return -1;
+      if (a['longFlag'] > b['longFlag']) return 1;
+      // This never happens since long flags are unique
+      return 0;
+    });
   }
 
   public withFilePathFlags(...filePathFlags: string[]) {
@@ -36,7 +42,7 @@ export class HelpPrinter {
     const indent = '   ';
 
     for (let idx = 0; idx < this._options.length; idx++) {
-      const { description, isRequired, shortFlag, longFlag, type } =
+      const { description, isRequired, shortFlag, longFlag, value } =
         this._options[idx];
       const isLast = idx === this._options.length - 1;
 
@@ -48,7 +54,7 @@ export class HelpPrinter {
       str += indent;
       if (shortFlag) str += `${shortFlag}, `;
       str += `${longFlag}`;
-      str += ` [${type}]`;
+      str += ` [${typeof value}]`;
       if (description) str += `\n${indent}${description}`;
       if (!isLast) str += '\n\n';
     }

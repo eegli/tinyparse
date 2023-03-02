@@ -1,78 +1,63 @@
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
-import { Value } from '../src/types';
+import { BaseFlagOption, Value } from '../src/types';
 import { mockFs } from './_setup';
 
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
-const M = (args: object) => new Map(Object.entries(args));
-const NUM = typeof 0;
-const STR = typeof '';
-const BOOL = typeof true;
+const cfg = (opts: Record<string, BaseFlagOption> = {}) =>
+  new Map(Object.entries(opts));
+const argv = (args: Record<string, Value>) => new Map(Object.entries(args));
+const alias = (args: Record<string, string>) => new Map(Object.entries(args));
+
+const numVal = 1;
+const strVal = 'str';
+const boolVal = true;
 
 describe('Parsing, with options', () => {
-  it('resolves if all required args are present', () => {
-    const result = new Parser()
-      .withArgvInput(M({ str: 'hello' }))
-      .validate(M({ str: { type: STR, isRequired: true } }))
-      .collect();
-    expect(result).toStrictEqual({
-      str: 'hello',
-    });
-  });
-
-  it('parses strings to integers iif types match', () => {
-    const result = new Parser()
-      .withArgvInput(M({ num: 1, str: '1' }))
-      .validate(M({ str: { type: STR }, num: { type: NUM } }))
+  test('converts strings and resolves aliases', () => {
+    const result = new Parser(
+      cfg({
+        str: { value: strVal },
+        num: { value: numVal },
+        default: { value: 'unchanged' },
+      })
+    )
+      .withArgvInput(argv({ '--num': 1, str: '1' }), alias({ '--num': 'num' }))
+      .parse()
       .collect();
     expect(result).toStrictEqual({
       str: '1',
       num: 1,
+      default: 'unchanged',
     });
   });
 
-  it('resolves aliases', () => {
-    const result = new Parser()
-      .withArgvInput(M({ '--num': 1 }), M({ '--num': 'num' }))
-      .validate(M({ num: { type: NUM } }))
-      .collect();
-    expect(result).toStrictEqual({
-      num: 1,
-    });
-  });
-
-  it('rejects invalid types 1', () => {
+  test('rejects invalid types', () => {
     expect(() => {
-      new Parser()
-        .withArgvInput(M({ x: 1 }))
-        .validate(M({ x: { type: BOOL } }));
+      new Parser(cfg({ x: { value: boolVal } }))
+        .withArgvInput(argv({ x: 1 }))
+        .parse();
     }).toThrow(new ValidationError(`Invalid type for x. "1" is not a boolean`));
-  });
-
-  it('rejects invalid types 2', () => {
     expect(() => {
-      new Parser()
-        .withArgvInput(M({ xyz: 'twelve' }))
-        .validate(M({ xyz: { type: NUM } }));
+      new Parser(cfg({ xyz: { value: numVal } }))
+        .withArgvInput(argv({ xyz: 'twelve' }))
+        .parse();
     }).toThrow(
       new ValidationError(`Invalid type for xyz. "twelve" is not a number`)
     );
-  });
-
-  it('rejects invalid types 3', () => {
     expect(() => {
-      new Parser()
-        .withArgvInput(M({ abc: true }))
-        .validate(M({ abc: { type: NUM } }));
+      new Parser(cfg({ abc: { value: numVal } }))
+        .withArgvInput(argv({ abc: true }))
+        .parse();
     }).toThrow(
       new ValidationError(`Invalid type for abc. "true" is not a number`)
     );
   });
 
-  it('rejects invalid types from file', () => {
+  test('rejects invalid types from file', () => {
     mockFs.readFileSync.mockImplementationOnce((path) => {
       if (path === 'nested.json') {
         return JSON.stringify({
@@ -85,59 +70,60 @@ describe('Parsing, with options', () => {
     });
 
     expect(() => {
-      new Parser()
-        .withArgvInput(M({ file: 'nested.json' }))
+      new Parser(cfg({ str: { value: strVal } }))
+        .withArgvInput(argv({ file: 'nested.json' }))
         .withFileInput('file')
-        .validate(M({ str: { type: STR } }));
+        .parse();
     }).toThrow('Invalid type for str. "[object Object]" is not a string');
   });
 
-  it('rejects for missing required args', () => {
+  test('rejects for missing required args', () => {
     expect(() => {
-      new Parser().validate(M({ '-x': { type: BOOL, isRequired: true } }));
+      new Parser(cfg({ '-x': { value: boolVal, isRequired: true } })).parse();
     }).toThrow(new ValidationError('Missing required argument -x'));
   });
 
-  it('custom validation, returns', () => {
+  test('custom validation', () => {
     expect(() => {
-      new Parser().withArgvInput(M({ x: 1 })).validate(
-        M({
+      new Parser(
+        cfg({
           x: {
-            type: STR,
+            value: strVal,
             validator: {
-              isValid(v: unknown): v is Value {
-                return typeof v === NUM && v === 1;
+              isValid(v): v is Value {
+                // Terrible idea in practice but works for making sure custom validation bypasses default validation
+                return typeof v === 'number';
               },
               errorMessage: () => 'whaaaat',
             },
           },
         })
-      );
+      )
+        .withArgvInput(argv({ x: 1 }))
+        .parse();
     }).not.toThrow();
-  });
-
-  it('custom validation, throws', () => {
     expect(() => {
-      new Parser().withArgvInput(M({ x: 'goodbye' })).validate(
-        M({
+      new Parser(
+        cfg({
           x: {
-            type: STR,
+            value: strVal,
             validator: {
-              isValid(v: unknown): v is Value {
-                return typeof v === STR && v === 'hello';
+              isValid(v): v is Value {
+                return typeof v === typeof strVal && v === 'hello';
               },
-              errorMessage: (v: unknown, f: string) =>
-                `did get "${v}" for ${f}, expected hello`,
+              errorMessage: (v, f) => `did get "${v}" for ${f}, expected hello`,
             },
           },
         })
-      );
+      )
+        .withArgvInput(argv({ x: 'goodbye' }))
+        .parse();
     }).toThrow(new ValidationError('did get "goodbye" for x, expected hello'));
   });
 });
 
 describe('Parsing, numeric conversions', () => {
-  const parser = new Parser();
+  const parser = new Parser(cfg({}));
   const inputs = [
     ['1', 1],
     [true, true],
@@ -148,7 +134,7 @@ describe('Parsing, numeric conversions', () => {
     [undefined, undefined],
   ];
   inputs.forEach(([input, output], idx) => {
-    it('test case ' + (idx + 1), () => {
+    test('test case ' + (idx + 1), () => {
       expect(parser.tryConvertToNumber(input)).toStrictEqual(output);
     });
   });
@@ -164,55 +150,48 @@ describe('Parsing, file reading', () => {
     throw new Error();
   });
 
-  it('identity for missing and invalid flags are given', () => {
+  test('reads file path from flag and collects', () => {
     expect(
-      new Parser()
-        .withArgvInput(M({ file: '' }))
-        .withFileInput()
-        .collect()
-    ).toStrictEqual({});
-    expect(
-      new Parser()
-        .withArgvInput(M({ file: '' }))
+      new Parser(cfg())
+        .withArgvInput(argv({ file: '' }))
         .withFileInput('no-file')
+        .parse()
         .collect()
     ).toStrictEqual({});
-  });
-  it('reads file path from flag and collects', () => {
     expect(
-      new Parser()
-        .withArgvInput(M({ file: 'test.json' }))
+      new Parser(cfg({ str: { value: strVal } }))
+        .withArgvInput(argv({ file: 'test.json' }))
         .withFileInput('file')
-        .validate(M({ str: { type: STR } }))
+        .parse()
         .collect()
     ).toStrictEqual({
       str: 'hello from a file',
     });
   });
-  it('does not overwrite user input', () => {
+  test('does not overwrite user input', () => {
     expect(
-      new Parser()
-        .withArgvInput(M({ file: 'test.json' }))
+      new Parser(cfg({ str: { value: strVal } }))
+        .withArgvInput(argv({ file: 'test.json' }))
         .withFileInput('file')
-        .validate(M({ str: { type: STR } }))
+        .parse()
         .collect()
     ).toStrictEqual({
       str: 'hello from a file',
     });
     expect(
-      new Parser()
-        .withArgvInput(M({ file: 'test.json', str: 'hello from the cli' }))
+      new Parser(cfg({ str: { value: strVal } }))
+        .withArgvInput(argv({ file: 'test.json', str: 'hello from the cli' }))
         .withFileInput('file')
-        .validate(M({ str: { type: STR } }))
+        .parse()
         .collect()
     ).toStrictEqual({
       str: 'hello from the cli',
     });
   });
-  it('throws for invalid files', () => {
+  test('throws for invalid files', () => {
     expect(() => {
-      new Parser()
-        .withArgvInput(M({ file: 'doesnotexist.json' }))
+      new Parser(cfg())
+        .withArgvInput(argv({ file: 'doesnotexist.json' }))
         .withFileInput('file');
     }).toThrow('doesnotexist.json is not a valid JSON file');
   });

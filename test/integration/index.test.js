@@ -38,6 +38,7 @@ test('quickstart advanced example', async () => {
     hasGithubPlus: true,
     followerCount: 0,
     birthYear: '',
+    unchanged: 'unchanged',
   };
   const { parse } = createParser(defaultValues, {
     options: {
@@ -70,5 +71,6 @@ test('quickstart advanced example', async () => {
     hasGithubProfile: true,
     followerCount: 10,
     birthYear: '2018',
+    unchanged: 'unchanged',
   });
 });
