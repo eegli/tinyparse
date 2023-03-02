@@ -33,6 +33,7 @@ test('quickstart example', async () => {
 
 test('quickstart advanced example', async () => {
   const defaultValues = {
+    unchanged: 'unchanged',
     name: '',
     hasGithubProfile: false,
     hasGithubPlus: true,
@@ -65,6 +66,7 @@ test('quickstart advanced example', async () => {
 
   assert.deepStrictEqual(parsed, {
     _: ['congratulate'],
+    unchanged: 'unchanged',
     name: '"John Smith"',
     hasGithubPlus: true,
     hasGithubProfile: true,

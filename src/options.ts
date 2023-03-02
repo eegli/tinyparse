@@ -49,7 +49,7 @@ export class Options {
         isRequired,
         validator: userOptions.customValidator,
         description: userOptions.description,
-        type: typeof value,
+        value,
       });
     }
   }

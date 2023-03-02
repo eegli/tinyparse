@@ -36,7 +36,7 @@ export class HelpPrinter {
     const indent = '   ';
 
     for (let idx = 0; idx < this._options.length; idx++) {
-      const { description, isRequired, shortFlag, longFlag, type } =
+      const { description, isRequired, shortFlag, longFlag, value } =
         this._options[idx];
       const isLast = idx === this._options.length - 1;
 
@@ -48,7 +48,7 @@ export class HelpPrinter {
       str += indent;
       if (shortFlag) str += `${shortFlag}, `;
       str += `${longFlag}`;
-      str += ` [${type}]`;
+      str += ` [${typeof value}]`;
       if (description) str += `\n${indent}${description}`;
       if (!isLast) str += '\n\n';
     }

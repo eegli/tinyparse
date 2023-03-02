@@ -17,11 +17,25 @@ type InputState = Map<
   }
 >;
 
+class Collector<T extends PrimitiveRecord> {
+  constructor(private readonly defaults: T) {}
+  public collectWithPositionals(positionals: string[]): WithPositionalArgs<T> {
+    return {
+      ...this.collect(),
+      _: positionals,
+    };
+  }
+
+  public collect(): T {
+    return this.defaults;
+  }
+}
+
 export class Parser<T extends PrimitiveRecord> {
   private _argvInput: InputState = new Map();
   private _fileInput: InputState = new Map();
 
-  private _output: Map<string, Value> = new Map();
+  constructor(private readonly _options: FlagOptions = new Map()) {}
 
   // Try to convert a string to a number. If the result is NaN, return identity
   public tryConvertToNumber(value: unknown): unknown {
@@ -76,11 +90,11 @@ export class Parser<T extends PrimitiveRecord> {
     return this;
   }
 
-  public validate(options: FlagOptions): this {
-    this._output.clear();
+  public parse(): Collector<T> {
+    const output: Map<string, Value> = new Map();
 
     // Go through all expected keys and try to find them in the input
-    for (const option of options) {
+    for (const option of this._options) {
       const [key, keyOptions] = option;
 
       // Input from argv takes precedence over input from a file
@@ -90,11 +104,13 @@ export class Parser<T extends PrimitiveRecord> {
         if (keyOptions?.isRequired) {
           throw new ValidationError(`Missing required argument ${key}`);
         }
+        // Set default
+        output.set(key, keyOptions.value);
         continue;
       }
 
       const customValidator = keyOptions?.validator;
-      const expectedType = keyOptions.type;
+      const expectedType = typeof keyOptions.value;
 
       // Iif the expected type is a number and not NaN, try to convert
       // the value
@@ -104,7 +120,7 @@ export class Parser<T extends PrimitiveRecord> {
 
       if (customValidator) {
         if (customValidator.isValid(entry.value)) {
-          this._output.set(key, entry.value);
+          output.set(key, entry.value);
         } else {
           throw new ValidationError(
             customValidator.errorMessage(entry.value, entry.receivedAs)
@@ -113,7 +129,7 @@ export class Parser<T extends PrimitiveRecord> {
       } else {
         const receivedType = typeof entry.value;
         if (Utils.isValueType(entry.value) && receivedType === expectedType) {
-          this._output.set(key, entry.value);
+          output.set(key, entry.value);
         } else {
           throw new ValidationError(
             `Invalid type for ${entry.receivedAs}. "${entry.value}" is not a ${expectedType}`
@@ -122,17 +138,6 @@ export class Parser<T extends PrimitiveRecord> {
       }
     }
 
-    return this;
-  }
-
-  public collectWithPositionals(positionals: string[]): WithPositionalArgs<T> {
-    return {
-      ...this.collect(),
-      _: positionals,
-    };
-  }
-
-  public collect(): T {
-    return Object.fromEntries(this._output) as T;
+    return new Collector(Object.fromEntries(output) as T);
   }
 }

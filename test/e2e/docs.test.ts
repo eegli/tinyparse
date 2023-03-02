@@ -18,7 +18,12 @@ describe('Docs', () => {
     const parsed = await parse(['hello-world']);
     expect(parsed).toStrictEqual({ _: ['hello-world'] });
   });
-
+  test('cli arguments, keeps defaults', async () => {
+    // TODO docs
+    const { parse } = createParser({ a: 'hello', b: 'world' });
+    const parsed = await parse(['--a', 'hello']);
+    expect(parsed).toStrictEqual({ _: [], a: 'hello', b: 'world' });
+  });
   test('cli arguments, boolean flags 1', async () => {
     const { parse } = createParser({
       verbose: false,

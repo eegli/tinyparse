@@ -28,7 +28,7 @@ export interface FlagOption {
   isRequired: boolean;
   description?: string;
   validator?: CustomValidator;
-  type: string;
+  value: Value;
 }
 
 export type FilePathArg = {
