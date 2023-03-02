@@ -33,7 +33,8 @@ test('quickstart example', async () => {
 
 test('quickstart advanced example', async () => {
   const defaultValues = {
-    name: '',
+    to: '',
+    from: '',
     hasGithubProfile: false,
     hasGithubPlus: true,
     followerCount: 0,
@@ -52,9 +53,10 @@ test('quickstart advanced example', async () => {
     },
   });
   const parsed = await parse([
-    'congratulate', // Positional argument
-    '--name', // Long flag
-    '"John Smith"', // Value with spaces
+    'congratulations', // Positional argument
+    '--to', // Long flag
+    'John', // Long flag value
+    '--from=Anna', // Equal sign instead of space
     '--github', // Custom long boolean flag
     '--hasGithubPlus', // Another boolean flag
     '-fc', // Custom short flag
@@ -65,8 +67,9 @@ test('quickstart advanced example', async () => {
   ]);
 
   assert.deepStrictEqual(parsed, {
-    _: ['congratulate'],
-    name: '"John Smith"',
+    _: ['congratulations'],
+    to: 'John',
+    from: 'Anna',
     hasGithubPlus: true,
     hasGithubProfile: true,
     followerCount: 10,
