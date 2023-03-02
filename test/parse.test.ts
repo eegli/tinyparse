@@ -34,6 +34,16 @@ describe('Parsing, with options', () => {
     });
   });
 
+  it('resolves aliases', () => {
+    const result = new Parser()
+      .withArgvInput(M({ '--num': 1 }), M({ '--num': 'num' }))
+      .validate(M({ num: { type: NUM } }))
+      .collect();
+    expect(result).toStrictEqual({
+      num: 1,
+    });
+  });
+
   it('rejects invalid types 1', () => {
     expect(() => {
       new Parser()
