@@ -38,7 +38,6 @@ export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
       customValidator?: CustomValidator;
     };
   };
-} & {
   decamelize?: boolean;
   filePathArg?: FilePathArg;
 };
