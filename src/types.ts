@@ -28,22 +28,16 @@ export interface HelpOptions {
   base?: string;
 }
 
-interface UserKeyOptions {
-  required?: boolean;
-  description?: string;
-  shortFlag?: string;
-  longFlag?: string;
-  customValidator?: CustomValidator;
-}
-
-type KeyOptions<
-  O extends Record<string, unknown> = Record<string, UserKeyOptions>
-> = {
-  [K in Extract<keyof O, string>]?: UserKeyOptions;
-};
-
 export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
-  options?: KeyOptions<T>;
+  options?: {
+    [K in keyof T]?: {
+      required?: boolean;
+      description?: string;
+      shortFlag?: string;
+      longFlag?: string;
+      customValidator?: CustomValidator;
+    };
+  };
 } & {
   decamelize?: boolean;
   filePathArg?: FilePathArg;

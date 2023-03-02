@@ -62,6 +62,11 @@ expectAssignable<Params>({
     loggedIn: {},
   },
 });
+expectNotAssignable<Params>({
+  options: {
+    age2: {},
+  },
+});
 
 type Defaults = Parameters<typeof createParser<Input>>[0];
 
