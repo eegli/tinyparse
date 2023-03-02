@@ -18,12 +18,14 @@ describe('Docs', () => {
     const parsed = await parse(['hello-world']);
     expect(parsed).toStrictEqual({ _: ['hello-world'] });
   });
+
   test('cli arguments, boolean flags 1', async () => {
     const { parse } = createParser({
       verbose: false,
     });
     const parsed = await parse(['--verbose']);
     expect(parsed.verbose).toBe(true);
+    expect(parsed).toStrictEqual({ verbose: true, _: [] });
   });
   test('cli arguments, boolean flags 2', async () => {
     const { parse } = createParser({

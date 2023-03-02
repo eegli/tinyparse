@@ -32,9 +32,9 @@ export function createParser<T extends PrimitiveRecord>(
   function parseSync(input: string[] = []): WithPositionalArgs<T> {
     const [transformed, positionals] = ArgvTransformer.transform(input);
     return new Parser<T>()
-      .input(transformed)
-      .extendFromFile(...options.filePathFlags)
-      .validate(options.flagOptions, options.aliases)
+      .withArgvInput(transformed, options.aliases)
+      .withFileInput(...options.filePathFlags)
+      .validate(options.flagOptions)
       .collectWithPositionals(positionals);
   }
 

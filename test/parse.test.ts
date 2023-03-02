@@ -15,7 +15,7 @@ const BOOL = typeof true;
 describe('Parsing, with options', () => {
   it('resolves if all required args are present', () => {
     const result = new Parser()
-      .input(M({ str: 'hello' }))
+      .withArgvInput(M({ str: 'hello' }))
       .validate(M({ str: { type: STR, isRequired: true } }))
       .collect();
     expect(result).toStrictEqual({
@@ -25,7 +25,7 @@ describe('Parsing, with options', () => {
 
   it('parses strings to integers iif types match', () => {
     const result = new Parser()
-      .input(M({ num: 1, str: '1' }))
+      .withArgvInput(M({ num: 1, str: '1' }))
       .validate(M({ str: { type: STR }, num: { type: NUM } }))
       .collect();
     expect(result).toStrictEqual({
@@ -36,14 +36,16 @@ describe('Parsing, with options', () => {
 
   it('rejects invalid types 1', () => {
     expect(() => {
-      new Parser().input(M({ x: 1 })).validate(M({ x: { type: BOOL } }));
+      new Parser()
+        .withArgvInput(M({ x: 1 }))
+        .validate(M({ x: { type: BOOL } }));
     }).toThrow(new ValidationError(`Invalid type for x. "1" is not a boolean`));
   });
 
   it('rejects invalid types 2', () => {
     expect(() => {
       new Parser()
-        .input(M({ xyz: 'twelve' }))
+        .withArgvInput(M({ xyz: 'twelve' }))
         .validate(M({ xyz: { type: NUM } }));
     }).toThrow(
       new ValidationError(`Invalid type for xyz. "twelve" is not a number`)
@@ -52,7 +54,9 @@ describe('Parsing, with options', () => {
 
   it('rejects invalid types 3', () => {
     expect(() => {
-      new Parser().input(M({ abc: true })).validate(M({ abc: { type: NUM } }));
+      new Parser()
+        .withArgvInput(M({ abc: true }))
+        .validate(M({ abc: { type: NUM } }));
     }).toThrow(
       new ValidationError(`Invalid type for abc. "true" is not a number`)
     );
@@ -72,8 +76,8 @@ describe('Parsing, with options', () => {
 
     expect(() => {
       new Parser()
-        .input(M({ file: 'nested.json' }))
-        .extendFromFile('file')
+        .withArgvInput(M({ file: 'nested.json' }))
+        .withFileInput('file')
         .validate(M({ str: { type: STR } }));
     }).toThrow('Invalid type for str. "[object Object]" is not a string');
   });
@@ -86,7 +90,7 @@ describe('Parsing, with options', () => {
 
   it('custom validation, returns', () => {
     expect(() => {
-      new Parser().input(M({ x: 1 })).validate(
+      new Parser().withArgvInput(M({ x: 1 })).validate(
         M({
           x: {
             type: STR,
@@ -104,7 +108,7 @@ describe('Parsing, with options', () => {
 
   it('custom validation, throws', () => {
     expect(() => {
-      new Parser().input(M({ x: 'goodbye' })).validate(
+      new Parser().withArgvInput(M({ x: 'goodbye' })).validate(
         M({
           x: {
             type: STR,
@@ -153,22 +157,22 @@ describe('Parsing, file reading', () => {
   it('identity for missing and invalid flags are given', () => {
     expect(
       new Parser()
-        .input(M({ file: '' }))
-        .extendFromFile()
+        .withArgvInput(M({ file: '' }))
+        .withFileInput()
         .collect()
-    ).toStrictEqual({ file: '' });
+    ).toStrictEqual({});
     expect(
       new Parser()
-        .input(M({ file: '' }))
-        .extendFromFile('no-file')
+        .withArgvInput(M({ file: '' }))
+        .withFileInput('no-file')
         .collect()
-    ).toStrictEqual({ file: '' });
+    ).toStrictEqual({});
   });
   it('reads file path from flag and collects', () => {
     expect(
       new Parser()
-        .input(M({ file: 'test.json' }))
-        .extendFromFile('file')
+        .withArgvInput(M({ file: 'test.json' }))
+        .withFileInput('file')
         .validate(M({ str: { type: STR } }))
         .collect()
     ).toStrictEqual({
@@ -178,8 +182,8 @@ describe('Parsing, file reading', () => {
   it('does not overwrite user input', () => {
     expect(
       new Parser()
-        .input(M({ file: 'test.json', str: 'hello from the cli' }))
-        .extendFromFile('file')
+        .withArgvInput(M({ file: 'test.json', str: 'hello from the cli' }))
+        .withFileInput('file')
         .validate(M({ str: { type: STR } }))
         .collect()
     ).toStrictEqual({
@@ -189,8 +193,8 @@ describe('Parsing, file reading', () => {
   it('throws for invalid files', () => {
     expect(() => {
       new Parser()
-        .input(M({ file: 'doesnotexist.json' }))
-        .extendFromFile('file');
+        .withArgvInput(M({ file: 'doesnotexist.json' }))
+        .withFileInput('file');
     }).toThrow('doesnotexist.json is not a valid JSON file');
   });
 });

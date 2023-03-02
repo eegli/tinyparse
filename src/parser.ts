@@ -3,12 +3,21 @@ import {
   AliasMap,
   FlagOptions,
   PrimitiveRecord,
+  Value,
   WithPositionalArgs,
 } from './types';
 import Utils from './utils';
 
 export class Parser<T extends PrimitiveRecord> {
-  private _current: Map<string, unknown> = new Map();
+  private _input: Map<
+    string,
+    {
+      value: unknown;
+      // Keep track of how the input was received for error reporting
+      receivedAs: string;
+    }
+  > = new Map();
+  private _output: Map<string, Value> = new Map();
 
   // Try to convert a string to a number. If the result is NaN, return identity
   public tryConvertToNumber(value: unknown): unknown {
@@ -17,22 +26,29 @@ export class Parser<T extends PrimitiveRecord> {
     return !Number.isNaN(num) ? num : value;
   }
 
-  public input(input: Map<string, unknown>): this {
+  public withArgvInput(
+    input: Map<string, unknown>,
+    aliases: AliasMap = new Map()
+  ): this {
     // New state on new input
-    this._current = new Map();
+    this._input = new Map();
     for (const [key, value] of input) {
-      this._current.set(key, value);
+      const maybeAlias = aliases.get(key);
+      this._input.set(maybeAlias ?? key, {
+        value,
+        receivedAs: key,
+      });
     }
     return this;
   }
 
   // Append file content to the input
   // File contents may be overridden by user input
-  public extendFromFile(...flags: string[]): this {
+  public withFileInput(...flags: string[]): this {
     if (flags.length === 0) return this;
 
     const filePaths = flags
-      .map((v) => this._current.get(v))
+      .map((v) => this._input.get(v)?.value)
       .filter((v) => typeof v === 'string') as string[];
 
     if (filePaths.length === 0) return this;
@@ -41,72 +57,63 @@ export class Parser<T extends PrimitiveRecord> {
     const filePath = filePaths[0];
 
     for (const [key, content] of Utils.parseJSONFile(filePath)) {
-      // Do not override CLI input
-      if (this._current.has(key)) continue;
-      this._current.set(key, content);
+      // Skip if key already exists
+      if (this._input.has(key)) continue;
+
+      this._input.set(key, {
+        value: content,
+        receivedAs: key,
+      });
     }
 
     for (const flag of flags) {
-      this._current.delete(flag);
+      this._input.delete(flag);
     }
 
     return this;
   }
 
-  public validate(options: FlagOptions, aliases: AliasMap = new Map()): this {
-    const requiredKeys = [...options.entries()].reduce((acc, [key, value]) => {
-      if (value?.isRequired) acc.add(key);
-      return acc;
-    }, new Set<string>());
+  public validate(options: FlagOptions): this {
+    this._output = new Map();
 
-    for (const kvPair of this._current) {
-      const [flag] = kvPair;
-      // Preserve original flag
-      let key = flag;
+    for (const option of options) {
+      const [key, keyOptions] = option;
 
-      // Resolve alias
-      const maybeAlias = aliases.get(flag);
-      if (maybeAlias) key = maybeAlias;
+      const entry = this._input.get(key);
 
-      // Lookup options
-      const keyOptions = options.get(key);
-
-      if (!keyOptions) {
-        // Invalid/unknown key
-        this._current.delete(key);
+      if (!entry) {
+        if (keyOptions?.isRequired) {
+          throw new ValidationError(`Missing required argument ${key}`);
+        }
         continue;
       }
-      let [, value] = kvPair;
+
       const { type: expectedType, validator } = keyOptions;
 
       // Iif the expected type is a number and not NaN, try to convert
       // the value
       if (expectedType === 'number') {
-        value = this.tryConvertToNumber(value);
+        entry.value = this.tryConvertToNumber(entry.value);
       }
 
-      const receivedType = typeof value;
-
       if (validator) {
-        if (validator.isValid(value)) {
-          this._current.set(key, value);
-        } else {
-          throw new ValidationError(validator.errorMessage(value, flag));
-        }
-      } else {
-        if (Utils.isValueType(value) && receivedType === expectedType) {
-          this._current.set(key, value);
+        if (validator.isValid(entry.value)) {
+          this._output.set(key, entry.value);
         } else {
           throw new ValidationError(
-            `Invalid type for ${flag}. "${value}" is not a ${expectedType}`
+            validator.errorMessage(entry.value, entry.receivedAs)
+          );
+        }
+      } else {
+        const receivedType = typeof entry.value;
+        if (Utils.isValueType(entry.value) && receivedType === expectedType) {
+          this._output.set(key, entry.value);
+        } else {
+          throw new ValidationError(
+            `Invalid type for ${entry.receivedAs}. "${entry.value}" is not a ${expectedType}`
           );
         }
       }
-      requiredKeys.delete(key);
-    }
-
-    for (const key of requiredKeys) {
-      throw new ValidationError(`Missing required argument ${key}`);
     }
 
     return this;
@@ -120,6 +127,6 @@ export class Parser<T extends PrimitiveRecord> {
   }
 
   public collect(): T {
-    return Object.fromEntries(this._current) as T;
+    return Object.fromEntries(this._output) as T;
   }
 }
