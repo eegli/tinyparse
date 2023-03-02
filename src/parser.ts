@@ -47,8 +47,6 @@ export class Parser<T extends PrimitiveRecord> {
     return this;
   }
 
-  // Append file content to the input
-  // File contents may be overridden by user input
   public withFileInput(...flags: string[]): this {
     this._fileInput.clear();
 
@@ -85,7 +83,7 @@ export class Parser<T extends PrimitiveRecord> {
     for (const option of options) {
       const [key, keyOptions] = option;
 
-      // Try from argv input, then file input
+      // Input from argv takes precedence over input from a file
       const entry = this._argvInput.get(key) ?? this._fileInput.get(key);
 
       if (!entry) {
