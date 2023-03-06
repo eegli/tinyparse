@@ -23,7 +23,7 @@ import { createParser } from '@eegli/tinyparse';
 const { help } = createParser(
   {
     userName: '',
-    age: -1,
+    age: Infinity,
     hasGithubProfile: false,
   },
   {

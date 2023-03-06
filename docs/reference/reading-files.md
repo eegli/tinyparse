@@ -32,8 +32,8 @@ const { parseSync } = createParser(
   },
   {
     filePathArg: {
-      longFlag: '--config',
-      shortFlag: '-c',
+      longFlag: 'config',
+      shortFlag: 'c',
       description: 'Path to your Github config file',
     },
   }
@@ -67,7 +67,7 @@ const { parseSync } = createParser(
   },
   {
     filePathArg: {
-      longFlag: '--config',
+      longFlag: 'config',
     },
   }
 );

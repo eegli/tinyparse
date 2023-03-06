@@ -133,8 +133,8 @@ describe('Docs', () => {
       },
       {
         filePathArg: {
-          longFlag: '--config',
-          shortFlag: '-c',
+          longFlag: 'config',
+          shortFlag: 'c',
           description: 'Path to your Github config file',
         },
       }
@@ -163,7 +163,7 @@ describe('Docs', () => {
       },
       {
         filePathArg: {
-          longFlag: '--config',
+          longFlag: 'config',
         },
       }
     );
@@ -176,7 +176,7 @@ describe('Docs', () => {
     const { help } = createParser(
       {
         userName: '',
-        age: -1,
+        age: Infinity,
         hasGithubProfile: false,
       },
       {
