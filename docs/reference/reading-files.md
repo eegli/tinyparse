@@ -6,7 +6,7 @@ Tinyparse supports reading and parsing JSON files natively. The path to a JSON f
 
 - CLI input - i.e., user input - **always** overrides file input!
 - Reading from files is the only way to set booleans to `false` that are `true` by default, see the first example.
-- When a command contains a short and long flag that both point to different files, the long flag takes precedence
+- When a command contains a short and long flag that both point to different files, the long flag takes precedence.
 
 ## Example
 

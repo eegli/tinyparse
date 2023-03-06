@@ -7,7 +7,7 @@ Make sure your `package.json`'s `type` field is set to `module` or convert the `
 Then, invoke the script like so:
 
 ```bash
-node main.js --name eric --hasDog
+node main.js --name mary --hasDog
 
 ```
 
