@@ -1,6 +1,6 @@
 # Custom Flags
 
-By default, an argument's _long flag_ is created automatically by prefixing it with two hyphens: `userName` -> `--userName`. _Short flags_, i.e., short aliases for long flag, are not automatically generated, they need to be set explicitly. Both flags can be customized on a per-argument basis.
+By default, an argument's _long flag_ is created automatically by prefixing it with two hyphens: `userName` -> `--userName`. _Short flags_, i.e., short aliases for long flags, are not automatically generated, they need to be set explicitly. Both flags can be customized on a per-argument basis.
 
 When specifying custom flags/aliases, it does not matter how you prefix the flag (with or without a hyphen, or more!). Internally, the flag is always trimmed to start with a _single_ hyphen. `---v`, `--v` and `v` will all be converted and map to `-v`.
 

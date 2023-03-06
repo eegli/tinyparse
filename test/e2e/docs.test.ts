@@ -133,8 +133,8 @@ describe('Docs', () => {
       },
       {
         filePathArg: {
-          longFlag: '--config',
-          shortFlag: '-c',
+          longFlag: 'config',
+          shortFlag: 'c',
           description: 'Path to your Github config file',
         },
       }
@@ -163,7 +163,7 @@ describe('Docs', () => {
       },
       {
         filePathArg: {
-          longFlag: '--config',
+          longFlag: 'config',
         },
       }
     );
@@ -176,13 +176,14 @@ describe('Docs', () => {
     const { help } = createParser(
       {
         userName: '',
-        age: -1,
+        age: Infinity,
         hasGithubProfile: false,
       },
       {
         options: {
           userName: {
-            description: 'Your custom username',
+            shortFlag: 'u',
+            description: 'Your GitHub username',
           },
           hasGithubProfile: {
             description: 'Indicate whether you have a Github profile',
@@ -190,6 +191,10 @@ describe('Docs', () => {
           age: {
             required: true,
           },
+        },
+        filePathArg: {
+          longFlag: 'config',
+          description: 'Path to your Github config file',
         },
       }
     );
@@ -209,8 +214,12 @@ describe('Docs', () => {
          --hasGithubProfile [boolean]
          Indicate whether you have a Github profile
 
-         --userName [string]
-         Your custom username"
+         -u, --userName [string]
+         Your GitHub username
+
+         --config [string]
+         Path to your Github config file
+      "
     `);
   });
 
