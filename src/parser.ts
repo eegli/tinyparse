@@ -18,14 +18,6 @@ export class Parser<T extends PrimitiveRecord> {
 
   constructor(private readonly _options: Map<string, BaseFlagOption>) {}
 
-  // Try to convert a string to a number. If the result is NaN, return
-  // identity
-  public tryConvertToNumber(value: unknown): unknown {
-    if (typeof value !== 'string') return value;
-    const num = +value;
-    return !Number.isNaN(num) ? num : value;
-  }
-
   public withArgvInput(
     input: Map<string, unknown>,
     aliases: Map<string, string> = new Map()
@@ -45,8 +37,6 @@ export class Parser<T extends PrimitiveRecord> {
 
   public withFileInput(...flags: string[]): this {
     this._fileInput.clear();
-
-    if (flags.length === 0) return this;
 
     const filePaths = flags
       .map((v) => this._argvInput.get(v)?.value)
@@ -97,7 +87,7 @@ export class Parser<T extends PrimitiveRecord> {
       // Iif the expected type is a number and not NaN, try to convert
       // the value
       if (expectedType === 'number') {
-        entry.value = this.tryConvertToNumber(entry.value);
+        entry.value = Utils.toNumber(entry.value);
       }
 
       if (customValidator) {
