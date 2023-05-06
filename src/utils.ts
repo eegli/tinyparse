@@ -15,6 +15,14 @@ export default class Utils {
     return _decamelize(value, { separator: '-' });
   }
 
+  // Try converting an unknown value to a number. If the result is
+  // NaN, return identity
+  public static toNumber(value: unknown): unknown {
+    if (typeof value !== 'string') return value;
+    const num = +value;
+    return !Number.isNaN(num) ? num : value;
+  }
+
   public static parseJSONFile(path: string): [string, unknown][] {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires

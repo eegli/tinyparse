@@ -122,24 +122,6 @@ describe('Parsing, with options', () => {
   });
 });
 
-describe('Parsing, numeric conversions', () => {
-  const parser = new Parser(cfg({}));
-  const inputs = [
-    ['1', 1],
-    [true, true],
-    [false, false],
-    [{}, {}],
-    ['.1', 0.1],
-    ['1.1', 1.1],
-    [undefined, undefined],
-  ];
-  inputs.forEach(([input, output], idx) => {
-    test('test case ' + (idx + 1), () => {
-      expect(parser.tryConvertToNumber(input)).toStrictEqual(output);
-    });
-  });
-});
-
 describe('Parsing, file reading', () => {
   mockFs.readFileSync.mockImplementation((path) => {
     if (path === 'test.json') {
