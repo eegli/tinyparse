@@ -7,15 +7,14 @@ import {
 } from './types';
 import Utils from './utils';
 
-export class ArgvTransformer {
-  // Double-digit symbols must come before single-digit symbols!
-  private static allowedSymbols: (UniversalCountSymbol | EqCountSymbol)[] = [
-    '<=',
-    '>=',
-    '=',
-    '*',
-  ] as const;
+const allowedSymbols: (UniversalCountSymbol | EqCountSymbol)[] = [
+  '<=',
+  '>=',
+  '=',
+  '*',
+] as const;
 
+export class ArgvTransformer {
   public static transform(
     argv: string[],
   ): [Map<string, string | boolean>, PositionalArgs] {
@@ -60,14 +59,12 @@ export class ArgvTransformer {
   }
 
   static parsePositionalCountExpr(expr: CountExpression) {
-    const symbolIdx = ArgvTransformer.allowedSymbols.findIndex((sym) =>
-      expr.startsWith(sym),
-    );
+    const symbolIdx = allowedSymbols.findIndex((sym) => expr.startsWith(sym));
     const errorMessage = `Invalid count symbol: ${expr}`;
 
     if (symbolIdx === -1) throw new Error(errorMessage);
 
-    const symbol = ArgvTransformer.allowedSymbols[symbolIdx];
+    const symbol = allowedSymbols[symbolIdx];
 
     if (symbol === '*') return { count: -1, symbol };
 
