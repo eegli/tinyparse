@@ -9,17 +9,35 @@ on:
       - main
 
 jobs:
+  checks:
+    name: TypeScript, lint, build
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Check types
+        run: yarn check-types
+      - name: Lint
+        run: yarn lint
+      - name: Build packages
+        run: yarn build:release
   test:
     name: ${{ matrix.os }}-node-v${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: ['14', '16', '17', '18', '19']
+        node: ['18', '19', '20', '21']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
@@ -27,13 +45,13 @@ jobs:
       - name: Run test
         run: yarn test --coverage --verbose
       - name: Run integration tests
-        if: matrix.node == '18'
+        if: matrix.node == '20'
         run: yarn test:integration
       - name: Run build
         run: yarn build
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        if: matrix.node == '18'
+        uses: codecov/codecov-action@v3
+        if: matrix.node == '20'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true

@@ -31,7 +31,7 @@ assert.deepStrictEqual(parsed1, {
 
 ## Install
 
-Node.js v14 or later is required.
+Node.js v18 or later is required.
 
 ```bash
 yarn add @eegli/tinyparse
