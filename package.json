@@ -30,7 +30,7 @@
   ],
   "scripts": {
     "build": "preconstruct build",
-    "build:release": "yarn build && rm -rf _release && yarn pack && mkdir _release && tar zxvf package.tgz --directory _release && rm package.tgz",
+    "build:release": "yarn build && rm -rf _release && yarn pack && mkdir _release && tar zxvf package.tgz --directory _release && rm package.tgz && cp docs/README.md _release/package/README.md",
     "check-types": "tsc",
     "docs": "docsify serve docs",
     "format": "prettier --write src test",
