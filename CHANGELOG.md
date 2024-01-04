@@ -1,5 +1,11 @@
 # @eegli/tinyparse
 
+## 0.15.1
+
+### Patch Changes
+
+- 498b64c: Include the README in the published package
+
 ## 0.15.0
 
 ### Minor Changes
