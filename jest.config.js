@@ -1,4 +1,4 @@
-/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
+/** @type {import('ts-jest/dist/types').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
@@ -12,6 +12,7 @@ module.exports = {
       statements: 90,
     },
   },
+  modulePathIgnorePatterns: ['<rootDir>/dist', '<rootDir>/_release'],
   projects: [
     {
       displayName: {

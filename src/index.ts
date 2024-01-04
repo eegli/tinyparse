@@ -21,16 +21,21 @@ export type { ParserOptions };
  */
 export function createParser<T extends PrimitiveRecord>(
   defaultValues: T,
-  params?: ParserOptions<T>
+  opts?: ParserOptions<T>,
 ) {
-  const options = new Options(defaultValues, params);
+  const options = new Options(defaultValues, opts);
   const parser = new Parser<T>(options.flagOptions);
   const helpPrinter = new HelpPrinter(options.flagOptions)
     .withFilePathFlags(...options.filePathFlags)
     .withFilePathDescription(options.filePathFlagDesc);
 
+  const countExpr = ArgvTransformer.parsePositionalCountExpr(
+    opts?.positionals?.count || '*',
+  );
+
   function parseSync(input: string[] = []): WithPositionalArgs<T> {
     const [transformed, positionals] = ArgvTransformer.transform(input);
+    ArgvTransformer.validatePositionals(positionals, countExpr);
     return parser
       .withArgvInput(transformed, options.aliases)
       .withFileInput(...options.filePathFlags)

@@ -28,6 +28,18 @@ export interface HelpOptions {
   base?: string;
 }
 
+export type CountExpression =
+  | `=${number}` // Exactly
+  | `>${number}` // More than
+  | `<${number}` // Less than
+  | `>=${number}` // More than or equal
+  | `<=${number}` // Less than or equal
+  | '*'; // Any number
+
+export type PositionalOptions = {
+  count: CountExpression;
+};
+
 export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
   options?: {
     [K in keyof T]?: {
@@ -38,6 +50,7 @@ export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
       customValidator?: CustomValidator;
     };
   };
+  positionals?: PositionalOptions;
   decamelize?: boolean;
   filePathArg?: FilePathArg;
 };

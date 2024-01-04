@@ -59,7 +59,7 @@ export class Options {
     const existingFilePathFlag = this.filePathFlags.has(alias);
     if (existingFilePathFlag) {
       throw new Error(
-        `Conflicting flag: ${alias} has already been declared as a file path flag`
+        `Conflicting flag: ${alias} has already been declared as a file path flag`,
       );
     }
 
@@ -73,7 +73,7 @@ export class Options {
       }
 
       throw new Error(
-        `Parser config validation error, ${text}. Check your settings for ${cause}.`
+        `Parser config validation error, ${text}. Check your settings for ${cause}.`,
       );
     }
 
