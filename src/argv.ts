@@ -5,6 +5,7 @@ import Utils from './utils';
 export class ArgvTransformer {
   // Double-digit symbols must come before single-digit symbols!
   private static allowedSymbols = ['<=', '>=', '=', '>', '<', '*'] as const;
+
   public static transform(
     argv: string[],
   ): [Map<string, string | boolean>, PositionalArgs] {
@@ -58,17 +59,19 @@ export class ArgvTransformer {
 
     const symbol = ArgvTransformer.allowedSymbols[symbolIdx];
 
-    if (symbol === '*') return { count: Infinity, symbol };
+    if (symbol === '*') return { count: -1, symbol };
 
     // No count specified
     if (expr.length === symbol.length) throw new Error(errorMessage);
 
-    const count = Number(expr.slice(symbol.length));
+    const expectedNumPosArgs = Number(expr.slice(symbol.length));
 
     // Count is specified but not a positive integer
-    if (isNaN(count) || count < 0) throw new Error(errorMessage);
+    if (isNaN(expectedNumPosArgs) || expectedNumPosArgs < 0) {
+      throw new Error(errorMessage);
+    }
 
-    return { count, symbol };
+    return { expectedNumPosArgs, symbol };
   }
 
   public static validatePositionals(
@@ -77,42 +80,37 @@ export class ArgvTransformer {
   ): void {
     if (countExpr.symbol === '*') return;
 
-    const length = positionals.length;
-    let { count: desiredLength } = countExpr;
+    const receivedNumPosArgs = positionals.length;
+    let { expectedNumPosArgs, symbol } = countExpr;
 
-    const assertAtLeast = (isValid: boolean) => {
-      if (!isValid)
-        throw new ValidationError(
-          `Expected at least ${desiredLength} positional argument(s), got ${length}`,
-        );
-    };
-    const assertAtMost = (isValid: boolean) => {
-      if (!isValid)
-        throw new ValidationError(
-          `Expected at most ${desiredLength} positional argument(s), got ${length}`,
-        );
+    if (symbol === '<') {
+      // <2 --> <=1
+      symbol = '<=';
+      expectedNumPosArgs -= 1;
+    } else if (symbol === '>') {
+      // >1 --> >=2
+      symbol = '>=';
+      expectedNumPosArgs += 1;
+    }
+
+    const throwIfNot = (
+      isValid: boolean,
+      quantity?: 'at least' | 'at most',
+    ) => {
+      if (isValid) return;
+      let errorMessage = 'Invalid number of positional arguments: Expected ';
+      if (quantity) errorMessage += `${quantity} `;
+      errorMessage += `${expectedNumPosArgs}, got ${receivedNumPosArgs}`;
+      throw new ValidationError(errorMessage);
     };
 
-    const assertExactly = (isValid: boolean) => {
-      if (!isValid)
-        throw new ValidationError(
-          `Expected exactly ${desiredLength} positional argument(s), got ${length}`,
-        );
-    };
-
-    switch (countExpr.symbol) {
+    switch (symbol) {
       case '=':
-        return assertExactly(length === desiredLength);
-      case '>':
-        desiredLength += 1;
-        return assertAtLeast(length > desiredLength);
-      case '<':
-        desiredLength -= 1;
-        return assertAtMost(length < desiredLength);
+        return throwIfNot(receivedNumPosArgs === expectedNumPosArgs);
       case '>=':
-        return assertAtLeast(length >= desiredLength);
+        return throwIfNot(receivedNumPosArgs >= expectedNumPosArgs, 'at least');
       case '<=':
-        return assertAtMost(length <= desiredLength);
+        return throwIfNot(receivedNumPosArgs <= expectedNumPosArgs, 'at most');
     }
   }
 }

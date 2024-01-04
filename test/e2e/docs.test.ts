@@ -32,13 +32,13 @@ describe('Docs', () => {
       {},
       {
         positionals: {
-          count: '>0',
+          count: '=0', // Allow no positional arguments
         },
       },
     );
     expect(() => {
-      parseSync([]);
-    }).toThrow('Expected at least 1 positional argument(s), got 0');
+      parseSync(['hello-world']);
+    }).toThrow('Invalid number of positional arguments: Expected 0, got 1');
   });
 
   test('cli arguments, positional arguments 3', () => {
@@ -46,13 +46,31 @@ describe('Docs', () => {
       {},
       {
         positionals: {
-          count: '<=1',
+          count: '>0', // Require 1 or more positional arguments
+        },
+      },
+    );
+    expect(() => {
+      parseSync([]);
+    }).toThrow(
+      'Invalid number of positional arguments: Expected at least 1, got 0',
+    );
+  });
+
+  test('cli arguments, positional arguments 4', () => {
+    const { parseSync } = createParser(
+      {},
+      {
+        positionals: {
+          count: '<=1', // Require 1 or less positional arguments
         },
       },
     );
     expect(() => {
       parseSync(['a', 'b']);
-    }).toThrow('Expected at most 1 positional argument(s), got 2');
+    }).toThrow(
+      'Invalid number of positional arguments: Expected at most 1, got 2',
+    );
   });
 
   test('cli arguments, boolean flags 1', async () => {
