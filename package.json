@@ -38,7 +38,7 @@
     "lint": "eslint src test --ext .ts",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
-    "release": "yarn build && changeset publish",
+    "release": "yarn build:release && changeset publish",
     "test": "jest --verbose",
     "test:coverage": "jest --coverage",
     "test:integration": "yarn build && cd test/integration && npm install --omit=dev --ignore-scripts && npm test",
@@ -76,16 +76,12 @@
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3"
   },
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@4.0.2",
   "engines": {
     "node": ">=18"
   },
   "publishConfig": {
-    "access": "public"
-  },
-  "np": {
-    "yarn": false,
-    "branch": "main",
-    "testScript": "yarn test:all"
+    "access": "public",
+    "directory": "_release/package"
   }
 }
