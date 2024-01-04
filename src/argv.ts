@@ -75,40 +75,44 @@ export class ArgvTransformer {
     positionals: PositionalArgs,
     countExpr: ReturnType<typeof ArgvTransformer.parsePositionalCountExpr>,
   ): void {
-    const assertOrThrow = (isValid: boolean, msg: string) => {
-      if (!isValid) throw new ValidationError(msg);
-    };
+    if (countExpr.symbol === '*') return;
 
     const length = positionals.length;
-    const { count: desiredLength, symbol } = countExpr;
-    switch (symbol) {
-      case '*':
-        return;
+    let { count: desiredLength } = countExpr;
+
+    const assertAtLeast = (isValid: boolean) => {
+      if (!isValid)
+        throw new ValidationError(
+          `Expected at least ${desiredLength} positional argument(s), got ${length}`,
+        );
+    };
+    const assertAtMost = (isValid: boolean) => {
+      if (!isValid)
+        throw new ValidationError(
+          `Expected at most ${desiredLength} positional argument(s), got ${length}`,
+        );
+    };
+
+    const assertExactly = (isValid: boolean) => {
+      if (!isValid)
+        throw new ValidationError(
+          `Expected exactly ${desiredLength} positional argument(s), got ${length}`,
+        );
+    };
+
+    switch (countExpr.symbol) {
       case '=':
-        return assertOrThrow(
-          length === desiredLength,
-          `Expected ${desiredLength} positional arguments, got ${length}`,
-        );
+        return assertExactly(length === desiredLength);
       case '>':
-        return assertOrThrow(
-          length > desiredLength,
-          `Expected more than ${desiredLength} positional arguments, got ${length}`,
-        );
+        desiredLength += 1;
+        return assertAtLeast(length > desiredLength);
       case '<':
-        return assertOrThrow(
-          length < desiredLength,
-          `Expected less than ${desiredLength} positional arguments, got ${length}`,
-        );
+        desiredLength -= 1;
+        return assertAtMost(length < desiredLength);
       case '>=':
-        return assertOrThrow(
-          length >= desiredLength,
-          `Expected at least ${desiredLength} positional arguments, got ${length}`,
-        );
+        return assertAtLeast(length >= desiredLength);
       case '<=':
-        return assertOrThrow(
-          length <= desiredLength,
-          `Expected at most ${desiredLength} positional arguments, got ${length}`,
-        );
+        return assertAtMost(length <= desiredLength);
     }
   }
 }

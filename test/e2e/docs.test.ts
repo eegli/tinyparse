@@ -15,16 +15,44 @@ describe('Docs', () => {
     expect(() => {
       createParser(
         { a: '', b: '' },
-        { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
+        { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } },
       );
     }).toThrow(
-      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.'
+      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.',
     );
   });
-  test('cli arguments, positional arguments', async () => {
+  test('cli arguments, positional arguments 1', async () => {
     const { parse } = createParser({});
     const parsed = await parse(['hello-world']);
     expect(parsed).toStrictEqual({ _: ['hello-world'] });
+  });
+
+  test('cli arguments, positional arguments 2', () => {
+    const { parseSync } = createParser(
+      {},
+      {
+        positionals: {
+          count: '>0',
+        },
+      },
+    );
+    expect(() => {
+      parseSync([]);
+    }).toThrow('Expected at least 1 positional argument(s), got 0');
+  });
+
+  test('cli arguments, positional arguments 3', () => {
+    const { parseSync } = createParser(
+      {},
+      {
+        positionals: {
+          count: '<=1',
+        },
+      },
+    );
+    expect(() => {
+      parseSync(['a', 'b']);
+    }).toThrow('Expected at most 1 positional argument(s), got 2');
   });
 
   test('cli arguments, boolean flags 1', async () => {
@@ -63,7 +91,7 @@ describe('Docs', () => {
             shortFlag: 'v',
           },
         },
-      }
+      },
     );
     const parsed = await parse(['-v', '--user=john']);
     expect(parsed.verbose).toBe(true);
@@ -88,7 +116,7 @@ describe('Docs', () => {
             },
           },
         },
-      }
+      },
     );
     // Valid date string
     expect(() => {
@@ -99,7 +127,7 @@ describe('Docs', () => {
     expect(() => {
       parseSync(['--bday', '2000-22']);
     }).toThrow(
-      "Invalid value '2000-22' for option '--bday'. Expected a valid date string"
+      "Invalid value '2000-22' for option '--bday'. Expected a valid date string",
     );
   });
 
@@ -108,7 +136,7 @@ describe('Docs', () => {
       { userName: '' },
       {
         decamelize: true,
-      }
+      },
     );
     const parsed = await parse(['--user-name', 'eegli']);
 
@@ -137,7 +165,7 @@ describe('Docs', () => {
           shortFlag: 'c',
           description: 'Path to your Github config file',
         },
-      }
+      },
     );
 
     const parsed = parseSync(['-c', 'github.json']);
@@ -165,7 +193,7 @@ describe('Docs', () => {
         filePathArg: {
           longFlag: 'config',
         },
-      }
+      },
     );
 
     expect(() => {
@@ -196,7 +224,7 @@ describe('Docs', () => {
           longFlag: 'config',
           description: 'Path to your Github config file',
         },
-      }
+      },
     );
     const helpText = help({
       title: 'CLI usage',
@@ -236,7 +264,7 @@ describe('Docs', () => {
             longFlag: 'user',
           },
         },
-      }
+      },
     );
     const helpText = help();
     expect(helpText).toMatchInlineSnapshot(`
@@ -258,7 +286,7 @@ describe('Docs', () => {
             required: true,
           },
         },
-      }
+      },
     );
 
     expect(() => {
@@ -271,7 +299,7 @@ describe('Docs', () => {
     expect(() => {
       parseSync(['--age']);
     }).toThrow(
-      new ValidationError('Invalid type for --age. "true" is not a number')
+      new ValidationError('Invalid type for --age. "true" is not a number'),
     );
   });
   // eslint-disable-next-line jest/expect-expect
