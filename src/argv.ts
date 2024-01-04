@@ -1,10 +1,20 @@
 import { ValidationError } from './error';
-import { CountExpression, PositionalArgs } from './types';
+import {
+  CountExpression,
+  UniversalCountSymbol,
+  EqCountSymbol,
+  PositionalArgs,
+} from './types';
 import Utils from './utils';
 
 export class ArgvTransformer {
   // Double-digit symbols must come before single-digit symbols!
-  private static allowedSymbols = ['<=', '>=', '=', '>', '<', '*'] as const;
+  private static allowedSymbols: (UniversalCountSymbol | EqCountSymbol)[] = [
+    '<=',
+    '>=',
+    '=',
+    '*',
+  ] as const;
 
   public static transform(
     argv: string[],
@@ -81,17 +91,7 @@ export class ArgvTransformer {
     if (countExpr.symbol === '*') return;
 
     const receivedNumPosArgs = positionals.length;
-    let { expectedNumPosArgs, symbol } = countExpr;
-
-    if (symbol === '<') {
-      // <2 --> <=1
-      symbol = '<=';
-      expectedNumPosArgs -= 1;
-    } else if (symbol === '>') {
-      // >1 --> >=2
-      symbol = '>=';
-      expectedNumPosArgs += 1;
-    }
+    const { expectedNumPosArgs, symbol } = countExpr;
 
     const throwIfNot = (
       isValid: boolean,

@@ -46,7 +46,7 @@ describe('Docs', () => {
       {},
       {
         positionals: {
-          count: '>0', // Require 1 or more positional arguments
+          count: '>=1', // Require 1 or more positional arguments
         },
       },
     );

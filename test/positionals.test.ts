@@ -3,7 +3,7 @@ import { ArgvTransformer } from '../src/argv';
 import { CountExpression } from '../src/types';
 
 describe('Positionals, parsing count expressions', () => {
-  const exprs: CountExpression[] = ['*', '=1', '>1', '<1', '>=1', '<=1'];
+  const exprs: CountExpression[] = ['*', '=1', '>=1', '<=1'];
   exprs.forEach((expr) => {
     test(`valid symbol ${expr}`, () => {
       expect(() =>
@@ -11,7 +11,7 @@ describe('Positionals, parsing count expressions', () => {
       ).not.toThrow();
     });
   });
-  const specialExpr: CountExpression[] = ['=0', '<11'];
+  const specialExpr: CountExpression[] = ['=0', '<=11'];
   specialExpr.forEach((expr) => {
     test(`valid symbol ${expr}`, () => {
       expect(() =>
@@ -51,23 +51,7 @@ describe('Positionals validation', () => {
         invalid: [[], ['a', 'b']],
       },
     ],
-    [
-      '>1',
-      {
-        valid: [
-          ['a', 'b'],
-          ['a', 'b', 'c'],
-        ],
-        invalid: [['a'], []],
-      },
-    ],
-    [
-      '<1',
-      {
-        valid: [[]],
-        invalid: [['a'], ['a', 'b']],
-      },
-    ],
+
     [
       '>=1',
       {

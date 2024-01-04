@@ -28,13 +28,16 @@ export interface HelpOptions {
   base?: string;
 }
 
+export type EqCountSymbol =
+  | '=' // Exactly
+  | '>=' // More than or equal
+  | '<='; // Less than or equal
+
+export type UniversalCountSymbol = '*';
+
 export type CountExpression =
-  | `=${number}` // Exactly
-  | `>${number}` // More than
-  | `<${number}` // Less than
-  | `>=${number}` // More than or equal
-  | `<=${number}` // Less than or equal
-  | '*'; // Any number
+  | `${EqCountSymbol}${number}`
+  | UniversalCountSymbol;
 
 export type PositionalOptions = {
   count: CountExpression;
