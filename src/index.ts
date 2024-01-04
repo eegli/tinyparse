@@ -29,13 +29,11 @@ export function createParser<T extends PrimitiveRecord>(
     .withFilePathFlags(...options.filePathFlags)
     .withFilePathDescription(options.filePathFlagDesc);
 
-  const countExpr = ArgvTransformer.parsePositionalCountExpr(
-    opts?.positionals?.count || '*',
-  );
+  const positionalOptions = opts?.positionals || {};
 
   function parseSync(input: string[] = []): WithPositionalArgs<T> {
     const [transformed, positionals] = ArgvTransformer.transform(input);
-    ArgvTransformer.validatePositionals(positionals, countExpr);
+    ArgvTransformer.validatePositionals(positionals, positionalOptions);
     return parser
       .withArgvInput(transformed, options.aliases)
       .withFileInput(...options.filePathFlags)

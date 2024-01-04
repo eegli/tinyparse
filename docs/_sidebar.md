@@ -1,6 +1,7 @@
 - [Quick start](quickstart.md)
 - [Command Line Arguments](reference/cli-arguments.md)
   - [Required Arguments](reference/required-arguments.md)
+  - [Positional Arguments](reference/positional-args.md)
   - [Custom Flags](reference/custom-flags.md)
   - [Custom Validation](reference/custom-validation.md)
   - [Decamelize Variables](reference/decamelize-variables.md)

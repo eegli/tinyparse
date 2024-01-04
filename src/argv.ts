@@ -4,6 +4,7 @@ import {
   UniversalCountSymbol,
   EqCountSymbol,
   PositionalArgs,
+  PositionalOptions,
 } from './types';
 import Utils from './utils';
 
@@ -58,7 +59,7 @@ export class ArgvTransformer {
     return [flagMap, positionals];
   }
 
-  static parsePositionalCountExpr(expr: CountExpression) {
+  public static validateCountExpr(expr: CountExpression) {
     const symbolIdx = allowedSymbols.findIndex((sym) => expr.startsWith(sym));
     const errorMessage = `Invalid count symbol: ${expr}`;
 
@@ -83,31 +84,43 @@ export class ArgvTransformer {
 
   public static validatePositionals(
     positionals: PositionalArgs,
-    countExpr: ReturnType<typeof ArgvTransformer.parsePositionalCountExpr>,
+    options: PositionalOptions,
   ): void {
-    if (countExpr.symbol === '*') return;
+    const {
+      expect: expected = [],
+      caseSensitive = false,
+      rejectAdditional = false,
+    } = options;
 
-    const receivedNumPosArgs = positionals.length;
-    const { expectedNumPosArgs, symbol } = countExpr;
+    if (expected.length > positionals.length) {
+      throw new ValidationError(
+        `Invalid number of positional arguments: Expected at least ${expected.length}, got ${positionals.length}`,
+      );
+    }
 
-    const throwIfNot = (
-      isValid: boolean,
-      quantity?: 'at least' | 'at most',
-    ) => {
-      if (isValid) return;
-      let errorMessage = 'Invalid number of positional arguments: Expected ';
-      if (quantity) errorMessage += `${quantity} `;
-      errorMessage += `${expectedNumPosArgs}, got ${receivedNumPosArgs}`;
-      throw new ValidationError(errorMessage);
-    };
+    if (rejectAdditional && expected.length < positionals.length) {
+      throw new ValidationError(
+        `Invalid number of positional arguments: Expected at most ${expected.length}, got ${positionals.length}`,
+      );
+    }
 
-    switch (symbol) {
-      case '=':
-        return throwIfNot(receivedNumPosArgs === expectedNumPosArgs);
-      case '>=':
-        return throwIfNot(receivedNumPosArgs >= expectedNumPosArgs, 'at least');
-      case '<=':
-        return throwIfNot(receivedNumPosArgs <= expectedNumPosArgs, 'at most');
+    for (let i = 0; i < expected.length; i++) {
+      const expectedPosArgs = expected[i];
+      // Allow any value
+      if (expectedPosArgs === null) continue;
+      const hasMatch = expectedPosArgs.some((expectedPosArg) => {
+        if (caseSensitive) {
+          return expectedPosArg === positionals[i];
+        }
+        return expectedPosArg.toLowerCase() === positionals[i].toLowerCase();
+      });
+      if (!hasMatch) {
+        throw new ValidationError(
+          `Invalid positional argument: Expected one of: ${expectedPosArgs
+            .map((cmd) => `'${cmd}'`)
+            .join(', ')}. Got '${positionals[i]}'`,
+        );
+      }
     }
   }
 }

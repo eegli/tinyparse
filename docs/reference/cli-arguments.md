@@ -53,7 +53,7 @@ This might happen if you declare a short flag twice or if two flags decamelize t
 ```ts
 createParser(
   { a: '', b: '' },
-  { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
+  { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } },
 );
 
 // Throws error:
@@ -72,6 +72,8 @@ const { parse } = createParser({});
 const parsed = await parse(['hello-world']);
 expect(parsed).toStrictEqual({ _: ['hello-world'] });
 ```
+
+You can put additional constraints on positional arguments, e.g., set a range of allowed values. See [Positional Arguments](reference/positional-args.md) for more information.
 
 ### Boolean Flags
 

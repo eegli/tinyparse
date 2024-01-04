@@ -40,7 +40,9 @@ export type CountExpression =
   | UniversalCountSymbol;
 
 export type PositionalOptions = {
-  count: CountExpression;
+  expect?: (null | string[])[];
+  caseSensitive?: boolean;
+  rejectAdditional?: boolean;
 };
 
 export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {

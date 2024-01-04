@@ -32,13 +32,14 @@ describe('Docs', () => {
       {},
       {
         positionals: {
-          count: '=0', // Allow no positional arguments
+          expect: [['ls', 'cd'], null],
         },
       },
     );
-    expect(() => {
-      parseSync(['hello-world']);
-    }).toThrow('Invalid number of positional arguments: Expected 0, got 1');
+
+    expect(parseSync(['ls', '/directory'])).toStrictEqual({
+      _: ['ls', '/directory'],
+    });
   });
 
   test('cli arguments, positional arguments 3', () => {
@@ -46,14 +47,16 @@ describe('Docs', () => {
       {},
       {
         positionals: {
-          count: '>=1', // Require 1 or more positional arguments
+          expect: [['ls', 'cd'], null],
+          caseSensitive: true,
         },
       },
     );
+
     expect(() => {
-      parseSync([]);
+      parseSync(['CD', 'my-app']);
     }).toThrow(
-      'Invalid number of positional arguments: Expected at least 1, got 0',
+      "Invalid positional argument: Expected one of: 'ls', 'cd'. Got 'CD'",
     );
   });
 
@@ -62,14 +65,20 @@ describe('Docs', () => {
       {},
       {
         positionals: {
-          count: '<=1', // Require 1 or less positional arguments
+          expect: [['ls'], null],
+          rejectAdditional: true,
         },
       },
     );
+
+    expect(parseSync(['ls', 'folder'])).toStrictEqual({
+      _: ['ls', 'folder'],
+    });
+
     expect(() => {
-      parseSync(['a', 'b']);
+      parseSync(['ls', 'folder', 'another-folder']);
     }).toThrow(
-      'Invalid number of positional arguments: Expected at most 1, got 2',
+      'Invalid number of positional arguments: Expected at most 2, got 3',
     );
   });
 
