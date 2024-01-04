@@ -1,5 +1,11 @@
 # @eegli/tinyparse
 
+## 0.15.0
+
+### Minor Changes
+
+- 258ab05: Increase minimum node version to 18 and upgrade dependencies
+
 ## 0.14.0
 
 ### Minor Changes
@@ -7,8 +13,8 @@
 - fa70f34: Arguments can now also separated by an equal sign instead of a whitespace. The following two are equivalent:
 
   ```ts
-  parse(['--username=john']);
-  parse(['--username', 'john']);
+  parse(["--username=john"]);
+  parse(["--username", "john"]);
   ```
 
 ## 0.13.0
@@ -30,8 +36,8 @@
 - 10ef97f: New API: `parseSync` is the synchronous alternative to `parse`:
 
   ```ts
-  const { parseSync } = createParser({ greeting: '' });
-  const parsed = parseSync(['--greeting', 'hello']);
+  const { parseSync } = createParser({ greeting: "" });
+  const parsed = parseSync(["--greeting", "hello"]);
   parsed; // { greeting: "hello" }
   ```
 
