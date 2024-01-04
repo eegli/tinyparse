@@ -28,17 +28,6 @@ export interface HelpOptions {
   base?: string;
 }
 
-export type EqCountSymbol =
-  | '=' // Exactly
-  | '>=' // More than or equal
-  | '<='; // Less than or equal
-
-export type UniversalCountSymbol = '*';
-
-export type CountExpression =
-  | `${EqCountSymbol}${number}`
-  | UniversalCountSymbol;
-
 export type PositionalOptions = {
   expect?: (null | string[])[];
   caseSensitive?: boolean;

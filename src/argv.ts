@@ -1,19 +1,6 @@
 import { ValidationError } from './error';
-import {
-  CountExpression,
-  UniversalCountSymbol,
-  EqCountSymbol,
-  PositionalArgs,
-  PositionalOptions,
-} from './types';
+import { PositionalArgs, PositionalOptions } from './types';
 import Utils from './utils';
-
-const allowedSymbols: (UniversalCountSymbol | EqCountSymbol)[] = [
-  '<=',
-  '>=',
-  '=',
-  '*',
-] as const;
 
 export class ArgvTransformer {
   public static transform(
@@ -57,29 +44,6 @@ export class ArgvTransformer {
     }
 
     return [flagMap, positionals];
-  }
-
-  public static validateCountExpr(expr: CountExpression) {
-    const symbolIdx = allowedSymbols.findIndex((sym) => expr.startsWith(sym));
-    const errorMessage = `Invalid count symbol: ${expr}`;
-
-    if (symbolIdx === -1) throw new Error(errorMessage);
-
-    const symbol = allowedSymbols[symbolIdx];
-
-    if (symbol === '*') return { count: -1, symbol };
-
-    // No count specified
-    if (expr.length === symbol.length) throw new Error(errorMessage);
-
-    const expectedNumPosArgs = Number(expr.slice(symbol.length));
-
-    // Count is specified but not a positive integer
-    if (isNaN(expectedNumPosArgs) || expectedNumPosArgs < 0) {
-      throw new Error(errorMessage);
-    }
-
-    return { expectedNumPosArgs, symbol };
   }
 
   public static validatePositionals(
