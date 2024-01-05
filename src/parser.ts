@@ -1,6 +1,6 @@
 import { Collector } from './collector';
 import { ValidationError } from './error';
-import { BaseFlagOption, PrimitiveRecord, Value } from './types';
+import { BaseFlagOptions, PrimitiveRecord, Value } from './types';
 import Utils from './utils';
 
 type InputState = Map<
@@ -16,11 +16,11 @@ export class Parser<T extends PrimitiveRecord> {
   private _argvInput: InputState = new Map();
   private _fileInput: InputState = new Map();
 
-  constructor(private readonly _options: Map<string, BaseFlagOption>) {}
+  constructor(private readonly _options: Map<string, BaseFlagOptions>) {}
 
   public withArgvInput(
     input: Map<string, unknown>,
-    aliases: Map<string, string> = new Map()
+    aliases: Map<string, string> = new Map(),
   ): this {
     // New state on new input
     this._argvInput.clear();
@@ -95,7 +95,7 @@ export class Parser<T extends PrimitiveRecord> {
           output.set(key, entry.value);
         } else {
           throw new ValidationError(
-            customValidator.errorMessage(entry.value, entry.receivedAs)
+            customValidator.errorMessage(entry.value, entry.receivedAs),
           );
         }
       } else {
@@ -104,7 +104,7 @@ export class Parser<T extends PrimitiveRecord> {
           output.set(key, entry.value);
         } else {
           throw new ValidationError(
-            `Invalid type for ${entry.receivedAs}. "${entry.value}" is not a ${expectedType}`
+            `Invalid type for ${entry.receivedAs}. "${entry.value}" is not a ${expectedType}`,
           );
         }
       }

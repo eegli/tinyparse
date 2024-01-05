@@ -1,4 +1,4 @@
-import { createParser, ValidationError } from '../src/index';
+import { createParser, ValidationError } from '../src';
 
 describe('Lib', () => {
   test('exports are defined', () => {

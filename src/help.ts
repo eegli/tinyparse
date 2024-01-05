@@ -1,11 +1,11 @@
-import { FlagOption } from './types';
+import { FlagOptions } from './types';
 
 export class HelpPrinter {
-  private _options: FlagOption[];
+  private _options: FlagOptions[];
   private _filePathFlags: string[] = [];
   private _filePathFlagDescription?: string;
 
-  constructor(options: Map<string, FlagOption>) {
+  constructor(options: Map<string, FlagOptions>) {
     // Required properties first, then alphabetical
     this._options = [...options.values()].sort((a, b) => {
       if (!!a['isRequired'] < !!b['isRequired']) return 1;

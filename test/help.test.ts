@@ -93,8 +93,8 @@ describe('Helper text', () => {
     expect(
       createParser(
         {},
-        { filePathArg: { longFlag: '--config', shortFlag: 'c' } }
-      ).help()
+        { filePathArg: { longFlag: '--config', shortFlag: 'c' } },
+      ).help(),
     ).toMatchInlineSnapshot(`
       "Usage
 

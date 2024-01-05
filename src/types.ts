@@ -4,14 +4,14 @@ type CustomValidator = {
 };
 
 // The parser requires a subset of options to work
-export interface BaseFlagOption {
+export interface BaseFlagOptions {
   isRequired?: boolean;
   validator?: CustomValidator;
   value: Value;
 }
 
 // All options for a flag
-export interface FlagOption extends BaseFlagOption {
+export interface FlagOptions extends BaseFlagOptions {
   longFlag: string;
   shortFlag?: string;
   description?: string;
@@ -28,13 +28,18 @@ export interface HelpOptions {
   base?: string;
 }
 
-export type PositionalOptions = {
-  expect?: (null | string[])[];
+export type PositionalOptionsValue = string[] | null;
+
+export type PositionalOptions<P = PositionalOptionsValue[]> = {
+  expect?: P;
   caseSensitive?: boolean;
   rejectAdditional?: boolean;
 };
 
-export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
+export type ParserOptions<
+  T extends PrimitiveRecord = PrimitiveRecord,
+  P extends PositionalOptionsValue[] = PositionalOptionsValue[],
+> = {
   options?: {
     [K in keyof T]?: {
       required?: boolean;
@@ -44,14 +49,25 @@ export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
       customValidator?: CustomValidator;
     };
   };
-  positionals?: PositionalOptions;
+  positionals?: PositionalOptions<P>;
   decamelize?: boolean;
   filePathArg?: FilePathArg;
 };
-export type PositionalArgs = string[];
 
-export type WithPositionalArgs<T> = T & { _: PositionalArgs };
+export type WithPositionalArgs<T, P extends string[] = string[]> = T & { _: P };
 
 export type PrimitiveRecord = Record<string, Value>;
 
 export type Value = string | number | boolean;
+
+export type TupleUnion<T> = {
+  [K in keyof T]: InferUnion<T[K]>;
+};
+
+export type InferUnion<T> = T extends infer U
+  ? U extends string[]
+    ? U[number]
+    : U extends null
+      ? string
+      : never
+  : never;

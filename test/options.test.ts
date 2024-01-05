@@ -16,7 +16,7 @@ describe('Options', () => {
           b: { shortFlag: 'b', longFlag: 'UpAndLoWeRCaSe' },
           ignoreThis: {},
         },
-      }
+      },
     );
     expect(Object.fromEntries(options.flagOptions)).toEqual({
       a: {
@@ -45,20 +45,21 @@ describe('Options', () => {
       () =>
         new Options(
           { a: '', b: '' },
-          { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } }
-        )
+          { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } },
+        ),
     ).toThrow(
-      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.'
+      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.',
     );
     expect(
-      () => new Options({ userName: '', 'user-name': '' }, { decamelize: true })
+      () =>
+        new Options({ userName: '', 'user-name': '' }, { decamelize: true }),
     ).toThrow(
-      'Parser config validation error, conflicting long flag: --user-name has been declared twice. Check your settings for custom long flags and decamelization.'
+      'Parser config validation error, conflicting long flag: --user-name has been declared twice. Check your settings for custom long flags and decamelization.',
     );
     expect(
-      () => new Options({ abc: '' }, { filePathArg: { longFlag: 'abc' } })
+      () => new Options({ abc: '' }, { filePathArg: { longFlag: 'abc' } }),
     ).toThrow(
-      'Conflicting flag: --abc has already been declared as a file path flag'
+      'Conflicting flag: --abc has already been declared as a file path flag',
     );
   });
   test('file path flag conversion', () => {
@@ -74,7 +75,7 @@ describe('Options', () => {
             longFlag,
             shortFlag,
           },
-        }
+        },
       );
       expect(options.filePathFlags).toStrictEqual(new Set(['--file', '-f']));
     });
@@ -93,7 +94,7 @@ describe('Options', () => {
           longFlag: 'file',
           shortFlag: 'f',
         },
-      }
+      },
     );
 
     expect(options.filePathFlags.size).toBe(2);

@@ -6,7 +6,7 @@
     "module": "commonjs",
     "noEmit": true,
     "checkJs": false,
-    "target": "ES2019",
+    "target": "ES2021",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -14,6 +14,7 @@
     "strict": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "baseUrl": "."
   }
 }

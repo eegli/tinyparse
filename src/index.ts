@@ -6,7 +6,9 @@ import {
   HelpOptions,
   ParserOptions,
   PrimitiveRecord,
+  TupleUnion,
   WithPositionalArgs,
+  PositionalOptionsValue,
 } from './types';
 
 export { ValidationError } from './error';
@@ -19,10 +21,10 @@ export type { ParserOptions };
  *
  * @export
  */
-export function createParser<T extends PrimitiveRecord>(
-  defaultValues: T,
-  opts?: ParserOptions<T>,
-) {
+export function createParser<
+  T extends PrimitiveRecord,
+  P extends PositionalOptionsValue[] = PositionalOptionsValue[],
+>(defaultValues: T, opts?: ParserOptions<T, P>) {
   const options = new Options(defaultValues, opts);
   const parser = new Parser<T>(options.flagOptions);
   const helpPrinter = new HelpPrinter(options.flagOptions)
@@ -31,7 +33,9 @@ export function createParser<T extends PrimitiveRecord>(
 
   const positionalOptions = opts?.positionals || {};
 
-  function parseSync(input: string[] = []): WithPositionalArgs<T> {
+  function parseSync(
+    input: string[] = [],
+  ): WithPositionalArgs<T, TupleUnion<P>> {
     const [transformed, positionals] = ArgvTransformer.transform(input);
     ArgvTransformer.validatePositionals(positionals, positionalOptions);
     return parser
@@ -42,7 +46,9 @@ export function createParser<T extends PrimitiveRecord>(
   }
 
   // eslint-disable-next-line require-await
-  async function parse(input: string[] = []): Promise<WithPositionalArgs<T>> {
+  async function parse(
+    input: string[] = [],
+  ): Promise<WithPositionalArgs<T, TupleUnion<P>>> {
     return parseSync(input);
   }
 

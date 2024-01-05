@@ -36,7 +36,7 @@ export default class Utils {
 
   public static splitAtFirst(
     str: string,
-    sep: string
+    sep: string,
   ): [string, string | undefined] {
     const i = str.indexOf(sep);
     if (i === -1) return [str, undefined];

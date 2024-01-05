@@ -1,9 +1,9 @@
-import { FlagOption, ParserOptions, PrimitiveRecord } from './types';
+import { FlagOptions, ParserOptions, PrimitiveRecord } from './types';
 import Utils from './utils';
 
 export class Options {
   public readonly aliases: Map<string, string> = new Map();
-  public readonly flagOptions: Map<string, FlagOption> = new Map();
+  public readonly flagOptions: Map<string, FlagOptions> = new Map();
 
   public readonly filePathFlags = new Set<string>();
   public readonly filePathFlagDesc?: string;

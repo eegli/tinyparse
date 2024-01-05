@@ -1,13 +1,13 @@
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
-import { BaseFlagOption, Value } from '../src/types';
+import { BaseFlagOptions, Value } from '../src/types';
 import { mockFs } from './_setup';
 
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
-const cfg = (opts: Record<string, BaseFlagOption> = {}) =>
+const cfg = (opts: Record<string, BaseFlagOptions> = {}) =>
   new Map(Object.entries(opts));
 const argv = (args: Record<string, Value>) => new Map(Object.entries(args));
 const alias = (args: Record<string, string>) => new Map(Object.entries(args));
@@ -23,7 +23,7 @@ describe('Parsing, with options', () => {
         str: { value: strVal },
         num: { value: numVal },
         default: { value: 'unchanged' },
-      })
+      }),
     )
       .withArgvInput(argv({ '--num': 1, str: '1' }), alias({ '--num': 'num' }))
       .parse()
@@ -46,14 +46,14 @@ describe('Parsing, with options', () => {
         .withArgvInput(argv({ xyz: 'twelve' }))
         .parse();
     }).toThrow(
-      new ValidationError(`Invalid type for xyz. "twelve" is not a number`)
+      new ValidationError(`Invalid type for xyz. "twelve" is not a number`),
     );
     expect(() => {
       new Parser(cfg({ abc: { value: numVal } }))
         .withArgvInput(argv({ abc: true }))
         .parse();
     }).toThrow(
-      new ValidationError(`Invalid type for abc. "true" is not a number`)
+      new ValidationError(`Invalid type for abc. "true" is not a number`),
     );
   });
 
@@ -97,7 +97,7 @@ describe('Parsing, with options', () => {
               errorMessage: () => 'whaaaat',
             },
           },
-        })
+        }),
       )
         .withArgvInput(argv({ x: 1 }))
         .parse();
@@ -114,7 +114,7 @@ describe('Parsing, with options', () => {
               errorMessage: (v, f) => `did get "${v}" for ${f}, expected hello`,
             },
           },
-        })
+        }),
       )
         .withArgvInput(argv({ x: 'goodbye' }))
         .parse();
@@ -138,14 +138,14 @@ describe('Parsing, file reading', () => {
         .withArgvInput(argv({ file: '' }))
         .withFileInput('no-file')
         .parse()
-        .collect()
+        .collect(),
     ).toStrictEqual({});
     expect(
       new Parser(cfg({ str: { value: strVal } }))
         .withArgvInput(argv({ file: 'test.json' }))
         .withFileInput('file')
         .parse()
-        .collect()
+        .collect(),
     ).toStrictEqual({
       str: 'hello from a file',
     });
@@ -156,7 +156,7 @@ describe('Parsing, file reading', () => {
         .withArgvInput(argv({ file: 'test.json' }))
         .withFileInput('file')
         .parse()
-        .collect()
+        .collect(),
     ).toStrictEqual({
       str: 'hello from a file',
     });
@@ -165,7 +165,7 @@ describe('Parsing, file reading', () => {
         .withArgvInput(argv({ file: 'test.json', str: 'hello from the cli' }))
         .withFileInput('file')
         .parse()
-        .collect()
+        .collect(),
     ).toStrictEqual({
       str: 'hello from the cli',
     });

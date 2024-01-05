@@ -2,7 +2,7 @@
 
 const handlePreserveConsecutiveUppercase = (
   decamelized: string,
-  separator: string
+  separator: string,
 ) => {
   // Lowercase all single uppercase characters. As we
   // want to preserve uppercase sequences, we cannot
@@ -10,24 +10,24 @@ const handlePreserveConsecutiveUppercase = (
   // `data_For_USACounties` → `data_for_USACounties`
   decamelized = decamelized.replace(
     /((?<![\p{Uppercase_Letter}\d])[\p{Uppercase_Letter}\d](?![\p{Uppercase_Letter}\d]))/gu,
-    ($0) => $0.toLowerCase()
+    ($0) => $0.toLowerCase(),
   );
 
   // Remaining uppercase sequences will be separated from lowercase sequences.
   // `data_For_USACounties` → `data_for_USA_counties`
   return decamelized.replace(
     /(\p{Uppercase_Letter}+)(\p{Uppercase_Letter}\p{Lowercase_Letter}+)/gu,
-    (_, $1, $2) => $1 + separator + $2.toLowerCase()
+    (_, $1, $2) => $1 + separator + $2.toLowerCase(),
   );
 };
 
 export default function decamelize(
   text: string,
-  { separator = '_', preserveConsecutiveUppercase = false } = {}
+  { separator = '_', preserveConsecutiveUppercase = false } = {},
 ): string {
   if (!(typeof text === 'string' && typeof separator === 'string')) {
     throw new TypeError(
-      'The `text` and `separator` arguments should be of type `string`'
+      'The `text` and `separator` arguments should be of type `string`',
     );
   }
 
@@ -43,7 +43,7 @@ export default function decamelize(
   // `myURLstring → `my_URLstring`
   const decamelized = text.replace(
     /([\p{Lowercase_Letter}\d])(\p{Uppercase_Letter})/gu,
-    replacement
+    replacement,
   );
 
   if (preserveConsecutiveUppercase) {
@@ -55,7 +55,7 @@ export default function decamelize(
   return decamelized
     .replace(
       /(\p{Uppercase_Letter})(\p{Uppercase_Letter}\p{Lowercase_Letter}+)/gu,
-      replacement
+      replacement,
     )
     .toLowerCase();
 }

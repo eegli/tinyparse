@@ -1,11 +1,11 @@
 import { ValidationError } from './error';
-import { PositionalArgs, PositionalOptions } from './types';
+import { PositionalOptions } from './types';
 import Utils from './utils';
 
 export class ArgvTransformer {
   public static transform(
     argv: string[],
-  ): [Map<string, string | boolean>, PositionalArgs] {
+  ): [Map<string, string | boolean>, string[]] {
     const flagMap = new Map<string, string | boolean>();
 
     const positionals: string[] = [];
@@ -47,7 +47,7 @@ export class ArgvTransformer {
   }
 
   public static validatePositionals(
-    positionals: PositionalArgs,
+    positionals: string[],
     options: PositionalOptions,
   ): void {
     const {

@@ -3,6 +3,10 @@ import type { Value } from '../../src';
 import { createParser } from '../../src';
 import { WithPositionalArgs } from '../../src/types';
 
+/**
+ * Return type tests
+ */
+
 type Input = {
   name: string;
   age: number;
@@ -14,24 +18,38 @@ expectAssignable<Promise<WithPositionalArgs<Input>>>(
     name: 'eric',
     age: 11,
     loggedIn: false,
-  }).parse()
+  }).parse(),
 );
-
-expectAssignable<WithPositionalArgs<Input>>(
-  createParser({
-    name: 'eric',
-    age: 11,
-    loggedIn: false,
-  }).parseSync()
-);
-
 expectAssignable<Promise<WithPositionalArgs<Input>>>(
   createParser({
     name: 'eric',
     age: 11,
     loggedIn: false,
-  }).parse([])
+  }).parse([]),
 );
+expectAssignable<WithPositionalArgs<Input>>(
+  createParser({
+    name: 'eric',
+    age: 11,
+    loggedIn: false,
+  }).parseSync(),
+);
+
+/**
+ * Parameter and option tests
+ */
+type Defaults = Parameters<typeof createParser<Input>>[0];
+
+expectType<Defaults>({ name: '', age: 0, loggedIn: true });
+expectNotAssignable<Defaults>({
+  name: {},
+});
+expectNotAssignable<Defaults>({
+  name: [],
+});
+expectNotAssignable<Defaults>({
+  [Symbol.iterator]: null,
+});
 
 type Params = Parameters<typeof createParser<Input>>[1];
 
@@ -68,16 +86,28 @@ expectNotAssignable<Params>({
   },
 });
 
-type Defaults = Parameters<typeof createParser<Input>>[0];
+/**
+ * Infer positionals tests
+ */
 
-expectType<Defaults>({ name: '', age: 0, loggedIn: true });
+expectType<['a' | 'b', string, 'c']>(
+  createParser(
+    {},
+    {
+      positionals: {
+        expect: [['a', 'b'], null, ['c']] as const,
+      },
+    },
+  ).parseSync()._,
+);
 
-expectNotAssignable<Defaults>({
-  name: {},
-});
-expectNotAssignable<Defaults>({
-  name: [],
-});
-expectNotAssignable<Defaults>({
-  [Symbol.iterator]: null,
-});
+expectType<string[]>(
+  createParser(
+    {},
+    {
+      positionals: {
+        expect: [['a', 'b'], null, ['c']],
+      },
+    },
+  ).parseSync()._,
+);

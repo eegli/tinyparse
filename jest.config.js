@@ -5,7 +5,8 @@ module.exports = {
   snapshotFormat: {
     printBasicPrototype: false,
   },
-  roots: ['<rootDir>/src', '<rootDir>/test'],
+  rootDir: '.',
+  roots: ['<rootDir>'],
   collectCoverageFrom: ['<rootDir>/src/**', '!<rootDir>/src/lib/**'],
   coverageThreshold: {
     global: {
