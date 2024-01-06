@@ -61,10 +61,10 @@ export type PrimitiveRecord = Record<string, Value>;
 export type Value = string | number | boolean;
 
 export type TupleUnion<T> = {
-  [K in keyof T]: InferUnion<T[K]>;
+  [K in keyof T]: InferLiteralUnion<T[K]>;
 };
 
-export type InferUnion<T> = T extends infer U
+export type InferLiteralUnion<T> = T extends infer U
   ? U extends string[]
     ? U[number]
     : U extends null

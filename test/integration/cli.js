@@ -1,24 +1,3 @@
-# Examples
-
-Here's a full example on how you could build a minimal command line interface with Tinyparse.
-
-We're building the interface for a small CLI tool that copies or moves files from one folder to another. The user can specify a file extension, a date after which the files were created, and whether to ignore folders. The user can also specify a number of files to copy/move. The first argument is a positional argument, i.e., it is not prefixed by a flag. It can either be `copy` or `move`. The second and third arguments are positional arguments as well, but they can be any value.
-
-Make sure your `package.json`'s `type` field is set to `module` or convert the `import` to a `require` statement.
-
-Then, invoke the script like so:
-
-```bash
-node cli.js move src/images dest/images --ext .jpg -i --first 10 --after 2018
-```
-
-Or
-
-```bash
-node cli.js --help
-```
-
-```js
 #!/usr/bin/bash
 
 // filename: cli.js
@@ -80,6 +59,5 @@ export default function run(argv) {
   - and ${ignoreFolders ? 'ignore' : 'include'} any subfolders`;
 }
 
-const result = run(process.argv.slice(2));
-console.info(result);
-```
+/* const result = run(process.argv.slice(2));
+console.info(result); */

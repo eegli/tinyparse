@@ -1,5 +1,34 @@
 # Quickstart
 
+## Install
+
+Node.js v18 or later is required.
+
+```bash
+yarn add @eegli/tinyparse
+```
+
+or
+
+```bash
+npm i @eegli/tinyparse
+```
+
+## Usage
+
+Tinyparse binds a parser to some default values you feed it.
+
+`createParser(defaultValues, options = {})`
+
+- `defaultValues: Record<string, Value>`: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
+
+- `options: object`: Options object. You can specify both a _file flag_ (whose flag value will point to a file) and options per key.
+
+Note that most arguments and options are optional. IntelliSense and
+TypeScript will show you the detailed signatures and what is required.
+
+For an advanced example, see [examples](/examples.md).
+
 Tinyparse is made for parsing simple user input. It can process **command line input**, i.e., `process.argv` - an array of strings - and build an object literal from it. The object to parse _into_ may only have `string`, `number` or `boolean` property values. These three primitive types are further denoted as a `Value` type.
 
 CLI arguments can either be separated by a whitespace or an equal sign.
@@ -28,84 +57,3 @@ assert.deepStrictEqual(parsed1, {
 ```
 
 `createParser` builds both an asynchronous (`parse`) and synchronous (`parseSync`) parser. Apart from their different return types, both functions do the exact same thing.
-
-## Install
-
-Node.js v18 or later is required.
-
-```bash
-yarn add @eegli/tinyparse
-```
-
-or
-
-```bash
-npm i @eegli/tinyparse
-```
-
-## Usage
-
-Tinyparse binds a parser to some default values you feed it.
-
-`createParser(defaultValues, options = {})`
-
-- `defaultValues: Record<string, Value>`: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
-
-- `options: object`: Options object. You can specify both a _file flag_ (whose flag value will point to a file) and options per key.
-
-Note that most arguments and options are optional. IntelliSense and
-TypeScript will show you the detailed signatures and what is required.
-
-### Advanced Example
-
-In the following example, we're building the interface for a small CLI tool that copies or moves files from one folder to another. The user can specify a file extension, a date after which the files were created, and whether to ignore folders. The user can also specify a number of files to copy/move. The first argument is a positional argument, i.e., it is not prefixed by a flag. It can either be `copy` or `move`. The second and third arguments are positional arguments as well, but they can be any value.
-
-```ts
-import { createParser } from '@eegli/tinyparse';
-import assert from 'node:assert/strict';
-
-const defaultValues = {
-  fileExtensions: '',
-  ignoreFolders: false,
-  first: Infinity,
-  afterDate: '',
-};
-const { parse } = createParser(defaultValues, {
-  options: {
-    fileExtensions: {
-      required: true,
-      longFlag: 'ext',
-    },
-    ignoreFolders: {
-      shortFlag: 'i',
-    },
-    afterDate: {
-      longFlag: 'after',
-    },
-  },
-  positionals: {
-    expect: [['copy', 'move'], null, null],
-    caseSensitive: true,
-  },
-});
-const parsed = await parse([
-  'move', // Required positional argument, either 'copy' or 'move'
-  'src/images', // Required positional argument, any value
-  'dest/images', // Required positional argument, any value
-  '--ext', // Custom long flag
-  'jpg', // The value for "fileExtensions"
-  '-i', // Custom short flag
-  '--first', // Default long flag
-  '10', // Will be parsed as number
-  '--after', // Custom long flag
-  '2018', // Will remain a string
-]);
-
-assert.deepStrictEqual(parsed, {
-  _: ['move', 'src/images', 'dest/images'],
-  fileExtensions: 'jpg',
-  ignoreFolders: true,
-  first: 10,
-  afterDate: '2018',
-});
-```
