@@ -21,10 +21,10 @@ describe('Docs', () => {
       'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.',
     );
   });
-  test('cli arguments, positional arguments 1', async () => {
-    const { parse } = createParser({});
-    const parsed = await parse(['hello-world']);
-    expect(parsed).toStrictEqual({ _: ['hello-world'] });
+  test('cli arguments, positional arguments 1', () => {
+    const { parseSync } = createParser({});
+    const positionals = parseSync(['hello-world'])._;
+    expect(positionals).toStrictEqual(['hello-world']);
   });
 
   test('cli arguments, positional arguments 2', () => {
@@ -32,26 +32,14 @@ describe('Docs', () => {
       {},
       {
         positionals: {
-          expect: [['ls', 'cd'], null],
-        },
-      },
-    );
-
-    expect(parseSync(['ls', '/directory'])).toStrictEqual({
-      _: ['ls', '/directory'],
-    });
-  });
-
-  test('cli arguments, positional arguments 3', () => {
-    const { parseSync } = createParser(
-      {},
-      {
-        positionals: {
-          expect: [['ls', 'cd'], null],
+          expect: [['ls', 'cd'], null] as const,
           caseSensitive: true,
         },
       },
     );
+    // TS infers that this is of type  ["ls" | "cd", string]
+    const positionals = parseSync(['ls', '/directory'])._;
+    expect(positionals).toStrictEqual(['ls', '/directory']);
 
     expect(() => {
       parseSync(['CD', 'my-app']);
@@ -60,12 +48,12 @@ describe('Docs', () => {
     );
   });
 
-  test('cli arguments, positional arguments 4', () => {
+  test('cli arguments, positional arguments 3', () => {
     const { parseSync } = createParser(
       {},
       {
         positionals: {
-          expect: [['ls'], null],
+          expect: [['ls'], null] as const,
           rejectAdditional: true,
         },
       },
@@ -95,11 +83,11 @@ describe('Docs', () => {
   });
   test('cli arguments, number conversion', async () => {
     const { parse } = createParser({
-      followers: -1, // expect number
+      limit: Infinity, // expect number
       year: '2000', // expect (date) string
     });
-    const parsed = await parse(['--followers', '8', '--year', '2023']);
-    expect(parsed.followers).toBe(8);
+    const parsed = await parse(['--limit', '8', '--year', '2023']);
+    expect(parsed.limit).toBe(8);
     expect(parsed.year).toBe('2023');
   });
 

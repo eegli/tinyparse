@@ -33,47 +33,47 @@ test('quickstart example', async () => {
 
 test('quickstart advanced example', async () => {
   const defaultValues = {
-    to: '',
-    from: '',
-    hasGithubProfile: false,
-    hasGithubPlus: true,
-    followerCount: 0,
-    birthYear: '',
-    unchanged: 'unchanged',
+    fileExtensions: '',
+    first: Infinity,
+    ignoreFolders: false,
+    afterDate: '',
   };
   const { parse } = createParser(defaultValues, {
     options: {
-      followerCount: {
+      fileExtensions: {
         required: true,
-        shortFlag: 'fc',
+        longFlag: 'ext',
       },
-      hasGithubProfile: {
-        longFlag: 'github',
+      ignoreFolders: {
+        shortFlag: 'i',
       },
+      afterDate: {
+        longFlag: 'after',
+      },
+    },
+    positionals: {
+      expect: [['copy', 'move'], null, null],
+      caseSensitive: true,
     },
   });
   const parsed = await parse([
-    'congratulations', // Positional argument
-    '--to', // Long flag
-    'John', // Long flag value
-    '--from=Anna', // Equal sign instead of space
-    '--github', // Custom long boolean flag
-    '--hasGithubPlus', // Another boolean flag
-    '-fc', // Custom short flag
+    'move', // Required positional argument, either 'copy' or 'move'
+    'src/images', // Required positional argument, any value
+    'dest/images', // Required positional argument, any value
+    '--ext', // Custom long flag
+    'jpg', // The value for "fileExtensions"
+    '-i', // Custom short flag
+    '--first', // Default long flag
     '10', // Will be parsed as number
-    'ignoredProperty', // This property is ignored
-    '--birthYear', // Long flag
+    '--after', // Custom long flag
     '2018', // Will remain a string
   ]);
 
   assert.deepStrictEqual(parsed, {
-    _: ['congratulations'],
-    to: 'John',
-    from: 'Anna',
-    hasGithubPlus: true,
-    hasGithubProfile: true,
-    followerCount: 10,
-    birthYear: '2018',
-    unchanged: 'unchanged',
+    _: ['move', 'src/images', 'dest/images'],
+    fileExtensions: 'jpg',
+    ignoreFolders: true,
+    first: 10,
+    afterDate: '2018',
   });
 });

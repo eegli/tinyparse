@@ -4,13 +4,10 @@
 
 Tinyparse:
 
-- Collects **command arguments**
+- Collects and validates **command arguments**
 - Parses and validates **long and short flag arguments**
 
 All arguments until the first flag are considered _command arguments_, that is, they are _positional_ arguments. Long flags start with two hyphens (`--`), short flags with a single hyphen (`-`). A valid _flag-argument_ pair consists of a _flag_ followed by the _flag argument_, separated by a whitespace or equal sign. The order of flag-argument pairs does not matter.
-
-- Command arguments are only collected, they are _not_ validated
-- Unknown input that is neither a command argument, a flag or flag argument is ignored
 
 | Example                   | Abstract format                     | Support |
 | ------------------------- | ----------------------------------- | ------- |
@@ -61,16 +58,16 @@ createParser(
 // -a has been declared twice. Check your settings for short flags
 ```
 
-### Positional (Command) Arguments
+### Positional Arguments
 
 When given an array of strings, Tinyparse will collect all positional/command arguments on the `_` property.
 
-<!-- doctest: positional arguments -->
+<!-- doctest: positional arguments 1 -->
 
 ```ts
-const { parse } = createParser({});
-const parsed = await parse(['hello-world']);
-expect(parsed).toStrictEqual({ _: ['hello-world'] });
+const { parseSync } = createParser({});
+const positionals = parseSync(['hello-world'])._;
+expect(positionals).toStrictEqual(['hello-world']);
 ```
 
 You can put additional constraints on positional arguments, e.g., set a range of allowed values. See [Positional Arguments](reference/positional-args.md) for more information.
@@ -107,10 +104,10 @@ If and only if the _expected value_ for a flag is a number, tinyparse will try t
 
 ```ts
 const { parse } = createParser({
-  followers: -1, // expect number
+  limit: Infinity, // expect number
   year: '2000', // expect (date) string
 });
-const parsed = await parse(['--followers', '8', '--year', '2023']);
-expect(parsed.followers).toBe(8);
+const parsed = await parse(['--limit', '8', '--year', '2023']);
+expect(parsed.limit).toBe(8);
 expect(parsed.year).toBe('2023');
 ```

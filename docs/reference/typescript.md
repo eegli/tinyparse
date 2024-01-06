@@ -1,6 +1,6 @@
 # TypeScript
 
-- The `ParserOptions` utility type can facilitate bootstrapping a parser.
+The `ParserOptions` utility type can facilitate bootstrapping a parser.
 
 Assuming you have an object with some default values, you can use the generic `ParserOptions` helper type to assemble the arguments for the parser outside of the factory function.
 
