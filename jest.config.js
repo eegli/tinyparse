@@ -29,13 +29,5 @@ module.exports = {
       testMatch: ['<rootDir>/test/e2e/*.test.ts'],
       setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
     },
-    {
-      displayName: {
-        color: 'magenta',
-        name: 'types',
-      },
-      runner: 'jest-runner-tsd',
-      testMatch: ['<rootDir>/test/types/*.test.ts'],
-    },
   ],
 };

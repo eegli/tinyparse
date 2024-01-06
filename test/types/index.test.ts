@@ -1,4 +1,4 @@
-import { expectAssignable, expectNotAssignable, expectType } from 'tsd-lite';
+import { expect } from 'tstyche';
 import type { Value } from '../../src';
 import { createParser } from '../../src';
 import { WithPositionalArgs } from '../../src/types';
@@ -9,42 +9,42 @@ type Input = {
   loggedIn: boolean;
 };
 
-expectAssignable<Promise<WithPositionalArgs<Input>>>(
+expect<Promise<WithPositionalArgs<Input>>>().type.toBeAssignable(
   createParser({
     name: 'eric',
     age: 11,
     loggedIn: false,
-  }).parse()
+  }).parse(),
 );
 
-expectAssignable<WithPositionalArgs<Input>>(
+expect<WithPositionalArgs<Input>>().type.toBeAssignable(
   createParser({
     name: 'eric',
     age: 11,
     loggedIn: false,
-  }).parseSync()
+  }).parseSync(),
 );
 
-expectAssignable<Promise<WithPositionalArgs<Input>>>(
+expect<Promise<WithPositionalArgs<Input>>>().type.toBeAssignable(
   createParser({
     name: 'eric',
     age: 11,
     loggedIn: false,
-  }).parse([])
+  }).parse([]),
 );
 
 type Params = Parameters<typeof createParser<Input>>[1];
 
-expectAssignable<Params>({});
-expectAssignable<Params>({
+expect<Params>().type.toBeAssignable({});
+expect<Params>().type.toBeAssignable({
   filePathArg: {
     longFlag: '--file',
   },
 });
-expectAssignable<Params>({
+expect<Params>().type.toBeAssignable({
   options: {},
 });
-expectAssignable<Params>({
+expect<Params>().type.toBeAssignable({
   options: {
     name: {
       required: true,
@@ -62,7 +62,7 @@ expectAssignable<Params>({
     loggedIn: {},
   },
 });
-expectNotAssignable<Params>({
+expect<Params>().type.not.toBeAssignable({
   options: {
     age2: {},
   },
@@ -70,14 +70,14 @@ expectNotAssignable<Params>({
 
 type Defaults = Parameters<typeof createParser<Input>>[0];
 
-expectType<Defaults>({ name: '', age: 0, loggedIn: true });
+expect<Defaults>().type.toEqual({ name: '', age: 0, loggedIn: true });
 
-expectNotAssignable<Defaults>({
+expect<Defaults>().type.not.toBeAssignable({
   name: {},
 });
-expectNotAssignable<Defaults>({
+expect<Defaults>().type.not.toBeAssignable({
   name: [],
 });
-expectNotAssignable<Defaults>({
+expect<Defaults>().type.not.toBeAssignable({
   [Symbol.iterator]: null,
 });
