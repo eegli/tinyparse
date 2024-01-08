@@ -19,7 +19,7 @@ const { parseSync, help } = createParser(
         longFlag: 'ext',
       },
     },
-    commands: {
+    subcommands: {
       cp: {
         args: ['from', 'to'],
         description: 'Copy files from one folder to another',

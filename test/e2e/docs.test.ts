@@ -53,7 +53,7 @@ describe('subcommands', () => {
     const { parseSync } = createParser(
       {},
       {
-        commands: {
+        subcommands: {
           status: {
             args: [],
             description: 'Show status',
@@ -237,7 +237,7 @@ describe('todo', () => {
             required: true,
           },
         },
-        commands: {
+        subcommands: {
           login: {
             args: ['username'],
             description: 'Login to Github',

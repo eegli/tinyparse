@@ -1,6 +1,9 @@
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { execa } from 'execa';
+import { Writable } from 'node:stream';
+import { WritableStream } from 'stream/web';
 
 test('landing page example', async () => {
   const { parse } = createParser({
@@ -29,4 +32,27 @@ test('quickstart example', async () => {
     active: true,
     _: ['hello'],
   });
+});
+test('advanced example', async () => {
+  const runcli = 'node cli.js';
+  const exampleArgs = [
+    'status',
+    'cp src dest -v',
+    'ls folder --ext=js,ts',
+    'rm file1 file2 file3 file4',
+    '--help',
+  ];
+  const outputs = [
+    /Showing status/,
+    /Copying src to dest/,
+    /Listing folder/,
+    /Removing file1, file2, file3, file4/,
+    /Usage/,
+  ];
+  for (let i = 0; i < exampleArgs.length; i++) {
+    const args = exampleArgs[i];
+    const output = outputs[i];
+    const { stdout } = await execa(runcli, args.split(' '));
+    assert.match(stdout, output);
+  }
 });

@@ -1,5 +1,6 @@
 - [Quick start](quickstart.md)
 - [Command Line Options](reference/cli-options.md)
+- Refernce
   - [Subcommands](reference/subcommands.md)
   - [Required Arguments](reference/required-arguments.md)
   - [Custom Flags](reference/custom-flags.md)
@@ -9,5 +10,5 @@
   - [Printing Arguments](reference/printing-arguments.md)
   - [Error Handling](reference/error-handling.md)
 - [TypeScript](reference/typescript.md)
-- [Examples](examples.md)
+- [Advanced Example](advanced-example.md)
 - [Contributing](contributing.md)

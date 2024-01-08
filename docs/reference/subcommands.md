@@ -16,7 +16,7 @@ One of the biggest advantages of using Tinyparse (together with TypeScript) is t
 
 ## Examples
 
-In the following example, we are building a CLI that allows the user to perform various file system operations. Each key in the `commands` object is a subcommand. The `args` property specifies the pattern of the subcommand's arguments, and the string literals are used in the help text to describe the arguments. The `description` property is optional and will be used to describe the subcommand in the help text.
+In the following example, we are building a CLI that allows the user to perform various file system operations. Each key in the `subcommands` object is a subcommand. The `args` property specifies the pattern of the subcommand's arguments, and the string literals are used in the help text to describe the arguments. The `description` property is optional and will be used to describe the subcommand in the help text.
 
 <!-- doctest: cli arguments, command arguments advanced -->
 
@@ -26,7 +26,7 @@ import { createParser } from '@eegli/tinyparse';
 const { parseSync } = createParser(
   {},
   {
-    commands: {
+    subcommands: {
       status: {
         args: [],
         description: 'Show status',

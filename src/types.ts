@@ -49,7 +49,8 @@ export type ParserOptions<
       customValidator?: CustomValidator;
     };
   };
-  commands?: C;
+  subcommands?: C;
+  requireSubcommand?: boolean;
   decamelize?: boolean;
   filePathArg?: FilePathArg;
 };

@@ -1,4 +1,4 @@
-# Examples
+# Advanced Example
 
 Here's a full example on how you could build a minimal command line interface with Tinyparse.
 
@@ -38,7 +38,7 @@ const { parseSync, help } = createParser(
         longFlag: 'ext',
       },
     },
-    commands: {
+    subcommands: {
       cp: {
         args: ['from', 'to'],
         description: 'Copy files from one folder to another',

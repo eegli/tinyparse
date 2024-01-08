@@ -28,11 +28,11 @@ export function createParser<
   const options = new Options(defaultValues, opts);
   const parser = new Parser<T>(options.flagOptions);
   const helpPrinter = new HelpPrinter(options.flagOptions)
-    .withCommands(opts?.commands || {})
+    .withCommands(opts?.subcommands || {})
     .withFilePathFlags(...options.filePathFlags)
     .withFilePathDescription(options.filePathFlagDesc);
 
-  const commandOptions = opts?.commands || {};
+  const commandOptions = opts?.subcommands || {};
 
   function parseSync(
     input: string[] = [],
