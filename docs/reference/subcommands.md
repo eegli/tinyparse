@@ -2,7 +2,7 @@
 
 By default, Tinyparse simply collects all positional arguments in an array on the `_` property. You can put additional constraints on positional arguments, which essentially turns them into **subcommands**.
 
-There are **three types of patterns** you can specify for subcommands, i.e., their arguments.
+There are **three types of patterns** you can specify for a subcommand, i.e., its arguments.
 
 - `[arg1, arg2, ...argn]`: A fixed number of arguments (array of strings)
 - `[]`: No arguments (empty array)
@@ -98,28 +98,8 @@ const subcommand = createParser(
   },
 ).parseSync()._;
 expectType<['cmd', string, string]>(subcommand);
-
-const subcommand2 = createParser(
-  {},
-  {
-    commands: {
-      cmd: {
-        args: [], // 0 arguments
-      },
-    } as const,
-  },
-).parseSync()._;
-expectType<['cmd']>(subcommand2);
-
-const subcommand3 = createParser(
-  {},
-  {
-    commands: {
-      cmd: {
-        args: 'args', // any number of arguments
-      },
-    } as const,
-  },
-).parseSync()._;
-expectType<['cmd', ...string[]]>(subcommand3);
 ```
+
+Likewise, if we'd specify `args: []`, the returned type is `['cmd']`. If we'd specify `args: ''`, we'd get `['cmd', ...string[]]`, which is essentially an array with type-safety on the first element.
+
+Keep in mind that using subcommands is completely optional. If you want to, simply use the collected positionals and do all the validation yourself. Using subcommands can be helpful if you want validated and type-safe subcommands as well as a neatly-formatted help text.
