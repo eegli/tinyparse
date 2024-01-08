@@ -58,8 +58,8 @@ export class HelpPrinter {
         } else {
           str += ` <${args}>`;
         }
-        if (description) str += `\n${indent}-${description}`;
-        str += '\n\n';
+        if (description) str += `\n${indent}- ${description}`;
+        str += '\n';
       }
       str += '\n';
     }

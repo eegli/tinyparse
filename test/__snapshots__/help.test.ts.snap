@@ -5,16 +5,15 @@ exports[`Helper text commands 1`] = `
 
 Available commands
    cp <source> <destination>
-   -Copy files from source to destination
-
+   - Copy files from source to destination
    cd <directory>
-   -Navigate to a directory
-
+   - Navigate to a directory
    info 
-
    rm <...files>
-   -Remove multiple files or directories
+   - Remove multiple files or directories
 
+Required flags
+   --nonverbose [boolean]
 
 Optional flags
    --verbose [boolean]"

@@ -76,9 +76,15 @@ describe('Helper text', () => {
 
   test('commands', () => {
     const defaultValues = {
+      nonverbose: false,
       verbose: false,
     };
     const { help } = createParser(defaultValues, {
+      options: {
+        nonverbose: {
+          required: true,
+        },
+      },
       commands: {
         cp: {
           args: ['source', 'destination'],

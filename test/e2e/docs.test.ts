@@ -1,9 +1,9 @@
 import type { ParserOptions, Value } from '../../src';
-import { createParser, ValidationError } from '../../src';
+import { ValidationError, createParser } from '../../src';
 import { mockFs } from '../_setup';
 
-describe('Docs', () => {
-  test('cli arguments, keeps defaults', async () => {
+describe('command line options', () => {
+  test('keeps defaults', async () => {
     const { parse } = createParser({ hello: 'world' });
     let parsed = await parse();
     expect(parsed).toStrictEqual({ _: [], hello: 'world' });
@@ -11,7 +11,7 @@ describe('Docs', () => {
     parsed = await parse(['--hello', 'john']);
     expect(parsed).toStrictEqual({ _: [], hello: 'john' });
   });
-  test('cli arguments, internal validation', () => {
+  test('internal validation', () => {
     expect(() => {
       createParser(
         { a: '', b: '' },
@@ -21,59 +21,11 @@ describe('Docs', () => {
       'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.',
     );
   });
-  test('cli arguments, command arguments default', () => {
+  test('command arguments', () => {
     const { parseSync } = createParser({});
     const positionals = parseSync(['hello-world'])._;
     expect(positionals).toStrictEqual(['hello-world']);
   });
-
-  test('cli arguments, command arguments advanced', () => {
-    const { parseSync } = createParser(
-      {},
-      {
-        commands: {
-          status: {
-            args: [],
-            description: 'Show status',
-          },
-          ls: {
-            args: ['folder'],
-            description: 'Checkout a folder',
-          },
-          copy: {
-            args: ['src', 'dest'],
-            description: 'Copy files from source to destination',
-          },
-          remove: {
-            args: 'files',
-            description: 'Remove multiple files',
-          },
-        } as const,
-      },
-    );
-
-    let positionals = parseSync(['ls', '/directory'])._;
-    expect(positionals).toStrictEqual(['ls', '/directory']);
-
-    positionals = parseSync(['copy', 'src', 'dest'])._;
-    expect(positionals).toStrictEqual(['copy', 'src', 'dest']);
-
-    positionals = parseSync(['remove', 'file1', 'file2', 'file3'])._;
-    expect(positionals).toStrictEqual(['remove', 'file1', 'file2', 'file3']);
-
-    expect(() => {
-      parseSync(['cd', 'my-app']);
-    }).toThrow("Unknown command 'cd'");
-
-    expect(() => {
-      parseSync(['copy', 'src']);
-    }).toThrow("Invalid usage of command 'copy'. Too few arguments");
-
-    expect(() => {
-      parseSync(['status', 'noooop']);
-    }).toThrow("Invalid usage of command 'status'. Too many arguments");
-  });
-
   test('cli arguments, boolean flags 1', async () => {
     const { parse } = createParser({ verbose: false });
     const parsed = await parse(['--verbose']);
@@ -94,7 +46,57 @@ describe('Docs', () => {
     expect(parsed.limit).toBe(8);
     expect(parsed.year).toBe('2023');
   });
+});
 
+describe('subcommands', () => {
+  test('cli arguments, command arguments advanced', () => {
+    const { parseSync } = createParser(
+      {},
+      {
+        commands: {
+          status: {
+            args: [],
+            description: 'Show status',
+          },
+          copy: {
+            args: ['src', 'dest'],
+            description: 'Copy files from source to destination',
+          },
+          remove: {
+            args: 'files',
+            description: 'Remove multiple files',
+          },
+        } as const,
+      },
+    );
+
+    let positionals = parseSync([])._; // No subcommand, no problemo
+    expect(positionals).toStrictEqual([]);
+
+    positionals = parseSync(['status'])._;
+    expect(positionals).toStrictEqual(['status']);
+
+    positionals = parseSync(['copy', 'src', 'dest'])._;
+    expect(positionals).toStrictEqual(['copy', 'src', 'dest']);
+
+    positionals = parseSync(['remove', 'file1', 'file2', 'file3'])._;
+    expect(positionals).toStrictEqual(['remove', 'file1', 'file2', 'file3']);
+
+    expect(() => {
+      parseSync(['cd', 'my-app']);
+    }).toThrow("Unknown command 'cd'");
+
+    expect(() => {
+      parseSync(['copy', 'src']);
+    }).toThrow("Invalid usage of command 'copy'. Too few arguments");
+
+    expect(() => {
+      parseSync(['status', 'noooop']);
+    }).toThrow("Invalid usage of command 'status'. Too many arguments");
+  });
+});
+
+describe('todo', () => {
   test('custom flags', async () => {
     const { parse } = createParser(
       {
@@ -222,21 +224,27 @@ describe('Docs', () => {
   test('printing args, without decamelization', () => {
     const { help } = createParser(
       {
-        userName: '',
         age: Infinity,
         hasGithubProfile: false,
       },
       {
         options: {
-          userName: {
-            shortFlag: 'u',
-            description: 'Your GitHub username',
-          },
           hasGithubProfile: {
             description: 'Indicate whether you have a Github profile',
           },
           age: {
+            shortFlag: 'a',
             required: true,
+          },
+        },
+        commands: {
+          login: {
+            args: ['username'],
+            description: 'Login to Github',
+          },
+          logout: {
+            args: [],
+            description: 'Logout from Github',
           },
         },
         filePathArg: {
@@ -247,22 +255,25 @@ describe('Docs', () => {
     );
     const helpText = help({
       title: 'CLI usage',
-      base: 'my-cli <message> [flags]',
+      base: 'You can use this CLI to do various things',
     });
     expect(helpText).toMatchInlineSnapshot(`
       "CLI usage
 
-      my-cli <message> [flags]
+      You can use this CLI to do various things
+
+      Available commands
+         login <username>
+         - Login to Github
+         logout 
+         - Logout from Github
 
       Required flags
-         --age [number]
+         -a, --age [number]
 
       Optional flags
          --hasGithubProfile [boolean]
          Indicate whether you have a Github profile
-
-         -u, --userName [string]
-         Your GitHub username
 
          --config [string]
          Path to your Github config file
@@ -274,15 +285,9 @@ describe('Docs', () => {
     const { help } = createParser(
       {
         userName: '',
-        hasGithubProfile: false,
       },
       {
         decamelize: true,
-        options: {
-          userName: {
-            longFlag: 'user',
-          },
-        },
       },
     );
     const helpText = help();
@@ -290,9 +295,7 @@ describe('Docs', () => {
       "Usage
 
       Optional flags
-         --has-github-profile [boolean]
-
-         --user [string]"
+         --user-name [string]"
     `);
   });
 

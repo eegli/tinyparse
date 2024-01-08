@@ -4,31 +4,32 @@
 
 Tinyparse:
 
-- Collects and validates **command arguments**
+- Matches **subcommands and their arguments**
 - Parses and validates **long and short flag arguments**
 
-All arguments until the first flag are considered _command arguments_, that is, they are _positional_ arguments. Long flags start with two hyphens (`--`), short flags with a single hyphen (`-`). A valid _flag-argument_ pair consists of a _flag_ followed by the _flag argument_, separated by a whitespace or equal sign. The order of flag-argument pairs does not matter.
+All arguments until the first flag are considered **subcommands** (and their arguments), that is, they are _positional_ arguments. After positional arguments - if there are any - **flags** may follow. Long flags start with two hyphens (`--`), short flags with a single hyphen (`-`). A valid _flag-argument_ pair consists of a _flag_ followed by the _flag argument_, separated by a whitespace or equal sign. Whereas the order _does_ matter for positonal arguments, it does _not_ matter for flags.
 
-| Example                   | Abstract format                     | Support |
-| ------------------------- | ----------------------------------- | ------- |
-| `run-cli src`             | `[command] [command arg]`           | ✅      |
-| `run-cli --directory src` | `[command] [long flag] [flag arg]`  | ✅      |
-| `run-cli -d src`          | `[command] [short flag] [flag arg]` | ✅      |
-| `run-cli --verbose`       | `[command] [boolean long flag]`     | ✅      |
-| `run-cli -v `             | `[command] [boolean short flag]`    | ✅      |
+| Example            | Abstract format                                        | Support |
+| ------------------ | ------------------------------------------------------ | ------- |
+| `status`           | `[subcommand]`                                         | ✅      |
+| `clone git@github` | `[subcommand] [subcommand arg]`                        | ✅      |
+| `commit -m "wip"`  | `[subcommand] [subcommand arg] [long flag] [flag arg]` | ✅      |
+| `log -n 5`         | `[subcommand] [short flag] [flag arg]`                 | ✅      |
+
+The table above depicts a few common ways of how arguments can be passed to a CLI using git as an example. Tinyparse supports all of them as well as arbitrary combinations. **Everything from subcommands to flags is completely optional**. You can build a CLI that only takes positional arguments, only flags, or a mix of both.
 
 ## Parsing Behavior
 
-- **`-` is a reserved prefix**. Any string that starts with `-` will be treated as a flag and not a flag argument. Flag arguments such as `["--password", "-x8ap!"]` should be wrapped in quotes!
+- **`-` is a reserved prefix**. Any string that starts with `-` will be treated as a flag. Flag arguments such as `["--password", "-x8ap!"]` should be wrapped in quotes!
 - **Later arguments will overwrite earlier arguments**. `["--password", "abc", "--password", "xyz"]` will parse to `password: "xyz"`
 
 Remember that it's never a good idea to read secrets directly from flags. [Read them from a file instead](https://clig.dev/#arguments-and-flags).
 
 ### Providing Defaults
 
-By default, the parser will try to find a matching key (or flag) in the input. If it can't find one, it will fall back to the default values it was initially provided with. An error for missing input is only thrown if the property is set as [`required`](reference/required-arguments.md)
+By default, the parser will try to find a matching key (or flag) in the input flags. If it can't find one, it will fall back to the default values it was initially provided with. An error for missing input is only thrown if the property is set as [`required`](reference/required-arguments.md)
 
-<!-- doctest: cli arguments, keeps defaults -->
+<!-- doctest: keeps defaults -->
 
 ```ts
 const { parse } = createParser({ hello: 'world' });
@@ -45,7 +46,7 @@ Tinyparse guarantees that it will only work with a valid configration. In very s
 
 This might happen if you declare a short flag twice or if two flags decamelize to the same value. The resulting error message should guide you towards a fix:
 
-<!-- doctest: cli arguments, internal validation -->
+<!-- doctest: internal validation -->
 
 ```ts
 createParser(
@@ -58,11 +59,11 @@ createParser(
 // -a has been declared twice. Check your settings for short flags
 ```
 
-### Positional Arguments
+### Positional Arguments / Subcommands
 
 When given an array of strings, Tinyparse will collect all positional/command arguments on the `_` property.
 
-<!-- doctest: positional arguments 1 -->
+<!-- doctest: command arguments -->
 
 ```ts
 const { parseSync } = createParser({});
@@ -70,7 +71,7 @@ const positionals = parseSync(['hello-world'])._;
 expect(positionals).toStrictEqual(['hello-world']);
 ```
 
-You can put additional constraints on positional arguments, e.g., set a range of allowed values. See [Positional Arguments](reference/positional-args.md) for more information.
+This is the basc behavior when no subcommands are specified. See [Subcommands](reference/subcommands.md) for more information.
 
 ### Boolean Flags
 

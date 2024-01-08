@@ -22,47 +22,58 @@ import { createParser } from '@eegli/tinyparse';
 
 const { help } = createParser(
   {
-    userName: '',
     age: Infinity,
     hasGithubProfile: false,
   },
   {
     options: {
-      userName: {
-        shortFlag: 'u',
-        description: 'Your GitHub username',
-      },
       hasGithubProfile: {
         description: 'Indicate whether you have a Github profile',
       },
       age: {
+        shortFlag: 'a',
         required: true,
+      },
+    },
+    commands: {
+      login: {
+        args: ['username'],
+        description: 'Login to Github',
+      },
+      logout: {
+        args: [],
+        description: 'Logout from Github',
       },
     },
     filePathArg: {
       longFlag: 'config',
       description: 'Path to your Github config file',
     },
-  }
+  },
 );
 const helpText = help({
   title: 'CLI usage',
-  base: 'my-cli <message> [flags]',
+  base: 'You can use this CLI to do various things',
 });
 expect(helpText).toMatchInlineSnapshot(`
       "CLI usage
 
-      my-cli <message> [flags]
+      You can use this CLI to do various things
+
+      Available commands
+         login <username>
+         -Login to Github
+
+         logout 
+         -Logout from Github
+
 
       Required flags
-         --age [number]
+         -a, --age [number]
 
       Optional flags
          --hasGithubProfile [boolean]
          Indicate whether you have a Github profile
-
-         -u, --userName [string]
-         Your GitHub username
 
          --config [string]
          Path to your Github config file
@@ -80,24 +91,16 @@ import { createParser } from '@eegli/tinyparse';
 const { help } = createParser(
   {
     userName: '',
-    hasGithubProfile: false,
   },
   {
     decamelize: true,
-    options: {
-      userName: {
-        longFlag: 'user',
-      },
-    },
-  }
+  },
 );
 const helpText = help();
 expect(helpText).toMatchInlineSnapshot(`
       "Usage
 
       Optional flags
-         --has-github-profile [boolean]
-
-         --user [string]"
+         --user-name [string]"
     `);
 ```

@@ -89,45 +89,41 @@ expectNotAssignable<Params>({
 /**
  * Infer commands tests
  */
+const subcommand = createParser(
+  {},
+  {
+    commands: {
+      cmd: {
+        args: ['arg1', 'arg2'],
+      },
+    } as const,
+  },
+).parseSync()._;
+expectType<['cmd', string, string]>(subcommand);
 
-expectType<['cmd', string, string]>(
-  createParser(
-    {},
-    {
-      commands: {
-        cmd: {
-          args: ['', ''],
-        },
-      } as const,
-    },
-  ).parseSync()._,
-);
+const subcommand2 = createParser(
+  {},
+  {
+    commands: {
+      cmd: {
+        args: [],
+      },
+    } as const,
+  },
+).parseSync()._;
+expectType<['cmd']>(subcommand2);
 
-expectType<['cmd']>(
-  createParser(
-    {},
-    {
-      commands: {
-        cmd: {
-          args: [],
-        },
-      } as const,
-    },
-  ).parseSync()._,
-);
-
-expectType<['cmd', ...string[]]>(
-  createParser(
-    {},
-    {
-      commands: {
-        cmd: {
-          args: '',
-        },
-      } as const,
-    },
-  ).parseSync()._,
-);
+const subcommand3 = createParser(
+  {},
+  {
+    commands: {
+      cmd: {
+        args: 'args',
+      },
+    } as const,
+  },
+).parseSync()._;
+expectType<['cmd', ...string[]]>(subcommand3);
 
 expectType<['cmd', ...string[]]>(
   createParser(
