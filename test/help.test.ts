@@ -85,7 +85,7 @@ describe('Helper text', () => {
           required: true,
         },
       },
-      commands: {
+      subcommands: {
         cp: {
           args: ['source', 'destination'],
           description: 'Copy files from source to destination',
