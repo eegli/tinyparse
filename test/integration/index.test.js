@@ -41,6 +41,7 @@ test('advanced example', async () => {
     'ls folder --ext=js,ts',
     'rm file1 file2 file3 file4',
     '--help',
+    'unknown',
   ];
   const outputs = [
     /Showing status/,
@@ -48,6 +49,7 @@ test('advanced example', async () => {
     /Listing folder/,
     /Removing file1, file2, file3, file4/,
     /Usage/,
+    /Error: Unknown command/,
   ];
   for (let i = 0; i < exampleArgs.length; i++) {
     const args = exampleArgs[i];

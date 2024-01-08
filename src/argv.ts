@@ -58,11 +58,7 @@ export class ArgvTransformer {
     const [command, ...args] = positionals;
 
     // User did not specify a command
-    if (!command) return;
-
-    if (!commandOptions[command]) {
-      throw new ValidationError(`Unknown command '${command}'`);
-    }
+    if (!command || !commandOptions[command]) return;
 
     const { args: expectedPattern } = commandOptions[command];
 

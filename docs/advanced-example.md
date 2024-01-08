@@ -14,6 +14,7 @@ node cli.js cp src dest -v
 node cli.js ls folder --ext=js,ts
 node cli.js rm file1 file2 file3 file4
 node cli.js --help
+node cli.js unknown
 ```
 
 ```js
@@ -65,12 +66,12 @@ const status = () => console.log('Showing status');
 
 const run = (argv) => {
   if (argv.includes('--help')) {
-    console.info(help());
+    console.log(help());
   }
 
   try {
     const { _: commands, verbose, extensions } = parseSync(argv);
-    console.info('Options:', { verbose, extensions });
+    console.log('Options:', { verbose, extensions });
 
     const [command] = commands;
 
@@ -86,11 +87,14 @@ const run = (argv) => {
         return remove(files);
       case 'status':
         return status();
+      default:
+        console.log('Error: Unknown command');
+        console.log(help());
     }
   } catch (error) {
     if (error instanceof ValidationError) {
-      console.error('Error: ' + error.message);
-      console.info(help());
+      console.log('Error: ' + error.message);
+      console.log(help());
     }
   }
 };

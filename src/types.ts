@@ -55,7 +55,9 @@ export type ParserOptions<
   filePathArg?: FilePathArg;
 };
 
-export type WithPositionalArgs<T, P extends string[] = string[]> = T & { _: P };
+export type WithPositionalArgs<T, P extends string[] = string[]> = T & {
+  _: P;
+};
 
 export type PrimitiveRecord = Record<string, Value>;
 

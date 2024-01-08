@@ -50,11 +50,16 @@ const { parseSync } = createParser(
 - `['src', 'dest']` - Fixed number of arguments - In this case, the subcommand will accept exactly two arguments
 - `'files'` - Any number of arguments - In this case, the subcommand will accept any number of arguments
 
-Here are some valid examples for the above configuration. If any subcommands are specified and the **first** positional argument matches a subcommand, the pattern will be enforced.
+Here are some valid examples for the above configuration. It is important to note that **unknown subcommands fall through**. This means that if a subcommand is not specified in the `subcommands` object, it (and its subsequent arguments) will be collected in the `positionals` array.
+
+If you want to handle unknown arguments, you need to check for them yourself (e.g., via a `default` case in a `switch` statement). See the [advanced example](/examples.md).
 
 ```ts
 let positionals = parseSync([])._; // No subcommand, no problemo
 expect(positionals).toStrictEqual([]);
+
+positionals = parseSync(['unknown'])._; // Unknown subcommands fall through
+expect(positionals).toStrictEqual(['unknown']);
 
 positionals = parseSync(['status'])._;
 expect(positionals).toStrictEqual(['status']);
@@ -66,7 +71,7 @@ positionals = parseSync(['remove', 'file1', 'file2', 'file3'])._;
 expect(positionals).toStrictEqual(['remove', 'file1', 'file2', 'file3']);
 ```
 
-If the pattern is not matched, an error will be thrown, either for an invalid subcommand or for an invalid number of arguments.
+If the argument pattern is not matched, an error will be thrown.
 
 ```ts
 expect(() => {
@@ -82,9 +87,7 @@ expect(() => {
 }).toThrow("Invalid usage of command 'status'. Too many arguments");
 ```
 
-Tinyparse is not opinionated about errors, it throws an ugly error by default. However, you can easily catch it, extract the message and show it to the user. See the [advanced example](/examples.md).
-
-**Type-safety**: Notice the `as const` in the above code? It is only relevant for TypeScript users. It is used to make sure that the `commands` object is not widened. It allows us to correctly infer the number of arguments for each subcommand. You could use it in a switch statement and get complete type-safety 🥰. See the [advanced example](/examples.md).
+**Type-safety**: Notice the `as const` in the above code? It is only relevant for TypeScript users. It is used to make sure that the `commands` object is not widened. It allows us to correctly infer the number of arguments for each subcommand. You could use it in a switch statement and get complete type-safety 🥰. See the [advanced example](/examples.md). Since
 
 ```ts
 const subcommand = createParser(
@@ -100,6 +103,9 @@ const subcommand = createParser(
 expectType<['cmd', string, string]>(subcommand);
 ```
 
-Likewise, if we'd specify `args: []`, the returned type is `['cmd']`. If we'd specify `args: ''`, we'd get `['cmd', ...string[]]`, which is essentially an array with type-safety on the first element.
+Likewise, if we'd specify:
+
+- `args: []`: `['cmd']`
+- `args: ''`: `['cmd', ...string[]]`
 
 Keep in mind that using subcommands is completely optional. If you want to, simply use the collected positionals and do all the validation yourself. Using subcommands can be helpful if you want validated and type-safe subcommands as well as a neatly-formatted help text.

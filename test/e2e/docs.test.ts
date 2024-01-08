@@ -73,6 +73,9 @@ describe('subcommands', () => {
     let positionals = parseSync([])._; // No subcommand, no problemo
     expect(positionals).toStrictEqual([]);
 
+    positionals = parseSync(['unknown'])._; // Unknown subcommands fall through
+    expect(positionals).toStrictEqual(['unknown']);
+
     positionals = parseSync(['status'])._;
     expect(positionals).toStrictEqual(['status']);
 
@@ -81,10 +84,6 @@ describe('subcommands', () => {
 
     positionals = parseSync(['remove', 'file1', 'file2', 'file3'])._;
     expect(positionals).toStrictEqual(['remove', 'file1', 'file2', 'file3']);
-
-    expect(() => {
-      parseSync(['cd', 'my-app']);
-    }).toThrow("Unknown command 'cd'");
 
     expect(() => {
       parseSync(['copy', 'src']);

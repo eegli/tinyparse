@@ -1,6 +1,14 @@
 # Error Handling
 
-If the parser encounters an _invalid value_, i.e., something that is _not_ of type `Value` `(string | number | boolean)`, it throws an error with a reason. Similarly, a `ValidationError` is thrown for _missing required arguments_. You can use it to inspect what has gone wrong.
+Tinyparse is not opinionated about errors, it throws an ugly error by default. However, you can easily catch it, extract the message and show it to the user. See the [advanced example](/examples.md).
+
+Parsing may fail if:
+
+- A subcommand is called with an invalid number of arguments
+- A required flag is missing
+- A flag is called with an invalid value
+
+If any of these errors occur, a `ValidationError` will be thrown. It contains a `message` property that you can show to the user.
 
 ## Examples
 
@@ -19,7 +27,7 @@ const { parseSync } = createParser(
         required: true,
       },
     },
-  }
+  },
 );
 
 expect(() => {
@@ -39,6 +47,6 @@ const { parseSync } = createParser({ age: 0 });
 expect(() => {
   parseSync(['--age']);
 }).toThrow(
-  new ValidationError('Invalid type for --age. "true" is not a number')
+  new ValidationError('Invalid type for --age. "true" is not a number'),
 );
 ```

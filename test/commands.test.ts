@@ -8,6 +8,15 @@ describe('Positionals validation, ok', () => {
     [[], {}, 'default'],
     [['hello-world'], {}, 'no command options'],
     [
+      ['x'],
+      {
+        cd: {
+          args: '',
+        },
+      },
+      'unknown command arg',
+    ],
+    [
       ['ls'],
       {
         ls: {
@@ -59,15 +68,6 @@ describe('Positionals validation, fail', () => {
     ...Parameters<typeof ArgvTransformer.validateCommands>,
     string,
   ][] = [
-    [
-      ['x'],
-      {
-        cd: {
-          args: '',
-        },
-      },
-      'unknown command arg',
-    ],
     [
       ['cd'],
       {
