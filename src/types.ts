@@ -28,17 +28,17 @@ export interface HelpOptions {
   base?: string;
 }
 
-export type PositionalOptionsValue = string[] | null;
-
-export type PositionalOptions<P = PositionalOptionsValue[]> = {
-  expect?: P;
-  caseSensitive?: boolean;
-  rejectAdditional?: boolean;
-};
+export type CommandOptions = Record<
+  string,
+  {
+    args: string | string[];
+    description?: string;
+  }
+>;
 
 export type ParserOptions<
   T extends PrimitiveRecord = PrimitiveRecord,
-  P extends PositionalOptionsValue[] = PositionalOptionsValue[],
+  C extends CommandOptions = CommandOptions,
 > = {
   options?: {
     [K in keyof T]?: {
@@ -49,7 +49,7 @@ export type ParserOptions<
       customValidator?: CustomValidator;
     };
   };
-  positionals?: PositionalOptions<P>;
+  commands?: C;
   decamelize?: boolean;
   filePathArg?: FilePathArg;
 };
@@ -60,14 +60,14 @@ export type PrimitiveRecord = Record<string, Value>;
 
 export type Value = string | number | boolean;
 
-export type TupleUnion<T> = {
-  [K in keyof T]: InferLiteralUnion<T[K]>;
-};
+export type CommandPatternMap<T extends CommandOptions> = {
+  [K in keyof T]: K extends string ? CommandArgTypeMap<K, T[K]['args']> : never;
+}[keyof T];
 
-export type InferLiteralUnion<T> = T extends infer U
-  ? U extends string[]
-    ? U[number]
-    : U extends null
-      ? string
-      : never
-  : never;
+type CommandArgTypeMap<K extends string, V> = V extends string[]
+  ? [K, ...Downcast<V, string>]
+  : V extends string
+    ? [K, ...string[]]
+    : never;
+
+type Downcast<T, E> = T extends E[] ? { [K in keyof T]: E } : E[];

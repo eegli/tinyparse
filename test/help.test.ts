@@ -33,29 +33,9 @@ describe('Helper text', () => {
       },
     });
 
-    expect(help({ title: 'CLI usage', base: 'copy <file1> <file2> [flags]' }))
-      .toMatchInlineSnapshot(`
-      "CLI usage
-
-      copy <file1> <file2> [flags]
-
-      Required flags
-         --color [string]
-         A color
-
-         -p, --port [number]
-         The port to listen on
-
-      Optional flags
-         --UserId [string]
-
-         -wa, --withAuth [boolean]
-         Require authentication for this action
-
-         -c, --config [string]
-         The config file to use
-      "
-    `);
+    expect(
+      help({ title: 'CLI usage', base: 'do stuff with this CLI' }),
+    ).toMatchSnapshot();
   });
   test('with decamelization and custom long flag', () => {
     const defaultValues = {
@@ -71,36 +51,18 @@ describe('Helper text', () => {
         },
       },
     });
-    expect(help()).toMatchInlineSnapshot(`
-      "Usage
-
-      Optional flags
-         --color [string]
-
-         --user-id [string]
-
-         --with-auth [boolean]"
-    `);
+    expect(help()).toMatchSnapshot();
   });
   test('file flag helper text only', () => {
-    expect(createParser({}, { filePathArg: { longFlag: '--config' } }).help())
-      .toMatchInlineSnapshot(`
-      "Usage
-
-         --config [string]
-      "
-    `);
+    expect(
+      createParser({}, { filePathArg: { longFlag: '--config' } }).help(),
+    ).toMatchSnapshot();
     expect(
       createParser(
         {},
         { filePathArg: { longFlag: '--config', shortFlag: 'c' } },
       ).help(),
-    ).toMatchInlineSnapshot(`
-      "Usage
-
-         -c, --config [string]
-      "
-    `);
+    ).toMatchSnapshot();
   });
   test('creates helper text with no descriptions', () => {
     const defaultValues = {
@@ -109,15 +71,32 @@ describe('Helper text', () => {
       port: 999,
     };
     const { help } = createParser(defaultValues);
-    expect(help()).toMatchInlineSnapshot(`
-      "Usage
+    expect(help()).toMatchSnapshot();
+  });
 
-      Optional flags
-         --id [string]
-
-         --port [number]
-
-         --withAuth [boolean]"
-    `);
+  test('commands', () => {
+    const defaultValues = {
+      verbose: false,
+    };
+    const { help } = createParser(defaultValues, {
+      commands: {
+        cp: {
+          args: ['source', 'destination'],
+          description: 'Copy files from source to destination',
+        },
+        cd: {
+          args: ['directory'],
+          description: 'Navigate to a directory',
+        },
+        info: {
+          args: [],
+        },
+        rm: {
+          args: '...files',
+          description: 'Remove multiple files or directories',
+        },
+      },
+    });
+    expect(help()).toMatchSnapshot();
   });
 });

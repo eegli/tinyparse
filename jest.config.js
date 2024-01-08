@@ -22,6 +22,8 @@ module.exports = {
       },
       testMatch: ['<rootDir>/test/*.test.ts'],
       setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
+      // https://jestjs.io/docs/configuration/#prettierpath-string
+      prettierPath: require.resolve('prettier-2'),
     },
     {
       displayName: {
@@ -30,6 +32,7 @@ module.exports = {
       },
       testMatch: ['<rootDir>/test/e2e/*.test.ts'],
       setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
+      prettierPath: require.resolve('prettier-2'),
     },
     {
       displayName: {
@@ -38,6 +41,7 @@ module.exports = {
       },
       runner: 'jest-runner-tsd',
       testMatch: ['<rootDir>/test/types/*.test.ts'],
+      prettierPath: require.resolve('prettier-2'),
     },
   ],
 };

@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Positionals validation, fail validation, too few command args 1`] = `"Invalid usage of command 'cd'. Too few arguments"`;
+
+exports[`Positionals validation, fail validation, too many command args 1`] = `"Invalid usage of command 'cd'. Too many arguments"`;
+
+exports[`Positionals validation, fail validation, unknown command arg 1`] = `"Unknown command 'x'"`;

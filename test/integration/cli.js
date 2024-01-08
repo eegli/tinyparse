@@ -2,62 +2,78 @@
 
 // filename: cli.js
 
-import { createParser } from '@eegli/tinyparse';
+import { createParser, ValidationError } from '@eegli/tinyparse';
 
 const { parseSync, help } = createParser(
   {
-    fileExtensions: '',
-    first: Infinity,
-    ignoreFolders: false,
-    afterDate: '',
+    verbose: false,
+    extensions: '',
   },
   {
     options: {
-      fileExtensions: {
-        required: true,
+      verbose: {
+        shortFlag: 'v',
+        description: 'Show more information about the operation',
+      },
+      extensions: {
         longFlag: 'ext',
       },
-      ignoreFolders: {
-        shortFlag: 'i',
-      },
-      afterDate: {
-        longFlag: 'after',
-        customValidator: {
-          isValid: (value) => {
-            if (value === '') return true;
-            const date = new Date(value);
-            return !Number.isNaN(date.getTime());
-          },
-        },
-      },
     },
-    positionals: {
-      expect: [['copy', 'move'], null, null],
-      caseSensitive: true,
+    commands: {
+      cp: {
+        args: ['from', 'to'],
+        description: 'Copy files from one folder to another',
+      },
+      ls: {
+        args: ['folder'],
+        description: 'List files in a folder',
+      },
+      rm: {
+        args: '...files',
+      },
+      status: {
+        args: [],
+        description: 'Show the status of the repository',
+      },
     },
   },
 );
 
-export default function run(argv) {
+const copy = (from, to) => console.log(`Copying ${from} to ${to}`);
+const list = (folder) => console.log(`Listing ${folder}`);
+const remove = (files) => console.log(`Removing ${files.join(', ')}`);
+const status = () => console.log('Showing status');
+
+const run = (argv) => {
   if (argv.includes('--help')) {
-    return help();
+    console.info(help());
   }
 
-  const {
-    _: [operation, from, to],
-    fileExtensions,
-    ignoreFolders,
-    first,
-    afterDate,
-  } = parseSync(argv);
+  try {
+    const { _: commands, verbose, extensions } = parseSync(argv);
+    console.info('Options:', { verbose, extensions });
 
-  return `You want to:
-  - ${operation} the first ${first} files with extension ${fileExtensions}
-  - from ${from}
-  - to ${to}
-  - after ${afterDate}
-  - and ${ignoreFolders ? 'ignore' : 'include'} any subfolders`;
-}
+    const [command] = commands;
 
-/* const result = run(process.argv.slice(2));
-console.info(result); */
+    switch (command) {
+      case 'cp':
+        const [, from, to] = commands;
+        return copy(from, to);
+      case 'ls':
+        const [, folder] = commands;
+        return list(folder);
+      case 'rm':
+        const [, ...files] = commands;
+        return remove(files);
+      case 'status':
+        return status();
+    }
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      console.error('Error: ' + error.message);
+      console.info(help());
+    }
+  }
+};
+
+run(process.argv.slice(2));

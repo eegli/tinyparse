@@ -1,7 +1,8 @@
-import { FlagOptions } from './types';
+import { FlagOptions, CommandOptions } from './types';
 
 export class HelpPrinter {
   private _options: FlagOptions[];
+  private _commands: CommandOptions = {};
   private _filePathFlags: string[] = [];
   private _filePathFlagDescription?: string;
 
@@ -17,6 +18,11 @@ export class HelpPrinter {
     });
   }
 
+  public withCommands(commands: CommandOptions) {
+    this._commands = commands;
+    return this;
+  }
+
   public withFilePathFlags(...filePathFlags: string[]) {
     this._filePathFlags = [...filePathFlags];
     return this;
@@ -28,18 +34,41 @@ export class HelpPrinter {
   }
 
   public print(title?: string, base?: string) {
+    const indent = '   ';
     let str = title || 'Usage';
 
     if (base) str += `\n\n${base}`;
 
     if (this._options.length > 0) str += '\n\n';
 
+    // Add commands
+    const commandNames = Object.keys(this._commands);
+
+    if (commandNames.length > 0) {
+      str += 'Available commands\n';
+      for (let idx = 0; idx < commandNames.length; idx++) {
+        const commandName = commandNames[idx];
+        const args = this._commands[commandName].args;
+        const description = this._commands[commandName].description;
+
+        str += indent;
+        str += `${commandName}`;
+        if (Array.isArray(args)) {
+          str += ` ${args.map((a) => `<${a}>`).join(' ')}`;
+        } else {
+          str += ` <${args}>`;
+        }
+        if (description) str += `\n${indent}-${description}`;
+        str += '\n\n';
+      }
+      str += '\n';
+    }
+
     // Maybe no option is required
     const hasRequiredFlag = this._options[0]?.isRequired;
     if (hasRequiredFlag) str += 'Required flags\n';
 
     let optionalFlag = true;
-    const indent = '   ';
 
     for (let idx = 0; idx < this._options.length; idx++) {
       const { description, isRequired, shortFlag, longFlag, value } =

@@ -1,5 +1,5 @@
 import { ValidationError } from './error';
-import { PositionalOptions } from './types';
+import { CommandOptions } from './types';
 import Utils from './utils';
 
 export class ArgvTransformer {
@@ -46,45 +46,41 @@ export class ArgvTransformer {
     return [flagMap, positionals];
   }
 
-  public static validatePositionals(
+  public static validateCommands(
     positionals: string[],
-    options: PositionalOptions,
+    commandOptions: CommandOptions,
   ): void {
-    const {
-      expect: expected = [],
-      caseSensitive = false,
-      rejectAdditional = false,
-    } = options;
+    const availableCommands = Object.keys(commandOptions);
 
-    if (expected.length > positionals.length) {
+    // No commands are specified in the config
+    if (availableCommands.length === 0) return;
+
+    const [command, ...args] = positionals;
+
+    // User did not specify a command
+    if (!command) return;
+
+    if (!commandOptions[command]) {
+      throw new ValidationError(`Unknown command '${command}'`);
+    }
+
+    const { args: expectedPattern } = commandOptions[command];
+
+    // Allow any number of command arguments
+    if (typeof expectedPattern === 'string') return;
+
+    // Number of arguments is satisfied
+    if (expectedPattern.length === args.length) return;
+
+    const tooFewArgs = expectedPattern.length > args.length;
+
+    if (tooFewArgs) {
       throw new ValidationError(
-        `Invalid number of positional arguments: Expected at least ${expected.length}, got ${positionals.length}`,
+        `Invalid usage of command '${command}'. Too few arguments`,
       );
     }
-
-    if (rejectAdditional && expected.length < positionals.length) {
-      throw new ValidationError(
-        `Invalid number of positional arguments: Expected at most ${expected.length}, got ${positionals.length}`,
-      );
-    }
-
-    for (let i = 0; i < expected.length; i++) {
-      const expectedPosArgs = expected[i];
-      // Allow any value
-      if (expectedPosArgs === null) continue;
-      const hasMatch = expectedPosArgs.some((expectedPosArg) => {
-        if (caseSensitive) {
-          return expectedPosArg === positionals[i];
-        }
-        return expectedPosArg.toLowerCase() === positionals[i].toLowerCase();
-      });
-      if (!hasMatch) {
-        throw new ValidationError(
-          `Invalid positional argument: Expected one of: ${expectedPosArgs
-            .map((cmd) => `'${cmd}'`)
-            .join(', ')}. Got '${positionals[i]}'`,
-        );
-      }
-    }
+    throw new ValidationError(
+      `Invalid usage of command '${command}'. Too many arguments`,
+    );
   }
 }

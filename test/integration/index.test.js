@@ -1,7 +1,6 @@
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import cli from './cli.js';
 
 test('landing page example', async () => {
   const { parse } = createParser({
@@ -30,28 +29,4 @@ test('quickstart example', async () => {
     active: true,
     _: ['hello'],
   });
-});
-
-test('cli example', () => {
-  const argv = [
-    'move',
-    'src/images',
-    'dest/images',
-    '--ext',
-    'jpg',
-    '-i',
-    '--first',
-    '10',
-    '--after',
-    '2018',
-  ];
-  const received = cli(argv);
-
-  const expected = `You want to:
-  - move the first 10 files with extension jpg
-  - from src/images
-  - to dest/images
-  - after 2018
-  - and ignore any subfolders`;
-  assert.strictEqual(received, expected);
 });

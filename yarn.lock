@@ -1879,6 +1879,7 @@ __metadata:
     lint-staged: "npm:^15.2.0"
     pinst: "npm:^3.0.0"
     prettier: "npm:^3.1.1"
+    prettier-2: "npm:prettier@^2"
     prettier-plugin-organize-imports: "npm:^3.2.4"
     ts-jest: "npm:^29.1.1"
     typescript: "npm:^5.3.3"
@@ -7921,6 +7922,15 @@ __metadata:
   version: 2.0.0
   resolution: "prepend-http@npm:2.0.0"
   checksum: 7694a9525405447662c1ffd352fcb41b6410c705b739b6f4e3a3e21cf5fdede8377890088e8934436b8b17ba55365a615f153960f30877bf0d0392f9e93503ea
+  languageName: node
+  linkType: hard
+
+"prettier-2@npm:prettier@^2":
+  version: 2.8.8
+  resolution: "prettier@npm:2.8.8"
+  bin:
+    prettier: bin-prettier.js
+  checksum: 00cdb6ab0281f98306cd1847425c24cbaaa48a5ff03633945ab4c701901b8e96ad558eb0777364ffc312f437af9b5a07d0f45346266e8245beaf6247b9c62b24
   languageName: node
   linkType: hard
 

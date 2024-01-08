@@ -87,26 +87,82 @@ expectNotAssignable<Params>({
 });
 
 /**
- * Infer positionals tests
+ * Infer commands tests
  */
 
-expectType<['a' | 'b', string, 'c']>(
+expectType<['cmd', string, string]>(
   createParser(
     {},
     {
-      positionals: {
-        expect: [['a', 'b'], null, ['c']] as const,
+      commands: {
+        cmd: {
+          args: ['', ''],
+        },
+      } as const,
+    },
+  ).parseSync()._,
+);
+
+expectType<['cmd']>(
+  createParser(
+    {},
+    {
+      commands: {
+        cmd: {
+          args: [],
+        },
+      } as const,
+    },
+  ).parseSync()._,
+);
+
+expectType<['cmd', ...string[]]>(
+  createParser(
+    {},
+    {
+      commands: {
+        cmd: {
+          args: '',
+        },
+      } as const,
+    },
+  ).parseSync()._,
+);
+
+expectType<['cmd', ...string[]]>(
+  createParser(
+    {},
+    {
+      commands: {
+        cmd: {
+          args: '',
+        },
       },
     },
   ).parseSync()._,
 );
 
-expectType<string[]>(
+expectType<['cmd', ...string[]]>(
   createParser(
     {},
     {
-      positionals: {
-        expect: [['a', 'b'], null, ['c']],
+      commands: {
+        cmd: {
+          args: [],
+        },
+      },
+    },
+  ).parseSync()._,
+);
+
+expectType<['cmd', ...string[]]>(
+  createParser(
+    {},
+    {
+      commands: {
+        cmd: {
+          args: [''],
+        },
       },
     },
   ).parseSync()._,

@@ -21,53 +21,57 @@ describe('Docs', () => {
       'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.',
     );
   });
-  test('cli arguments, positional arguments 1', () => {
+  test('cli arguments, command arguments default', () => {
     const { parseSync } = createParser({});
     const positionals = parseSync(['hello-world'])._;
     expect(positionals).toStrictEqual(['hello-world']);
   });
 
-  test('cli arguments, positional arguments 2', () => {
+  test('cli arguments, command arguments advanced', () => {
     const { parseSync } = createParser(
       {},
       {
-        positionals: {
-          expect: [['ls', 'cd'], null] as const,
-          caseSensitive: true,
-        },
+        commands: {
+          status: {
+            args: [],
+            description: 'Show status',
+          },
+          ls: {
+            args: ['folder'],
+            description: 'Checkout a folder',
+          },
+          copy: {
+            args: ['src', 'dest'],
+            description: 'Copy files from source to destination',
+          },
+          remove: {
+            args: 'files',
+            description: 'Remove multiple files',
+          },
+        } as const,
       },
     );
-    // TS infers that this is of type  ["ls" | "cd", string]
-    const positionals = parseSync(['ls', '/directory'])._;
+
+    let positionals = parseSync(['ls', '/directory'])._;
     expect(positionals).toStrictEqual(['ls', '/directory']);
 
-    expect(() => {
-      parseSync(['CD', 'my-app']);
-    }).toThrow(
-      "Invalid positional argument: Expected one of: 'ls', 'cd'. Got 'CD'",
-    );
-  });
+    positionals = parseSync(['copy', 'src', 'dest'])._;
+    expect(positionals).toStrictEqual(['copy', 'src', 'dest']);
 
-  test('cli arguments, positional arguments 3', () => {
-    const { parseSync } = createParser(
-      {},
-      {
-        positionals: {
-          expect: [['ls'], null] as const,
-          rejectAdditional: true,
-        },
-      },
-    );
-
-    expect(parseSync(['ls', 'folder'])).toStrictEqual({
-      _: ['ls', 'folder'],
-    });
+    positionals = parseSync(['remove', 'file1', 'file2', 'file3'])._;
+    expect(positionals).toStrictEqual(['remove', 'file1', 'file2', 'file3']);
 
     expect(() => {
-      parseSync(['ls', 'folder', 'another-folder']);
-    }).toThrow(
-      'Invalid number of positional arguments: Expected at most 2, got 3',
-    );
+      parseSync(['cd', 'my-app']);
+    }).toThrow("Unknown command 'cd'");
+
+    expect(() => {
+      parseSync(['copy', 'src']);
+    }).toThrow("Invalid usage of command 'copy'. Too few arguments");
+
+    expect(() => {
+      parseSync(['status', 'noooop']);
+    }).toThrow("Invalid usage of command 'status'. Too many arguments");
   });
 
   test('cli arguments, boolean flags 1', async () => {
