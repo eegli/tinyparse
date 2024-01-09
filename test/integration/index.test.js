@@ -2,8 +2,6 @@ import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { execa } from 'execa';
-import { Writable } from 'node:stream';
-import { WritableStream } from 'stream/web';
 
 test('landing page example', async () => {
   const { parse } = createParser({
