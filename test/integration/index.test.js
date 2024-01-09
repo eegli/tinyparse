@@ -32,7 +32,7 @@ test('quickstart example', async () => {
   });
 });
 test('advanced example', async () => {
-  const runcli = 'node cli.js';
+  const runcli = 'node ./cli.js';
   const exampleArgs = [
     'status',
     'cp src dest -v',
