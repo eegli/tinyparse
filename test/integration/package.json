@@ -7,8 +7,5 @@
   },
   "dependencies": {
     "@eegli/tinyparse": "file:../.."
-  },
-  "devDependencies": {
-    "execa": "^8.0.1"
   }
 }

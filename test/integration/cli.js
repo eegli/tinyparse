@@ -37,14 +37,14 @@ const { parseSync, help } = createParser(
   },
 );
 
-const copy = (from, to) => console.log(`Copying ${from} to ${to}`);
-const list = (folder) => console.log(`Listing ${folder}`);
-const remove = (files) => console.log(`Removing ${files.join(', ')}`);
-const status = () => console.log('Showing status');
+const copy = (from, to) => `Copying ${from} to ${to}`;
+const list = (folder) => `Listing ${folder}`;
+const remove = (files) => `Removing ${files.join(', ')}`;
+const status = () => 'Showing status';
 
-const run = (argv) => {
+export const run = (argv) => {
   if (argv.includes('--help')) {
-    console.log(help());
+    return help();
   }
 
   try {
@@ -67,17 +67,18 @@ const run = (argv) => {
       default:
         if (command) {
           // Unknown command
-          console.log(`Error: Unknown command ${command}`);
+          return `Error: Unknown command ${command}`;
         }
         // No command
-        console.log(help());
+        return help();
     }
   } catch (error) {
     if (error instanceof ValidationError) {
-      console.log('Error: ' + error.message);
-      console.log(help());
+      return 'Error: ' + error.message;
     }
+    throw error;
   }
 };
 
-run(process.argv.slice(2));
+const result = run(process.argv.slice(2));
+console.log(result);

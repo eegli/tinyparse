@@ -1,7 +1,7 @@
 import { createParser } from '@eegli/tinyparse';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { execa } from 'execa';
+import { run } from './cli.js';
 
 test('landing page example', async () => {
   const { parse } = createParser({
@@ -54,7 +54,7 @@ test('advanced example', async () => {
   for (let i = 0; i < exampleArgs.length; i++) {
     const args = exampleArgs[i];
     const output = outputs[i];
-    const { stdout } = await execa(runcli, args.split(' '));
-    assert.match(stdout, output);
+    const result = run(args.split(' '));
+    assert.match(result, output);
   }
 });
