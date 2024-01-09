@@ -1,5 +1,3 @@
-#!/usr/bin/bash
-
 // filename: cli.js
 
 import { createParser, ValidationError } from '@eegli/tinyparse';
@@ -51,7 +49,6 @@ const run = (argv) => {
 
   try {
     const { _: commands, verbose, extensions } = parseSync(argv);
-    console.log('Options:', { verbose, extensions });
 
     const [command] = commands;
 
@@ -68,7 +65,11 @@ const run = (argv) => {
       case 'status':
         return status();
       default:
-        console.log('Error: Unknown command');
+        if (command) {
+          // Unknown command
+          console.log(`Error: Unknown command ${command}`);
+        }
+        // No command
         console.log(help());
     }
   } catch (error) {

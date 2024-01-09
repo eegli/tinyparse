@@ -2,7 +2,7 @@
 
 Here's a full example on how you could build a minimal command line interface with Tinyparse.
 
-We're building a small CLI tool does various file operations. The tool supports various (optional) subcommands.
+We're building a small CLI tool does various file operations. The tool supports various (optional) subcommands. We require that at least one subcommand is specified. Since Tinyparse does not enforce this by default, we need to do it manually.
 
 Make sure your `package.json`'s `type` field is set to `module` or convert the `import` to a `require` statement.
 
@@ -15,11 +15,10 @@ node cli.js ls folder --ext=js,ts
 node cli.js rm file1 file2 file3 file4
 node cli.js --help
 node cli.js unknown
+node cli.js
 ```
 
 ```js
-#!/usr/bin/bash
-
 // filename: cli.js
 
 import { createParser, ValidationError } from '@eegli/tinyparse';
@@ -71,7 +70,6 @@ const run = (argv) => {
 
   try {
     const { _: commands, verbose, extensions } = parseSync(argv);
-    console.log('Options:', { verbose, extensions });
 
     const [command] = commands;
 
@@ -88,7 +86,11 @@ const run = (argv) => {
       case 'status':
         return status();
       default:
-        console.log('Error: Unknown command');
+        if (command) {
+          // Unknown command
+          console.log(`Error: Unknown command ${command}`);
+        }
+        // No command
         console.log(help());
     }
   } catch (error) {

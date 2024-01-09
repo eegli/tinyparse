@@ -42,14 +42,16 @@ test('advanced example', async () => {
     'rm file1 file2 file3 file4',
     '--help',
     'unknown',
+    '',
   ];
   const outputs = [
-    /Showing status/,
-    /Copying src to dest/,
-    /Listing folder/,
-    /Removing file1, file2, file3, file4/,
-    /Usage/,
-    /Error: Unknown command/,
+    /^Showing status/,
+    /^Copying src to dest/,
+    /^Listing folder/,
+    /^Removing file1, file2, file3, file4/,
+    /^Usage/,
+    /^Error: Unknown command/,
+    /^Usage/,
   ];
   for (let i = 0; i < exampleArgs.length; i++) {
     const args = exampleArgs[i];
