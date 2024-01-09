@@ -15,27 +15,28 @@ Both `title` and `base` are optional. The former is printed on the first line, w
 
 ## Examples
 
-<!-- doctest: printing args, without decamelization -->
+<!-- doctest: without decamelization -->
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
 
 const { help } = createParser(
   {
-    age: Infinity,
-    hasGithubProfile: false,
+    verbose: false,
+    authMethod: '',
   },
   {
+    decamelize: true,
     options: {
-      hasGithubProfile: {
-        description: 'Indicate whether you have a Github profile',
-      },
-      age: {
-        shortFlag: 'a',
+      authMethod: {
+        description: 'GitHub authentication method',
         required: true,
       },
+      verbose: {
+        shortFlag: 'v',
+      },
     },
-    commands: {
+    subcommands: {
       login: {
         args: ['username'],
         description: 'Login to Github',
@@ -62,45 +63,19 @@ expect(helpText).toMatchInlineSnapshot(`
 
       Available commands
          login <username>
-         -Login to Github
-
+         - Login to Github
          logout 
-         -Logout from Github
-
+         - Logout from Github
 
       Required flags
-         -a, --age [number]
+         --auth-method [string]
+         GitHub authentication method
 
       Optional flags
-         --hasGithubProfile [boolean]
-         Indicate whether you have a Github profile
+         -v, --verbose [boolean]
 
          --config [string]
          Path to your Github config file
       "
-    `);
-```
-
-<!-- doctest: printing args, with decamelization -->
-
-Note that when decamelization is enabled, the decamelized version is preferred to the original.
-
-```ts
-import { createParser } from '@eegli/tinyparse';
-
-const { help } = createParser(
-  {
-    userName: '',
-  },
-  {
-    decamelize: true,
-  },
-);
-const helpText = help();
-expect(helpText).toMatchInlineSnapshot(`
-      "Usage
-
-      Optional flags
-         --user-name [string]"
     `);
 ```

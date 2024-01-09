@@ -1,5 +1,5 @@
 import { expectAssignable, expectNotAssignable, expectType } from 'tsd-lite';
-import type { Value } from '../../src';
+import type { FlagValue } from '../../src';
 import { createParser } from '../../src';
 import { WithPositionalArgs } from '../../src/types';
 
@@ -70,7 +70,7 @@ expectAssignable<Params>({
       shortFlag: `-n`,
       longFlag: `--name`,
       customValidator: {
-        isValid(v: unknown): v is Value {
+        isValid(v: unknown): v is FlagValue {
           return typeof v === 'string' && v.length > 0;
         },
         errorMessage: () => 'Error',

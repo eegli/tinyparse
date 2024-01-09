@@ -20,7 +20,7 @@ For the following examples, assume there are two JSON files in the current direc
 }
 ```
 
-<!-- doctest: file readin, valid -->
+<!-- doctest: valid -->
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -36,7 +36,7 @@ const { parseSync } = createParser(
       shortFlag: 'c',
       description: 'Path to your Github config file',
     },
-  }
+  },
 );
 
 const parsed = parseSync(['-c', 'github.json']);
@@ -45,7 +45,7 @@ expect(parsed.userName).toBe('eegli');
 expect(parsed.hasGitHubPlus).toBe(true);
 ```
 
-If the file contains non-`Value` values, i.e., arrays or object literals, parsing fails as it would for other invalid values.
+If the file contains non-`FlagValue` values, i.e., arrays or object literals, parsing fails as it would for other invalid values.
 
 ```js
 // github-bad.json - nested
@@ -56,7 +56,7 @@ If the file contains non-`Value` values, i.e., arrays or object literals, parsin
 }
 ```
 
-<!-- doctest: file readin, invalid -->
+<!-- doctest: invalid -->
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -69,7 +69,7 @@ const { parseSync } = createParser(
     filePathArg: {
       longFlag: 'config',
     },
-  }
+  },
 );
 
 expect(() => {

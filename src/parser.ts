@@ -1,6 +1,6 @@
 import { Collector } from './collector';
 import { ValidationError } from './error';
-import { BaseFlagOptions, PrimitiveRecord, Value } from './types';
+import { BaseFlagOptions, FlagObject, FlagValue } from './types';
 import Utils from './utils';
 
 type InputState = Map<
@@ -12,7 +12,7 @@ type InputState = Map<
   }
 >;
 
-export class Parser<T extends PrimitiveRecord> {
+export class Parser<T extends FlagObject> {
   private _argvInput: InputState = new Map();
   private _fileInput: InputState = new Map();
 
@@ -63,7 +63,7 @@ export class Parser<T extends PrimitiveRecord> {
   }
 
   public parse(): Collector<T> {
-    const output: Map<string, Value> = new Map();
+    const output: Map<string, FlagValue> = new Map();
 
     // Go through all expected keys and try to find them in the input
     for (const option of this._options) {
@@ -74,7 +74,9 @@ export class Parser<T extends PrimitiveRecord> {
 
       if (!entry) {
         if (keyOptions?.isRequired) {
-          throw new ValidationError(`Missing required argument ${key}`);
+          throw new ValidationError(
+            `Missing required option ${keyOptions.longFlag}`,
+          );
         }
         // Set default
         output.set(key, keyOptions.value);

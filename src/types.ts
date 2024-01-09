@@ -1,5 +1,5 @@
 type CustomValidator = {
-  isValid: (value: unknown) => value is Value;
+  isValid: (value: unknown) => value is FlagValue;
   errorMessage: (value: unknown, flag: string) => string;
 };
 
@@ -7,12 +7,12 @@ type CustomValidator = {
 export interface BaseFlagOptions {
   isRequired?: boolean;
   validator?: CustomValidator;
-  value: Value;
+  longFlag: string;
+  value: FlagValue;
 }
 
 // All options for a flag
 export interface FlagOptions extends BaseFlagOptions {
-  longFlag: string;
   shortFlag?: string;
   description?: string;
 }
@@ -37,7 +37,7 @@ export type CommandOptions = Record<
 >;
 
 export type ParserOptions<
-  T extends PrimitiveRecord = PrimitiveRecord,
+  T extends FlagObject = FlagObject,
   C extends CommandOptions = CommandOptions,
 > = {
   options?: {
@@ -59,9 +59,9 @@ export type WithPositionalArgs<T, P extends string[] = string[]> = T & {
   _: P;
 };
 
-export type PrimitiveRecord = Record<string, Value>;
+export type FlagObject = Record<string, FlagValue>;
 
-export type Value = string | number | boolean;
+export type FlagValue = string | number | boolean;
 
 export type CommandPatternMap<T extends CommandOptions> = {
   [K in keyof T]: K extends string ? CommandArgTypeMap<K, T[K]['args']> : never;

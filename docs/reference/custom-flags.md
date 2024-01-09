@@ -13,7 +13,7 @@ Although it is generally recommended that a short flag is actually short, i.e., 
 
 ## Example
 
-<!-- doctest: custom flags -->
+<!-- doctest: default -->
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -21,6 +21,7 @@ import { createParser } from '@eegli/tinyparse';
 const { parse } = createParser(
   {
     userName: '',
+    favoriteColor: '',
     verbose: false,
   },
   {
@@ -32,9 +33,11 @@ const { parse } = createParser(
         shortFlag: 'v',
       },
     },
-  }
+    decamelize: true,
+  },
 );
-const parsed = await parse(['-v', '--user=john']);
+const parsed = await parse(['-v', '--user=john', '--favorite-color=red']);
 expect(parsed.verbose).toBe(true);
 expect(parsed.userName).toBe('john');
+expect(parsed.favoriteColor).toBe('red');
 ```

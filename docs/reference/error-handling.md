@@ -1,6 +1,6 @@
 # Error Handling
 
-Tinyparse is not opinionated about errors, it throws an ugly error by default. However, you can easily catch it, extract the message and show it to the user. See the [advanced example](/examples.md).
+Tinyparse is not opinionated about errors, it throws an ugly error by default. However, you can easily catch it, extract the message and show it to the user. See the [advanced example](/advanced-example.md).
 
 Parsing may fail if:
 
@@ -14,7 +14,7 @@ If any of these errors occur, a `ValidationError` will be thrown. It contains a 
 
 Missing required arguments.
 
-<!-- doctest: error handling, rejects for missing args -->
+<!-- doctest: rejects for missing args -->
 
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';
@@ -32,12 +32,12 @@ const { parseSync } = createParser(
 
 expect(() => {
   parseSync(); // Whoops, forgot username!
-}).toThrow(new ValidationError('Missing required flag --username'));
+}).toThrow(new ValidationError('Missing required option --username'));
 ```
 
 Invalid types.
 
-<!-- doctest: error handling, rejects invalid types -->
+<!-- doctest: rejects invalid types -->
 
 ```ts
 import { createParser, ValidationError } from '@eegli/tinyparse';

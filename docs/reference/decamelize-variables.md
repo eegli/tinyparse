@@ -16,7 +16,7 @@ Tinyparse implements decamelization as follows:
 
 ## Example
 
-<!-- doctest: decamelization -->
+<!-- doctest: default -->
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
@@ -25,7 +25,7 @@ const { parse } = createParser(
   { userName: '' },
   {
     decamelize: true,
-  }
+  },
 );
 const parsed = await parse(['--user-name', 'eegli']);
 

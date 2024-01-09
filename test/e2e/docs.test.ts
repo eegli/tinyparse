@@ -1,30 +1,20 @@
-import type { ParserOptions, Value } from '../../src';
+import type { FlagValue, ParserOptions } from '../../src';
 import { ValidationError, createParser } from '../../src';
 import { mockFs } from '../_setup';
 
 describe('command line options', () => {
-  test('keeps defaults', async () => {
+  test('command arguments', () => {
+    const { parseSync } = createParser({});
+    const positionals = parseSync(['hello-world'])._;
+    expect(positionals).toStrictEqual(['hello-world']);
+  });
+  test('flag arguments', async () => {
     const { parse } = createParser({ hello: 'world' });
     let parsed = await parse();
     expect(parsed).toStrictEqual({ _: [], hello: 'world' });
 
     parsed = await parse(['--hello', 'john']);
     expect(parsed).toStrictEqual({ _: [], hello: 'john' });
-  });
-  test('internal validation', () => {
-    expect(() => {
-      createParser(
-        { a: '', b: '' },
-        { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } },
-      );
-    }).toThrow(
-      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.',
-    );
-  });
-  test('command arguments', () => {
-    const { parseSync } = createParser({});
-    const positionals = parseSync(['hello-world'])._;
-    expect(positionals).toStrictEqual(['hello-world']);
   });
   test('cli arguments, boolean flags 1', async () => {
     const { parse } = createParser({ verbose: false });
@@ -45,6 +35,16 @@ describe('command line options', () => {
     const parsed = await parse(['--limit', '8', '--year', '2023']);
     expect(parsed.limit).toBe(8);
     expect(parsed.year).toBe('2023');
+  });
+  test('internal validation', () => {
+    expect(() => {
+      createParser(
+        { a: '', b: '' },
+        { options: { a: { shortFlag: 'a' }, b: { shortFlag: 'a' } } },
+      );
+    }).toThrow(
+      'Parser config validation error, conflicting short flag: -a has been declared twice. Check your settings for short flags.',
+    );
   });
 });
 
@@ -95,11 +95,32 @@ describe('subcommands', () => {
   });
 });
 
-describe('todo', () => {
-  test('custom flags', async () => {
+describe('required arguments', () => {
+  test('default', () => {
+    const { parseSync } = createParser(
+      { userName: '' },
+      {
+        options: {
+          userName: {
+            required: true,
+          },
+        },
+        decamelize: true,
+      },
+    );
+
+    expect(() => {
+      parseSync(); // Whoops, forgot username!
+    }).toThrow(new ValidationError('Missing required option --user-name'));
+  });
+});
+
+describe('custom flags', () => {
+  test('default', async () => {
     const { parse } = createParser(
       {
         userName: '',
+        favoriteColor: '',
         verbose: false,
       },
       {
@@ -111,14 +132,18 @@ describe('todo', () => {
             shortFlag: 'v',
           },
         },
+        decamelize: true,
       },
     );
-    const parsed = await parse(['-v', '--user=john']);
+    const parsed = await parse(['-v', '--user=john', '--favorite-color=red']);
     expect(parsed.verbose).toBe(true);
     expect(parsed.userName).toBe('john');
+    expect(parsed.favoriteColor).toBe('red');
   });
+});
 
-  test('custom validation', () => {
+describe('custom validation', () => {
+  test('default', () => {
     const { parseSync } = createParser(
       { birthDate: '2000-01-01' },
       {
@@ -126,7 +151,7 @@ describe('todo', () => {
           birthDate: {
             longFlag: 'bday',
             customValidator: {
-              isValid(value): value is Value {
+              isValid(value): value is FlagValue {
                 if (typeof value !== 'string') return false;
                 return !isNaN(new Date(value).getTime());
               },
@@ -150,8 +175,10 @@ describe('todo', () => {
       "Invalid value '2000-22' for option '--bday'. Expected a valid date string",
     );
   });
+});
 
-  test('decamelization', async () => {
+describe('decamelize variabes', () => {
+  test('default', async () => {
     const { parse } = createParser(
       { userName: '' },
       {
@@ -162,8 +189,10 @@ describe('todo', () => {
 
     expect(parsed.userName).toBe('eegli');
   });
+});
 
-  test('file reading, valid', () => {
+describe('reading files', () => {
+  test('valid', () => {
     const file = {
       userName: 'eegli',
       hasGitHubPlus: true,
@@ -193,7 +222,7 @@ describe('todo', () => {
     expect(parsed.userName).toBe('eegli');
     expect(parsed.hasGitHubPlus).toBe(true);
   });
-  test('file reading, invalid', () => {
+  test('invalid', () => {
     const file = {
       userName: {
         name: 'eegli',
@@ -220,20 +249,24 @@ describe('todo', () => {
       parseSync(['--config', 'bad-github.json']);
     }).toThrow(`Invalid type for userName. "[object Object]" is not a string`);
   });
-  test('printing args, without decamelization', () => {
+});
+
+describe('printing arguments', () => {
+  test('without decamelization', () => {
     const { help } = createParser(
       {
-        age: Infinity,
-        hasGithubProfile: false,
+        verbose: false,
+        authMethod: '',
       },
       {
+        decamelize: true,
         options: {
-          hasGithubProfile: {
-            description: 'Indicate whether you have a Github profile',
-          },
-          age: {
-            shortFlag: 'a',
+          authMethod: {
+            description: 'GitHub authentication method',
             required: true,
+          },
+          verbose: {
+            shortFlag: 'v',
           },
         },
         subcommands: {
@@ -268,11 +301,11 @@ describe('todo', () => {
          - Logout from Github
 
       Required flags
-         -a, --age [number]
+         --auth-method [string]
+         GitHub authentication method
 
       Optional flags
-         --hasGithubProfile [boolean]
-         Indicate whether you have a Github profile
+         -v, --verbose [boolean]
 
          --config [string]
          Path to your Github config file
@@ -280,7 +313,7 @@ describe('todo', () => {
     `);
   });
 
-  test('printing args, with decamelization', () => {
+  test('with decamelization', () => {
     const { help } = createParser(
       {
         userName: '',
@@ -297,8 +330,10 @@ describe('todo', () => {
          --user-name [string]"
     `);
   });
+});
 
-  test('error handling, rejects for missing args', () => {
+describe('error handling', () => {
+  test('rejects missing required', () => {
     const { parseSync } = createParser(
       { username: '' },
       {
@@ -312,9 +347,9 @@ describe('todo', () => {
 
     expect(() => {
       parseSync(); // Whoops, forgot username!
-    }).toThrow(new ValidationError('Missing required argument username'));
+    }).toThrow(new ValidationError('Missing required option --username'));
   });
-  test('error handling, rejects invalid types', () => {
+  test('rejects invalid types', () => {
     const { parseSync } = createParser({ age: 0 });
 
     expect(() => {
@@ -323,8 +358,11 @@ describe('todo', () => {
       new ValidationError('Invalid type for --age. "true" is not a number'),
     );
   });
+});
+
+describe('typescript', () => {
   // eslint-disable-next-line jest/expect-expect
-  test('typescript, bootstrapping', () => {
+  test('bootstrapping', () => {
     const defaults = {
       abc: 'abc',
     };

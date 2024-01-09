@@ -1,13 +1,13 @@
 import { ValidationError } from './error';
 import _decamelize from './lib/decamelize';
-import { Value } from './types';
+import { FlagValue } from './types';
 
 type ReadFileSync = typeof import('fs').readFileSync;
 
 const allowedTypes = new Set(['string', 'number', 'boolean']);
 
 export default class Utils {
-  public static isValueType(value: unknown): value is Value {
+  public static isValueType(value: unknown): value is FlagValue {
     return allowedTypes.has(typeof value);
   }
 

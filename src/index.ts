@@ -5,14 +5,14 @@ import { Parser } from './parser';
 import {
   HelpOptions,
   ParserOptions,
-  PrimitiveRecord,
+  FlagObject,
   WithPositionalArgs,
   CommandOptions,
   CommandPatternMap,
 } from './types';
 
 export { ValidationError } from './error';
-export type { Value } from './types';
+export type { FlagValue } from './types';
 export type { ParserOptions };
 
 /**
@@ -22,11 +22,11 @@ export type { ParserOptions };
  * @export
  */
 export function createParser<
-  T extends PrimitiveRecord,
+  F extends FlagObject,
   C extends CommandOptions = CommandOptions,
->(defaultValues: T, opts?: ParserOptions<T, C>) {
+>(defaultValues: F, opts?: ParserOptions<F, C>) {
   const options = new Options(defaultValues, opts);
-  const parser = new Parser<T>(options.flagOptions);
+  const parser = new Parser<F>(options.flagOptions);
   const helpPrinter = new HelpPrinter(options.flagOptions)
     .withCommands(opts?.subcommands || {})
     .withFilePathFlags(...options.filePathFlags)
@@ -36,7 +36,7 @@ export function createParser<
 
   function parseSync(
     input: string[] = [],
-  ): WithPositionalArgs<T, CommandPatternMap<C>> {
+  ): WithPositionalArgs<F, CommandPatternMap<C>> {
     const [transformed, positionals] = ArgvTransformer.transform(input);
     ArgvTransformer.validateCommands(positionals, commandOptions);
     return parser
@@ -49,7 +49,7 @@ export function createParser<
   // eslint-disable-next-line require-await
   async function parse(
     input: string[] = [],
-  ): Promise<WithPositionalArgs<T, CommandPatternMap<C>>> {
+  ): Promise<WithPositionalArgs<F, CommandPatternMap<C>>> {
     return parseSync(input);
   }
 
@@ -63,45 +63,3 @@ export function createParser<
     parseSync,
   };
 }
-
-/* const x = createParser(
-  {},
-  {
-    positionals: {
-      copy: {
-        pattern: ['src', 'dst'],
-        description: 'Copy files from src to dst',
-      },
-      cd: {
-        pattern: ['directory'],
-        description: 'List a single directory',
-      },
-      info: {
-        pattern: [],
-        description: 'Show info about the current directory',
-      },
-      rm: {
-        pattern: 'files',
-        description: 'Remove multiple files or directories',
-      },
-    } as const,
-  },
-).parseSync()._;
-
-const [command, ...rest] = x;
-
-switch (command) {
-  case 'copy':
-    const [, src, dst] = x;
-    break;
-  case 'cd':
-    const [, directory] = x;
-    break;
-  case 'info':
-    x;
-    break;
-  case 'rm':
-    const [, first, second, ...rest] = x;
-    break;
-}
- */

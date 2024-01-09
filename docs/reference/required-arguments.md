@@ -4,23 +4,24 @@ A property - or flag - can be marked as required. If a required property is not 
 
 ## Example
 
-<!-- doctest: error handling, rejects for missing args -->
+<!-- doctest: default -->
 
 ```ts
 import { createParser } from '@eegli/tinyparse';
 
 const { parseSync } = createParser(
-  { username: '' },
+  { userName: '' },
   {
     options: {
-      username: {
+      userName: {
         required: true,
       },
     },
-  }
+    decamelize: true,
+  },
 );
 
 expect(() => {
   parseSync(); // Whoops, forgot username!
-}).toThrow('Missing required flag --username');
+}).toThrow(new ValidationError('Missing required option --user-name'));
 ```

@@ -20,11 +20,11 @@ The internals of Tinyparse use a specific terminology.
 
 Here's and overview of the testing strategy.
 
-| Test type   | Test directory      |
-| ----------- | ------------------- |
-| Unit        | test/\*.test.ts     |
-| Integration | test/integration/\* |
-| End-to-end  | test/e2e/\*         |
-| Types       | test/types/\*       |
+| Test type   | Test directory      | Notes                                        |
+| ----------- | ------------------- | -------------------------------------------- |
+| Unit        | test/\*.test.ts     | -                                            |
+| Integration | test/integration/\* | Documentation quickstart & advanced examples |
+| End-to-end  | test/e2e/\*         | General documentation examples               |
+| Types       | test/types/\*       | -                                            |
 
 All examples in the docs are also e2e tests. Integration tests are run with the native Node test runner instead of Jest.

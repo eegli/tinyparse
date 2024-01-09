@@ -1,6 +1,6 @@
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
-import { BaseFlagOptions, Value } from '../src/types';
+import { BaseFlagOptions, FlagValue } from '../src/types';
 import { mockFs } from './_setup';
 
 beforeEach(() => {
@@ -9,20 +9,16 @@ beforeEach(() => {
 
 const cfg = (opts: Record<string, BaseFlagOptions> = {}) =>
   new Map(Object.entries(opts));
-const argv = (args: Record<string, Value>) => new Map(Object.entries(args));
+const argv = (args: Record<string, FlagValue>) => new Map(Object.entries(args));
 const alias = (args: Record<string, string>) => new Map(Object.entries(args));
-
-const numVal = 1;
-const strVal = 'str';
-const boolVal = true;
 
 describe('Parsing, with options', () => {
   test('converts strings and resolves aliases', () => {
     const result = new Parser(
       cfg({
-        str: { value: strVal },
-        num: { value: numVal },
-        default: { value: 'unchanged' },
+        str: { value: '', longFlag: '--str' },
+        num: { value: 1, longFlag: '--num' },
+        default: { value: 'unchanged', longFlag: 'default' },
       }),
     )
       .withArgvInput(argv({ '--num': 1, str: '1' }), alias({ '--num': 'num' }))
@@ -37,19 +33,19 @@ describe('Parsing, with options', () => {
 
   test('rejects invalid types', () => {
     expect(() => {
-      new Parser(cfg({ x: { value: boolVal } }))
+      new Parser(cfg({ x: { value: false, longFlag: '--x' } }))
         .withArgvInput(argv({ x: 1 }))
         .parse();
     }).toThrow(new ValidationError(`Invalid type for x. "1" is not a boolean`));
     expect(() => {
-      new Parser(cfg({ xyz: { value: numVal } }))
+      new Parser(cfg({ xyz: { value: 0, longFlag: '--xyz' } }))
         .withArgvInput(argv({ xyz: 'twelve' }))
         .parse();
     }).toThrow(
       new ValidationError(`Invalid type for xyz. "twelve" is not a number`),
     );
     expect(() => {
-      new Parser(cfg({ abc: { value: numVal } }))
+      new Parser(cfg({ abc: { value: 0, longFlag: '--abc' } }))
         .withArgvInput(argv({ abc: true }))
         .parse();
     }).toThrow(
@@ -70,17 +66,31 @@ describe('Parsing, with options', () => {
     });
 
     expect(() => {
-      new Parser(cfg({ str: { value: strVal } }))
+      new Parser(cfg({ str: { value: '', longFlag: '--str' } }))
         .withArgvInput(argv({ file: 'nested.json' }))
         .withFileInput('file')
         .parse();
     }).toThrow('Invalid type for str. "[object Object]" is not a string');
   });
 
-  test('rejects for missing required args', () => {
+  test('rejects for missing required args 1', () => {
     expect(() => {
-      new Parser(cfg({ '-x': { value: boolVal, isRequired: true } })).parse();
-    }).toThrow(new ValidationError('Missing required argument -x'));
+      new Parser(
+        cfg({
+          '-x': { value: true, isRequired: true, longFlag: '--custom-flag' },
+        }),
+      ).parse();
+    }).toThrow(new ValidationError('Missing required option --custom-flag'));
+  });
+
+  test('rejects for missing required args 2', () => {
+    expect(() => {
+      new Parser(
+        cfg({
+          '-x': { value: true, isRequired: true, longFlag: 'x' },
+        }),
+      ).parse();
+    }).toThrow(new ValidationError('Missing required option x'));
   });
 
   test('custom validation', () => {
@@ -88,9 +98,10 @@ describe('Parsing, with options', () => {
       new Parser(
         cfg({
           x: {
-            value: strVal,
+            value: '',
+            longFlag: '--x',
             validator: {
-              isValid(v): v is Value {
+              isValid(v): v is FlagValue {
                 // Terrible idea in practice but works for making sure custom validation bypasses default validation
                 return typeof v === 'number';
               },
@@ -106,10 +117,11 @@ describe('Parsing, with options', () => {
       new Parser(
         cfg({
           x: {
-            value: strVal,
+            value: '',
+            longFlag: '--x',
             validator: {
-              isValid(v): v is Value {
-                return typeof v === typeof strVal && v === 'hello';
+              isValid(v): v is FlagValue {
+                return typeof v === 'string' && v === 'hello';
               },
               errorMessage: (v, f) => `did get "${v}" for ${f}, expected hello`,
             },
@@ -141,7 +153,7 @@ describe('Parsing, file reading', () => {
         .collect(),
     ).toStrictEqual({});
     expect(
-      new Parser(cfg({ str: { value: strVal } }))
+      new Parser(cfg({ str: { value: '', longFlag: '--str' } }))
         .withArgvInput(argv({ file: 'test.json' }))
         .withFileInput('file')
         .parse()
@@ -152,7 +164,7 @@ describe('Parsing, file reading', () => {
   });
   test('does not overwrite user input', () => {
     expect(
-      new Parser(cfg({ str: { value: strVal } }))
+      new Parser(cfg({ str: { value: '', longFlag: '--str' } }))
         .withArgvInput(argv({ file: 'test.json' }))
         .withFileInput('file')
         .parse()
@@ -161,7 +173,7 @@ describe('Parsing, file reading', () => {
       str: 'hello from a file',
     });
     expect(
-      new Parser(cfg({ str: { value: strVal } }))
+      new Parser(cfg({ str: { value: '', longFlag: '--str' } }))
         .withArgvInput(argv({ file: 'test.json', str: 'hello from the cli' }))
         .withFileInput('file')
         .parse()

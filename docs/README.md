@@ -26,8 +26,7 @@ I use this mostly for other pet projects of mine so it comes with some opinions 
 ## Features
 
 - TypeScript first - 100% type-safety
-- Support for subcommands
-- Support for flag arguments
+- Supports subcommands and flag options
 - Lightweight - Zero dependencies
 - JSON parsing, custom validation and more
 

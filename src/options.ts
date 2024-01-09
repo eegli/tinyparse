@@ -1,4 +1,4 @@
-import { FlagOptions, ParserOptions, PrimitiveRecord } from './types';
+import { FlagOptions, ParserOptions, FlagObject } from './types';
 import Utils from './utils';
 
 export class Options {
@@ -8,7 +8,7 @@ export class Options {
   public readonly filePathFlags = new Set<string>();
   public readonly filePathFlagDesc?: string;
 
-  constructor(defaults: PrimitiveRecord = {}, options: ParserOptions = {}) {
+  constructor(defaults: FlagObject = {}, options: ParserOptions = {}) {
     const { longFlag, shortFlag } = options.filePathArg ?? {};
 
     this.filePathFlagDesc = options.filePathArg?.description;
