@@ -1,4 +1,5 @@
-import { transform } from './argv';
+import { transformArgv } from './argv';
+import { validateCommandArgs } from './command';
 import { collect } from './flags';
 import {
   Subcommand,
@@ -8,15 +9,16 @@ import {
   FlagOptions,
   InputFlagValue,
   CommandMap,
+  CommandArgPattern,
 } from './types';
 
 export { ValidationError } from './error';
 
-export class ParserBuilder<F extends FlagRecord = Record<never, never>> {
+export class CommandBuilder<F extends FlagRecord = Record<never, never>> {
   #flags: FlagMap = new Map();
   #commands: CommandMap<F> = new Map();
 
-  public subcommand<P extends string[] | string>(
+  public subcommand<P extends CommandArgPattern>(
     command: string,
     opts: Subcommand<F, P>,
   ) {
@@ -29,38 +31,48 @@ export class ParserBuilder<F extends FlagRecord = Record<never, never>> {
     opts: FlagOptions<V>,
   ) {
     this.#flags.set(flag, opts);
-    return this as ParserBuilder<F & Record<T, Downcast<V>>>;
+    return this as unknown as CommandBuilder<F & Record<T, Downcast<V>>>;
   }
+
+  public build() {
+    return new DispatchBuilder<F>(this.#flags, this.#commands);
+  }
+}
+
+class DispatchBuilder<F extends FlagRecord> {
+  #handler?: (flags: F, positionals: string[]) => void;
+
+  constructor(
+    private readonly flags: FlagMap,
+    private readonly commands: CommandMap<F>,
+  ) {}
 
   public default<T extends F>(
     handler: T extends FlagRecord
       ? (flags: T, positionals: string[]) => void
       : never,
   ) {
-    return new Dispatcher<F>(this.#flags, this.#commands, handler);
+    this.#handler = handler;
+    return this;
   }
-}
 
-class Dispatcher<F extends FlagRecord = Record<never, never>> {
-  constructor(
-    private readonly flags: FlagMap,
-    private readonly commands: CommandMap<F>,
-    private readonly handler: (
-      flags: FlagRecord,
-      positionals: string[],
-    ) => void,
-  ) {}
+  public parseFlags(argv: string[]) {
+    const [flagMap] = transformArgv(argv);
+    return collect(this.flags, flagMap) as F;
+  }
 
-  parse(argv: string[]): void {
-    const [flagMap, positionals] = transform(argv);
-    const flags = collect(this.flags, flagMap);
+  public parse(argv: string[]) {
+    const [flagMap, positionals] = transformArgv(argv);
+    const flags = collect(this.flags, flagMap) as F;
 
-    const command = positionals[0];
-    const subcommand = this.commands.get(command);
-    if (!command || !subcommand) {
-      return this.handler?.(flags, positionals);
+    const [command, ...args] = positionals;
+    const commandOpts = this.commands.get(command);
+    if (!command || !commandOpts) {
+      return this.#handler?.(flags, positionals);
     }
 
-    return subcommand.handler(flags as F, positionals.slice(1));
+    validateCommandArgs(command, commandOpts, args);
+
+    return commandOpts.handler(flags, args);
   }
 }

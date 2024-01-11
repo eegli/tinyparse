@@ -1,15 +1,15 @@
-import { ParserBuilder } from '../src';
+import { CommandBuilder } from '../src';
 
-const mockHandler = jest.fn();
-const mockExecutor = jest.fn();
+const mockCommandHandler = jest.fn();
+const mockDefaultHandler = jest.fn();
 
 afterEach(() => {
-  mockHandler.mockClear();
-  mockExecutor.mockClear();
+  mockCommandHandler.mockClear();
+  mockDefaultHandler.mockClear();
 });
 
 test('main', () => {
-  new ParserBuilder()
+  const command = new CommandBuilder()
     .flag('f1', {
       longFlag: '--f1',
       shortFlag: '-f',
@@ -23,41 +23,69 @@ test('main', () => {
       longFlag: '--f3',
       defaultValue: new Date(0),
     })
-    .default(mockExecutor)
-    .parse(['--f1', 'hello', '--f2', '1', '--f3', '1970-01-01']);
+    .build();
+  const args = ['--f1', 'hello', '--f2', '1', '--f3', '1970-01-01'];
+  const flags = command.parseFlags(args);
+  expect(flags).toMatchInlineSnapshot(`
+    {
+      "f1": "hello",
+      "f2": 1,
+      "f3": 1970-01-01T00:00:00.000Z,
+    }
+  `);
+  command.default(mockDefaultHandler).parse(args);
 
-  expect(mockExecutor.mock.calls[0]).toMatchInlineSnapshot(`
+  expect(mockDefaultHandler.mock.calls).toMatchInlineSnapshot(`
     [
-      {
-        "f1": "hello",
-        "f2": 1,
-        "f3": 1970-01-01T00:00:00.000Z,
-      },
-      [],
+      [
+        {
+          "f1": "hello",
+          "f2": 1,
+          "f3": 1970-01-01T00:00:00.000Z,
+        },
+        [],
+      ],
     ]
   `);
 });
 
-test('main 2', () => {
-  new ParserBuilder()
-    .subcommand('hello', {
-      handler: mockHandler,
+test('subcommand works', () => {
+  new CommandBuilder()
+    .subcommand('cmd', {
+      args: ['arg1'] as const,
+      handler: mockCommandHandler,
     })
-    .default(mockExecutor)
-    .parse(['hello']);
-
-  expect(mockExecutor).not.toHaveBeenCalled();
-  expect(mockHandler).toHaveBeenCalled();
+    .build()
+    .parse(['cmd', 'arg1']);
+  expect(mockCommandHandler.mock.calls).toMatchInlineSnapshot(`
+    [
+      [
+        {},
+        [
+          "arg1",
+        ],
+      ],
+    ]
+  `);
 });
 
-test('main 3', () => {
-  new ParserBuilder()
-    .subcommand('hello', {
-      handler: mockHandler,
-    })
-    .default(mockExecutor)
-    .parse([]);
-
-  expect(mockExecutor).toHaveBeenCalled();
-  expect(mockHandler).not.toHaveBeenCalled();
+test('subcommand fails', () => {
+  expect(() => {
+    new CommandBuilder()
+      .subcommand('cmd', {
+        args: ['arg1'],
+        handler: mockCommandHandler,
+      })
+      .build()
+      .parse(['cmd']);
+  }).toThrow('cmd expects 1 argument, got 0');
+  expect(() => {
+    new CommandBuilder()
+      .subcommand('cmd', {
+        args: ['arg1'],
+        handler: mockCommandHandler,
+      })
+      .build()
+      .parse(['cmd', 'arg1', 'arg2']);
+  }).toThrow('cmd expects 1 argument, got 2');
 });

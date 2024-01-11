@@ -8,6 +8,7 @@ export interface HelpOptions {
   base?: string;
 }
 
+export type CommandArgPattern = string[] | string | null;
 export type InputFlagValue = string | number | false | Date;
 export type FlagValue = string | number | boolean | Date;
 
@@ -22,12 +23,8 @@ export type FlagOptions<V extends FlagValue> = {
 export type FlagMap = Map<string, FlagOptions<FlagValue>>;
 export type CommandMap<F extends Record<string, FlagValue>> = Map<
   string,
-  Subcommand<F, string[] | string>
+  Subcommand<F, CommandArgPattern>
 >;
-
-export type WithPositionalArgs<T> = T & {
-  _: string[];
-};
 
 export type FlagRecord = Record<string, FlagValue>;
 
@@ -49,15 +46,12 @@ export type Downcast<T> = T extends unknown[]
         ? boolean
         : T;
 
-export type Subcommand<
-  F extends Record<string, FlagValue>,
-  P extends string[] | string,
-> = {
-  args?: P;
+export type Subcommand<F extends FlagRecord, P extends CommandArgPattern> = {
+  args: P;
   description?: string;
   handler: P extends string[]
     ? (flags: F, positionals: Downcast<P>) => void
     : P extends string
       ? (flags: F, positionals: string[]) => void
-      : never;
+      : (flags: F) => void;
 };

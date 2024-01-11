@@ -1,6 +1,6 @@
 import Utils from './utils';
 
-export const transform = (
+export const transformArgv = (
   argv: string[],
 ): [Map<string, string | boolean>, string[]] => {
   const flagMap = new Map<string, string | boolean>();
