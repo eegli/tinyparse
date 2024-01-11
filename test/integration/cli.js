@@ -69,6 +69,7 @@ export const run = (argv) => {
           // Unknown command
           return `Error: Unknown command ${command}`;
         }
+
         // No command
         return help();
     }

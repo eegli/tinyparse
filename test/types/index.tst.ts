@@ -89,9 +89,8 @@ expectNotAssignable<Params>({
 /**
  * Infer commands tests
  */
-
-expectType<['cmd', string, string]>(
-  createParser(
+/* {
+  const positionals = createParser(
     {},
     {
       subcommands: {
@@ -100,10 +99,25 @@ expectType<['cmd', string, string]>(
         },
       } as const,
     },
-  ).parseSync()._,
-);
+  ).parseSync()._;
+  const [cmd, ..._args] = positionals;
+  switch (cmd) {
+    case 'cmd': {
+      const [, ...args] = positionals;
+      expect(cmd).type.toEqual<'cmd' | AnyString>();
+      expect(args).type.toEqual<[string, string]>();
+      break;
+    }
+    default: {
+      expect(cmd).type.toEqual<AnyString>();
+      const [, ..._args] = positionals;
+    }
+  }
+}
+ */
+// expectType<['cmd', string, string]>(commands);
 
-expectType<['cmd']>(
+/* expectType<['cmd']>(
   createParser(
     {},
     {
@@ -165,4 +179,4 @@ expectType<['cmd', ...string[]]>(
       },
     },
   ).parseSync()._,
-);
+); */

@@ -1,82 +1,44 @@
-import { ValidationError } from './error';
-import { CommandOptions } from './types';
 import Utils from './utils';
 
-export class ArgvTransformer {
-  public static transform(
-    argv: string[],
-  ): [Map<string, string | boolean>, string[]] {
-    const flagMap = new Map<string, string | boolean>();
+export const transform = (
+  argv: string[],
+): [Map<string, string | boolean>, string[]] => {
+  const flagMap = new Map<string, string | boolean>();
 
-    const positionals: string[] = [];
-    let isPositional = true;
+  const positionals: string[] = [];
+  let isPositional = true;
 
-    for (let i = 0; i < argv.length; i++) {
-      const arg = argv[i];
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
 
-      // A short flag is also a long flag
-      const isShortFlag = Utils.isShortFlag(arg);
+    // A short flag is also a long flag
+    const isShortFlag = Utils.isShortFlag(arg);
 
-      if (!isShortFlag && isPositional) {
-        positionals.push(arg);
-        // Collect positionals
-        continue;
-      }
-
-      isPositional = false;
-
-      if (!isShortFlag) continue;
-
-      const splitted = Utils.splitAtFirst(arg, '=');
-
-      const [flag] = splitted;
-      let [, flagVal] = splitted;
-
-      if (!flagVal) flagVal = argv[i + 1];
-
-      // Assume boolean flag
-      if (!flagVal || Utils.isShortFlag(flagVal)) {
-        flagMap.set(flag, true);
-        // Assume string or number
-      } else {
-        flagMap.set(flag, flagVal);
-      }
+    if (!isShortFlag && isPositional) {
+      positionals.push(arg);
+      // Collect positionals
+      continue;
     }
 
-    return [flagMap, positionals];
-  }
+    isPositional = false;
 
-  public static validateCommands(
-    positionals: string[],
-    commandOptions: CommandOptions,
-  ): void {
-    const availableCommands = Object.keys(commandOptions);
+    if (!isShortFlag) continue;
 
-    // No commands are specified in the config
-    if (availableCommands.length === 0) return;
+    const splitted = Utils.splitAtFirst(arg, '=');
 
-    const [command, ...args] = positionals;
+    const [flag] = splitted;
+    let [, flagVal] = splitted;
 
-    // User did not specify a command
-    if (!command || !commandOptions[command]) return;
+    if (!flagVal) flagVal = argv[i + 1];
 
-    const { args: expectedPattern } = commandOptions[command];
-
-    // Allow any number of command arguments
-    if (typeof expectedPattern === 'string') return;
-
-    // Number of arguments is satisfied
-    if (expectedPattern.length === args.length) return;
-
-    const tooFewArgs = expectedPattern.length > args.length;
-
-    if (tooFewArgs) {
-      throw new ValidationError(
-        `Invalid usage of command '${command}'. Too few arguments`,
-      );
+    // Assume boolean flag
+    if (!flagVal || Utils.isShortFlag(flagVal)) {
+      flagMap.set(flag, true);
+      // Assume string or number
+    } else {
+      flagMap.set(flag, flagVal);
     }
-    throw new ValidationError(
-      `Invalid usage of command '${command}'. Too many arguments`,
-    );
   }
-}
+
+  return [flagMap, positionals];
+};

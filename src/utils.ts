@@ -1,37 +1,29 @@
-import { ValidationError } from './error';
-import _decamelize from './lib/decamelize';
-import { FlagValue } from './types';
-
-type ReadFileSync = typeof import('fs').readFileSync;
-
-const allowedTypes = new Set(['string', 'number', 'boolean']);
+export enum Type {
+  String,
+  Number,
+  Boolean,
+  Date,
+  Unknown,
+}
 
 export default class Utils {
-  public static isValueType(value: unknown): value is FlagValue {
-    return allowedTypes.has(typeof value);
+  public static getType(value: unknown): Type {
+    if (typeof value === 'string') return Type.String;
+    if (typeof value === 'number') return Type.Number;
+    if (typeof value === 'boolean') return Type.Boolean;
+    if (value instanceof Date) return Type.Date;
+    return Type.Unknown;
   }
 
-  public static decamelize(value: string) {
-    return _decamelize(value, { separator: '-' });
-  }
-
-  // Try converting an unknown value to a number. If the result is
-  // NaN, return identity
-  public static toNumber(value: unknown): unknown {
-    if (typeof value !== 'string') return value;
+  public static tryToNumber(value: string): number | undefined {
     const num = +value;
-    return !Number.isNaN(num) ? num : value;
+    return !Number.isNaN(num) ? num : undefined;
   }
 
-  public static parseJSONFile(path: string): [string, unknown][] {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const readFileSync = require('fs').readFileSync as ReadFileSync;
-      const file = readFileSync(path, { encoding: 'utf8' });
-      return Object.entries(JSON.parse(file));
-    } catch (error) {
-      throw new ValidationError(`${path} is not a valid JSON file`);
-    }
+  public static tryToDate(value: unknown): Date | undefined {
+    if (typeof value !== 'string') return;
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) return date;
   }
 
   public static splitAtFirst(

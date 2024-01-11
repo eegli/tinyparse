@@ -1,65 +1,66 @@
-import { ArgvTransformer } from './argv';
-import { HelpPrinter } from './help';
-import { Options } from './options';
-import { Parser } from './parser';
+import { transform } from './argv';
+import { collect } from './flags';
 import {
-  HelpOptions,
-  ParserOptions,
-  FlagObject,
-  WithPositionalArgs,
-  CommandOptions,
-  CommandPatternMap,
+  Subcommand,
+  Downcast,
+  FlagMap,
+  FlagRecord,
+  FlagOptions,
+  InputFlagValue,
+  CommandMap,
 } from './types';
 
 export { ValidationError } from './error';
-export type { FlagValue } from './types';
-export type { ParserOptions };
 
-/**
- * Parser factory function. Returns a parser that is bound to the
- * given default values and options per key.
- *
- * @export
- */
-export function createParser<
-  F extends FlagObject,
-  C extends CommandOptions = CommandOptions,
->(defaultValues: F, opts?: ParserOptions<F, C>) {
-  const options = new Options(defaultValues, opts);
-  const parser = new Parser<F>(options.flagOptions);
-  const helpPrinter = new HelpPrinter(options.flagOptions)
-    .withCommands(opts?.subcommands || {})
-    .withFilePathFlags(...options.filePathFlags)
-    .withFilePathDescription(options.filePathFlagDesc);
+export class ParserBuilder<F extends FlagRecord = Record<never, never>> {
+  #flags: FlagMap = new Map();
+  #commands: CommandMap<F> = new Map();
 
-  const commandOptions = opts?.subcommands || {};
-
-  function parseSync(
-    input: string[] = [],
-  ): WithPositionalArgs<F, CommandPatternMap<C>> {
-    const [transformed, positionals] = ArgvTransformer.transform(input);
-    ArgvTransformer.validateCommands(positionals, commandOptions);
-    return parser
-      .withArgvInput(transformed, options.aliases)
-      .withFileInput(...options.filePathFlags)
-      .parse()
-      .collectWithPositionals(positionals);
+  public subcommand<P extends string[] | string>(
+    command: string,
+    opts: Subcommand<F, P>,
+  ) {
+    this.#commands.set(command, opts);
+    return this;
   }
 
-  // eslint-disable-next-line require-await
-  async function parse(
-    input: string[] = [],
-  ): Promise<WithPositionalArgs<F, CommandPatternMap<C>>> {
-    return parseSync(input);
+  public flag<T extends string, V extends InputFlagValue>(
+    flag: T,
+    opts: FlagOptions<V>,
+  ) {
+    this.#flags.set(flag, opts);
+    return this as ParserBuilder<F & Record<T, Downcast<V>>>;
   }
 
-  function help({ title, base }: HelpOptions = {}): string {
-    return helpPrinter.print(title, base);
+  public default<T extends F>(
+    handler: T extends FlagRecord
+      ? (flags: T, positionals: string[]) => void
+      : never,
+  ) {
+    return new Dispatcher<F>(this.#flags, this.#commands, handler);
   }
+}
 
-  return {
-    help,
-    parse,
-    parseSync,
-  };
+class Dispatcher<F extends FlagRecord = Record<never, never>> {
+  constructor(
+    private readonly flags: FlagMap,
+    private readonly commands: CommandMap<F>,
+    private readonly handler: (
+      flags: FlagRecord,
+      positionals: string[],
+    ) => void,
+  ) {}
+
+  parse(argv: string[]): void {
+    const [flagMap, positionals] = transform(argv);
+    const flags = collect(this.flags, flagMap);
+
+    const command = positionals[0];
+    const subcommand = this.commands.get(command);
+    if (!command || !subcommand) {
+      return this.handler?.(flags, positionals);
+    }
+
+    return subcommand.handler(flags as F, positionals.slice(1));
+  }
 }

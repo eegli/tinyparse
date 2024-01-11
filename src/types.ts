@@ -1,26 +1,6 @@
-type CustomValidator = {
+export type CustomValidator = {
   isValid: (value: unknown) => value is FlagValue;
   errorMessage: (value: unknown, flag: string) => string;
-};
-
-// The parser requires a subset of options to work
-export interface BaseFlagOptions {
-  isRequired?: boolean;
-  validator?: CustomValidator;
-  longFlag: string;
-  value: FlagValue;
-}
-
-// All options for a flag
-export interface FlagOptions extends BaseFlagOptions {
-  shortFlag?: string;
-  description?: string;
-}
-
-export type FilePathArg = {
-  longFlag: string;
-  shortFlag?: string;
-  description?: string;
 };
 
 export interface HelpOptions {
@@ -28,49 +8,56 @@ export interface HelpOptions {
   base?: string;
 }
 
-export type CommandOptions = Record<
+export type InputFlagValue = string | number | false | Date;
+export type FlagValue = string | number | boolean | Date;
+
+export type FlagOptions<V extends FlagValue> = {
+  longFlag: `--${string}`;
+  shortFlag?: `-${string}`;
+  defaultValue: Downcast<V>;
+  required?: boolean;
+  description?: string;
+};
+
+export type FlagMap = Map<string, FlagOptions<FlagValue>>;
+export type CommandMap<F extends Record<string, FlagValue>> = Map<
   string,
-  {
-    args: string | string[];
-    description?: string;
-  }
+  Subcommand<F, string[] | string>
 >;
 
-export type ParserOptions<
-  T extends FlagObject = FlagObject,
-  C extends CommandOptions = CommandOptions,
+export type WithPositionalArgs<T> = T & {
+  _: string[];
+};
+
+export type FlagRecord = Record<string, FlagValue>;
+
+export type Downcast<T> = T extends unknown[]
+  ? {
+      [P in keyof T]: T[P] extends number
+        ? number
+        : T[P] extends string
+          ? string
+          : T[P] extends boolean
+            ? boolean
+            : T[P];
+    }
+  : T extends number
+    ? number
+    : T extends string
+      ? string
+      : T extends boolean
+        ? boolean
+        : T;
+
+export type Subcommand<
+  F extends Record<string, FlagValue>,
+  P extends string[] | string,
 > = {
-  options?: {
-    [K in keyof T]?: {
-      required?: boolean;
-      description?: string;
-      shortFlag?: string;
-      longFlag?: string;
-      customValidator?: CustomValidator;
-    };
-  };
-  subcommands?: C;
-  requireSubcommand?: boolean;
-  decamelize?: boolean;
-  filePathArg?: FilePathArg;
+  args?: P;
+  description?: string;
+  handler: P extends string[]
+    ? (flags: F, positionals: Downcast<P>) => void
+    : P extends string
+      ? (flags: F, positionals: string[]) => void
+      : never;
 };
-
-export type WithPositionalArgs<T, P extends string[] = string[]> = T & {
-  _: P;
-};
-
-export type FlagObject = Record<string, FlagValue>;
-
-export type FlagValue = string | number | boolean;
-
-export type CommandPatternMap<T extends CommandOptions> = {
-  [K in keyof T]: K extends string ? CommandArgTypeMap<K, T[K]['args']> : never;
-}[keyof T];
-
-type CommandArgTypeMap<K extends string, V> = V extends string[]
-  ? [K, ...Downcast<V, string>]
-  : V extends string
-    ? [K, ...string[]]
-    : never;
-
-type Downcast<T, E> = T extends E[] ? { [K in keyof T]: E } : E[];

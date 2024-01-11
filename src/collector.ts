@@ -4,7 +4,7 @@ export class Collector<T> {
   constructor(private readonly defaults: T) {}
   public collectWithPositionals<P extends string[]>(
     positionals: string[],
-  ): WithPositionalArgs<T, P> {
+  ): WithPositionalArgs<T> {
     return {
       ...this.collect(),
       _: positionals as P,
