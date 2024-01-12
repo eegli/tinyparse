@@ -8,7 +8,7 @@ export interface HelpOptions {
   base?: string;
 }
 
-export type CommandArgPattern = string[] | string | null;
+export type CommandArgPattern = string[] | string;
 export type InputFlagValue = string | number | false | Date;
 export type FlagValue = string | number | boolean | Date;
 
