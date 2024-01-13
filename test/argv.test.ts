@@ -42,10 +42,10 @@ describe('Argv transformer', () => {
       const [transformed, positionals] = transformArgv(argv);
 
       expect(Object.fromEntries(transformed)).toStrictEqual({
-        '--boolProp1': true,
+        '--boolProp1': null,
         '--stringProp': 'hello from node',
         '--numProp': '123',
-        '--boolProp2': true,
+        '--boolProp2': null,
       });
       expect(positionals).toStrictEqual([]);
     });
@@ -77,7 +77,7 @@ describe('Argv transformer', () => {
       '--secret': '123',
       '--password': 'MyPassword',
       '-short': 'short',
-      '--bool': true,
+      '--bool': null,
       '--input-message': 'this is a string',
       '--sinlgeQuotes': '"-this is a string"',
       '-doubleQuotes': "'-this is a string'",

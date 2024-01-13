@@ -4,17 +4,17 @@ import { collect } from './flags';
 import {
   Subcommand,
   Downcast,
-  FlagMap,
+  FlagOptionMap,
   FlagRecord,
   FlagOptions,
-  InputFlagValue,
-  CommandMap,
+  FlagArgValue,
+  CommandOptionMap,
   CommandArgPattern,
 } from './types';
 
 export class CommandBuilder<F extends FlagRecord = Record<never, never>> {
-  #flags: FlagMap = new Map();
-  #commands: CommandMap<F> = new Map();
+  #flags: FlagOptionMap = new Map();
+  #commands: CommandOptionMap<F> = new Map();
 
   public subcommand<P extends CommandArgPattern>(
     command: string,
@@ -24,11 +24,12 @@ export class CommandBuilder<F extends FlagRecord = Record<never, never>> {
     return this;
   }
 
-  public flag<T extends string, V extends InputFlagValue>(
+  public flag<T extends string, V extends FlagArgValue>(
     flag: T,
     opts: FlagOptions<V>,
   ) {
     this.#flags.set(flag, opts);
+    // TODO: Figure out how to make this typecheck properly
     return this as unknown as CommandBuilder<F & Record<T, Downcast<V>>>;
   }
 
@@ -39,11 +40,13 @@ export class CommandBuilder<F extends FlagRecord = Record<never, never>> {
 
 export class DispatchBuilder<F extends FlagRecord> {
   #handler?: (flags: F, positionals: string[]) => void;
+  #flags: FlagOptionMap;
+  #commands: CommandOptionMap<F>;
 
-  constructor(
-    private readonly flags: FlagMap,
-    private readonly commands: CommandMap<F>,
-  ) {}
+  constructor(flags: FlagOptionMap, commands: CommandOptionMap<F>) {
+    this.#flags = flags;
+    this.#commands = commands;
+  }
 
   public default<T extends F>(
     handler: T extends FlagRecord
@@ -59,10 +62,10 @@ export class DispatchBuilder<F extends FlagRecord> {
     call: () => void;
   } {
     const [flagMap, positionals] = transformArgv(argv);
-    const flags = collect(this.flags, flagMap) as F;
+    const flags = collect(flagMap, this.#flags) as F;
 
     const [command, ...args] = positionals;
-    const commandOpts = this.commands.get(command);
+    const commandOpts = this.#commands.get(command);
 
     if (command && commandOpts) {
       validateCommandArgs(command, commandOpts, args);

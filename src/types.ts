@@ -1,32 +1,35 @@
 export type CustomValidator = {
-  isValid: (value: unknown) => value is FlagValue;
+  isValid: (value: unknown) => value is FlagArgValue;
   errorMessage: (value: unknown, flag: string) => string;
 };
 
-export interface HelpOptions {
-  title?: string;
-  base?: string;
-}
-
-export type CommandArgPattern = string[] | string;
-export type InputFlagValue = string | number | false | Date;
-export type FlagValue = string | number | boolean | Date;
-
-export type FlagOptions<V extends FlagValue> = {
+export type FlagArgValue = string | number | boolean | Date;
+export type FlagInputMap = Map<string, string | null>;
+export type FlagOptions<V extends FlagArgValue> = {
   longFlag: `--${string}`;
   shortFlag?: `-${string}`;
   defaultValue: Downcast<V>;
   required?: boolean;
   description?: string;
 };
+export type FlagOptionMap = Map<string, FlagOptions<FlagArgValue>>;
+export type FlagRecord = Record<string, FlagArgValue>;
 
-export type FlagMap = Map<string, FlagOptions<FlagValue>>;
-export type CommandMap<F extends Record<string, FlagValue>> = Map<
+export type CommandArgPattern = string[] | string;
+export type CommandOptionMap<F extends FlagRecord = FlagRecord> = Map<
   string,
   Subcommand<F, CommandArgPattern>
 >;
 
-export type FlagRecord = Record<string, FlagValue>;
+export type Subcommand<F extends FlagRecord, P extends CommandArgPattern> = {
+  args: P;
+  description?: string;
+  handler: P extends string[]
+    ? (flags: F, positionals: Downcast<P>) => void
+    : P extends string
+      ? (flags: F, positionals: string[]) => void
+      : (flags: F) => void;
+};
 
 export type Downcast<T> = T extends unknown[]
   ? {
@@ -45,13 +48,3 @@ export type Downcast<T> = T extends unknown[]
       : T extends boolean
         ? boolean
         : T;
-
-export type Subcommand<F extends FlagRecord, P extends CommandArgPattern> = {
-  args: P;
-  description?: string;
-  handler: P extends string[]
-    ? (flags: F, positionals: Downcast<P>) => void
-    : P extends string
-      ? (flags: F, positionals: string[]) => void
-      : (flags: F) => void;
-};

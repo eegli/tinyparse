@@ -1,5 +1,5 @@
 import { HelpPrinter } from '../src/help';
-import { CommandMap, FlagOptions, FlagRecord, FlagValue } from '../src/types';
+import { CommandOptionMap, FlagOptions, FlagArgValue } from '../src/types';
 
 describe('Helper text', () => {
   test('no configuration', () => {
@@ -7,7 +7,7 @@ describe('Helper text', () => {
     expect(printer.print()).toMatchSnapshot();
   });
   test('creates helper text with descriptions', () => {
-    const flags: FlagOptions<FlagValue>[] = [
+    const flags: FlagOptions<FlagArgValue>[] = [
       {
         longFlag: '--flag-d',
         shortFlag: '-d',
@@ -31,7 +31,7 @@ describe('Helper text', () => {
         required: true,
       },
     ];
-    const commands: CommandMap<FlagRecord> = new Map([
+    const commands: CommandOptionMap = new Map([
       [
         'serve',
         {

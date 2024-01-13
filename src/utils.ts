@@ -1,13 +1,15 @@
+import { FlagArgValue } from './types';
+
 export enum Type {
-  String,
-  Number,
-  Boolean,
-  Date,
-  Unknown,
+  String = 'string',
+  Number = 'number',
+  Boolean = 'boolean',
+  Date = 'date',
+  Unknown = 'unknown',
 }
 
 export default class Utils {
-  public static getType(value: unknown): Type {
+  public static typeof(value: FlagArgValue): Type {
     if (typeof value === 'string') return Type.String;
     if (typeof value === 'number') return Type.Number;
     if (typeof value === 'boolean') return Type.Boolean;
@@ -20,8 +22,7 @@ export default class Utils {
     return !Number.isNaN(num) ? num : undefined;
   }
 
-  public static tryToDate(value: unknown): Date | undefined {
-    if (typeof value !== 'string') return;
+  public static tryToDate(value: string): Date | undefined {
     const date = new Date(value);
     if (!Number.isNaN(date.getTime())) return date;
   }
@@ -38,17 +39,5 @@ export default class Utils {
 
   public static isShortFlag(value: string) {
     return value[0] === '-';
-  }
-
-  public static trimFlag(flag: string): string {
-    return flag.trim().replace(/^-+/, '');
-  }
-
-  public static makeLongFlag(flag: string): string {
-    return `--${this.trimFlag(flag)}`;
-  }
-
-  public static makeShortFlag(flag: string): string {
-    return `-${this.trimFlag(flag)}`;
   }
 }

@@ -13,7 +13,7 @@ export const validateCommandArgs = <
     const actualNumArgs = args.length;
 
     if (expectedNumArgs !== actualNumArgs) {
-      const wording = expectedNumArgs > 1 ? 'arguments' : 'argument';
+      const wording = expectedNumArgs === 1 ? 'argument' : 'arguments';
       throw new Error(
         `${command} expects ${expectedNumArgs} ${wording}, got ${actualNumArgs}`,
       );

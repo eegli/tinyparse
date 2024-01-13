@@ -1,9 +1,8 @@
+import { FlagInputMap } from './types';
 import Utils from './utils';
 
-export const transformArgv = (
-  argv: string[],
-): [Map<string, string | boolean>, string[]] => {
-  const flagMap = new Map<string, string | boolean>();
+export const transformArgv = (argv: string[]): [FlagInputMap, string[]] => {
+  const flagMap: FlagInputMap = new Map();
 
   const positionals: string[] = [];
   let isPositional = true;
@@ -33,7 +32,7 @@ export const transformArgv = (
 
     // Assume boolean flag
     if (!flagVal || Utils.isShortFlag(flagVal)) {
-      flagMap.set(flag, true);
+      flagMap.set(flag, null);
       // Assume string or number
     } else {
       flagMap.set(flag, flagVal);

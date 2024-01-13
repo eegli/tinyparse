@@ -9,6 +9,11 @@ afterEach(() => {
 });
 
 describe('command delegation', () => {
+  test('does nothing without handlers', () => {
+    expect(() => {
+      new CommandBuilder().build().parse([]).call();
+    }).not.toThrow();
+  });
   test('calls default handler', () => {
     new CommandBuilder().build().default(mockDefaultHandler).parse([]).call();
     expect(mockDefaultHandler).toHaveBeenCalledTimes(1);
