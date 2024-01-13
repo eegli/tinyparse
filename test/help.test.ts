@@ -1,108 +1,63 @@
-import { createParser } from '../src';
+import { HelpPrinter } from '../src/help';
+import { CommandMap, FlagOptions, FlagRecord, FlagValue } from '../src/types';
 
 describe('Helper text', () => {
+  test('no configuration', () => {
+    const printer = new HelpPrinter();
+    expect(printer.print()).toMatchSnapshot();
+  });
   test('creates helper text with descriptions', () => {
-    const defaultValues = {
-      UserId: '',
-      color: '',
-      withAuth: false,
-      port: 999,
-    };
-
-    const { help } = createParser(defaultValues, {
-      filePathArg: {
-        longFlag: '-config',
+    const flags: FlagOptions<FlagValue>[] = [
+      {
+        longFlag: '--flag-d',
+        shortFlag: '-d',
+        defaultValue: 3000,
+        description: 'The fourth flag',
+      },
+      {
+        longFlag: '--flag-a',
+        defaultValue: '',
+        required: true,
+        description: 'The first flag',
+      },
+      {
+        longFlag: '--flag-c',
         shortFlag: '-c',
-        description: 'The config file to use',
+        defaultValue: false,
       },
-      options: {
-        UserId: {},
-        color: {
-          required: true,
-          description: 'A color',
-        },
-        withAuth: {
-          description: 'Require authentication for this action',
-          shortFlag: '-wa',
-        },
-        port: {
-          description: 'The port to listen on',
-          shortFlag: 'p',
-          required: true,
-        },
+      {
+        longFlag: '--flag-b',
+        defaultValue: '',
+        required: true,
       },
-    });
-
-    expect(
-      help({ title: 'CLI usage', base: 'do stuff with this CLI' }),
-    ).toMatchSnapshot();
-  });
-  test('with decamelization and custom long flag', () => {
-    const defaultValues = {
-      UserId: '',
-      someColor: '',
-      withAuth: false,
-    };
-    const { help } = createParser(defaultValues, {
-      decamelize: true,
-      options: {
-        someColor: {
-          longFlag: 'color',
+    ];
+    const commands: CommandMap<FlagRecord> = new Map([
+      [
+        'serve',
+        {
+          args: ['path'],
+          description: 'Serve a directory',
+          handler: () => {},
         },
-      },
-    });
-    expect(help()).toMatchSnapshot();
-  });
-  test('file flag helper text only', () => {
-    expect(
-      createParser({}, { filePathArg: { longFlag: '--config' } }).help(),
-    ).toMatchSnapshot();
-    expect(
-      createParser(
-        {},
-        { filePathArg: { longFlag: '--config', shortFlag: 'c' } },
-      ).help(),
-    ).toMatchSnapshot();
-  });
-  test('creates helper text with no descriptions', () => {
-    const defaultValues = {
-      id: '',
-      withAuth: false,
-      port: 999,
-    };
-    const { help } = createParser(defaultValues);
-    expect(help()).toMatchSnapshot();
-  });
-
-  test('commands', () => {
-    const defaultValues = {
-      nonverbose: false,
-      verbose: false,
-    };
-    const { help } = createParser(defaultValues, {
-      options: {
-        nonverbose: {
-          required: true,
-        },
-      },
-      subcommands: {
-        cp: {
-          args: ['source', 'destination'],
-          description: 'Copy files from source to destination',
-        },
-        cd: {
-          args: ['directory'],
-          description: 'Navigate to a directory',
-        },
-        info: {
+      ],
+      [
+        'info',
+        {
           args: [],
+          handler: () => {},
         },
-        rm: {
+      ],
+      [
+        'rm',
+        {
           args: '...files',
-          description: 'Remove multiple files or directories',
+          description: 'Remove files',
+          handler: () => {},
         },
-      },
-    });
-    expect(help()).toMatchSnapshot();
+      ],
+    ]);
+    const printer = new HelpPrinter(flags, commands);
+    expect(printer.print()).toMatchSnapshot('default');
+    expect(printer.print('How to use my-cli')).toMatchSnapshot('with title');
   });
 });

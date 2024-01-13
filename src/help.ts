@@ -1,103 +1,85 @@
-import { FlagOptions, CommandOptions } from './types';
+import { FlagOptions, CommandMap, FlagRecord, FlagValue } from './types';
 
 export class HelpPrinter {
-  private _options: FlagOptions[];
-  private _commands: CommandOptions = {};
-  private _filePathFlags: string[] = [];
-  private _filePathFlagDescription?: string;
+  #flags: FlagOptions<FlagValue>[];
+  #commands: CommandMap<FlagRecord>;
 
-  constructor(options: Map<string, FlagOptions>) {
-    // Required properties first, then alphabetical
-    this._options = [...options.values()].sort((a, b) => {
-      if (!!a['isRequired'] < !!b['isRequired']) return 1;
-      if (!!a['isRequired'] > !!b['isRequired']) return -1;
-      if (a['longFlag'] < b['longFlag']) return -1;
-      if (a['longFlag'] > b['longFlag']) return 1;
-      // This never happens since long flags are unique
+  constructor(
+    flags: FlagOptions<FlagValue>[] = [],
+    commands: CommandMap<FlagRecord> = new Map(),
+  ) {
+    this.#commands = commands;
+    this.#flags = this.sortFlags(flags);
+  }
+
+  private sortFlags(flags: FlagOptions<FlagValue>[]) {
+    const sortedFlags = flags.sort((a, b) => {
+      const { required: aRequired, longFlag: aLongFlag } = a;
+      const { required: bRequired, longFlag: bLongFlag } = b;
+      // Sort according to required flags, then alphabetically
+      if (aRequired && !bRequired) return -1;
+      if (!aRequired && bRequired) return 1;
+      if (aLongFlag < bLongFlag) return -1;
+      if (aLongFlag > bLongFlag) return 1;
       return 0;
     });
+
+    return sortedFlags;
   }
 
-  public withCommands(commands: CommandOptions) {
-    this._commands = commands;
-    return this;
-  }
-
-  public withFilePathFlags(...filePathFlags: string[]) {
-    this._filePathFlags = [...filePathFlags];
-    return this;
-  }
-
-  public withFilePathDescription(filePathDescription?: string) {
-    this._filePathFlagDescription = filePathDescription;
-    return this;
-  }
-
-  public print(title?: string, base?: string) {
+  public print(title?: string) {
     const indent = '   ';
     let str = title || 'Usage';
 
-    if (base) str += `\n\n${base}`;
-
-    if (this._options.length > 0) str += '\n\n';
-
     // Add commands
-    const commandNames = Object.keys(this._commands);
+    const commandNames = [...this.#commands.keys()];
 
     if (commandNames.length > 0) {
-      str += 'Available commands\n';
-      for (let idx = 0; idx < commandNames.length; idx++) {
-        const commandName = commandNames[idx];
-        const args = this._commands[commandName].args;
-        const description = this._commands[commandName].description;
+      str += '\n\nAvailable commands\n';
+      for (const command of commandNames) {
+        const { args, description } = this.#commands.get(command)!;
 
         str += indent;
-        str += `${commandName}`;
+        str += `${command}`;
         if (Array.isArray(args)) {
           str += ` ${args.map((a) => `<${a}>`).join(' ')}`;
         } else {
           str += ` <${args}>`;
         }
-        if (description) str += `\n${indent}- ${description}`;
-        str += '\n';
+        if (description) {
+          str += `\n${indent}- ${description}\n`;
+        } else {
+          str += '\n';
+        }
       }
-      str += '\n';
     }
 
     // Maybe no option is required
-    const hasRequiredFlag = this._options[0]?.isRequired;
-    if (hasRequiredFlag) str += 'Required flags\n';
+    const hasAnyRequiredFlag = this.#flags.at(0)?.required;
+    if (hasAnyRequiredFlag) str += '\nRequired flags\n';
 
     let optionalFlag = true;
 
-    for (let idx = 0; idx < this._options.length; idx++) {
-      const { description, isRequired, shortFlag, longFlag, value } =
-        this._options[idx];
-      const isLast = idx === this._options.length - 1;
+    for (const options of this.#flags) {
+      const { description, required, shortFlag, longFlag, defaultValue } =
+        options;
 
-      if (optionalFlag && !isRequired) {
-        str += 'Optional flags\n';
+      if (optionalFlag && !required) {
+        str += '\nOptional flags\n';
         optionalFlag = false;
       }
 
       str += indent;
       if (shortFlag) str += `${shortFlag}, `;
       str += `${longFlag}`;
-      str += ` [${typeof value}]`;
-      if (description) str += `\n${indent}${description}`;
-      if (!isLast) str += '\n\n';
+      str += ` [${typeof defaultValue}]`;
+      if (description) {
+        str += `\n${indent}${description}\n`;
+      } else {
+        str += '\n';
+      }
     }
 
-    if (this._filePathFlags.length > 0) {
-      const longFlag = this._filePathFlags[0];
-      const shortFlag = this._filePathFlags[1];
-      const description = this._filePathFlagDescription;
-
-      str += `\n\n${indent}`;
-      if (shortFlag) str += `${shortFlag}, `;
-      str += `${longFlag} [string]\n`;
-      if (description) str += `${indent}${description}\n`;
-    }
     return str;
   }
 }

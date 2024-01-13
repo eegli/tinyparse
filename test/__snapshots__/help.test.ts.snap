@@ -1,79 +1,47 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Helper text commands 1`] = `
+exports[`Helper text creates helper text with descriptions: default 1`] = `
 "Usage
 
 Available commands
-   cp <source> <destination>
-   - Copy files from source to destination
-   cd <directory>
-   - Navigate to a directory
+   serve <path>
+   - Serve a directory
    info 
    rm <...files>
-   - Remove multiple files or directories
+   - Remove files
 
 Required flags
-   --nonverbose [boolean]
+   --flag-a [string]
+   The first flag
+   --flag-b [string]
 
 Optional flags
-   --verbose [boolean]"
+   -c, --flag-c [boolean]
+   -d, --flag-d [number]
+   The fourth flag
+"
 `;
 
-exports[`Helper text creates helper text with descriptions 1`] = `
-"CLI usage
+exports[`Helper text creates helper text with descriptions: with title 1`] = `
+"How to use my-cli
 
-do stuff with this CLI
+Available commands
+   serve <path>
+   - Serve a directory
+   info 
+   rm <...files>
+   - Remove files
 
 Required flags
-   --color [string]
-   A color
-
-   -p, --port [number]
-   The port to listen on
+   --flag-a [string]
+   The first flag
+   --flag-b [string]
 
 Optional flags
-   --UserId [string]
-
-   -wa, --withAuth [boolean]
-   Require authentication for this action
-
-   -c, --config [string]
-   The config file to use
+   -c, --flag-c [boolean]
+   -d, --flag-d [number]
+   The fourth flag
 "
 `;
 
-exports[`Helper text creates helper text with no descriptions 1`] = `
-"Usage
-
-Optional flags
-   --id [string]
-
-   --port [number]
-
-   --withAuth [boolean]"
-`;
-
-exports[`Helper text file flag helper text only 1`] = `
-"Usage
-
-   --config [string]
-"
-`;
-
-exports[`Helper text file flag helper text only 2`] = `
-"Usage
-
-   -c, --config [string]
-"
-`;
-
-exports[`Helper text with decamelization and custom long flag 1`] = `
-"Usage
-
-Optional flags
-   --color [string]
-
-   --user-id [string]
-
-   --with-auth [boolean]"
-`;
+exports[`Helper text no configuration 1`] = `"Usage"`;
