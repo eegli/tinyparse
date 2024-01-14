@@ -1,44 +1,9 @@
 import { transformArgv } from './argv';
 import { validateCommandArgs } from './commands';
 import { collect } from './flags';
-import {
-  Subcommand,
-  Downcast,
-  FlagOptionMap,
-  FlagRecord,
-  FlagOptions,
-  FlagArgValue,
-  CommandOptionMap,
-  CommandArgPattern,
-} from './types';
+import { CommandOptionMap, FlagOptionMap, FlagRecord } from './types';
 
-export class CommandBuilder<F extends FlagRecord = Record<never, never>> {
-  #flags: FlagOptionMap = new Map();
-  #commands: CommandOptionMap<F> = new Map();
-
-  public subcommand<P extends CommandArgPattern>(
-    command: string,
-    opts: Subcommand<F, P>,
-  ) {
-    this.#commands.set(command, opts);
-    return this;
-  }
-
-  public flag<T extends string, V extends FlagArgValue>(
-    flag: T,
-    opts: FlagOptions<V>,
-  ) {
-    this.#flags.set(flag, opts);
-    // TODO: Figure out how to make this typecheck properly
-    return this as unknown as CommandBuilder<F & Record<T, Downcast<V>>>;
-  }
-
-  public build() {
-    return new DispatchBuilder<F>(this.#flags, this.#commands);
-  }
-}
-
-export class DispatchBuilder<F extends FlagRecord> {
+export class ParserBuilder<F extends FlagRecord> {
   #handler?: (flags: F, positionals: string[]) => void;
   #flags: FlagOptionMap;
   #commands: CommandOptionMap<F>;
@@ -48,7 +13,7 @@ export class DispatchBuilder<F extends FlagRecord> {
     this.#commands = commands;
   }
 
-  public default<T extends F>(
+  default<T extends F>(
     handler: T extends FlagRecord
       ? (flags: T, positionals: string[]) => void
       : never,
@@ -57,7 +22,7 @@ export class DispatchBuilder<F extends FlagRecord> {
     return this;
   }
 
-  public parse(argv: string[]): {
+  parse(argv: string[]): {
     flags: F;
     call: () => void;
   } {

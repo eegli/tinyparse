@@ -41,7 +41,36 @@ describe('command delegation', () => {
   });
 });
 
-describe('argument insertion', () => {
+describe('builder flags and subcommand validation', () => {
+  test('throws for flags that are declared twice', () => {
+    expect(() => {
+      new CommandBuilder()
+        .flag('foo', {
+          defaultValue: 'default',
+          longFlag: '--foo',
+        })
+        .flag('foo', {
+          defaultValue: 'default',
+          longFlag: '--foo',
+        });
+    }).toThrow('Flag foo already exists');
+  });
+  test('throws for subcommands that are declared twice', () => {
+    expect(() => {
+      new CommandBuilder()
+        .subcommand('foo', {
+          args: [],
+          handler: mockCommandHandler,
+        })
+        .subcommand('foo', {
+          args: [],
+          handler: mockCommandHandler,
+        });
+    }).toThrow('Command foo already exists');
+  });
+});
+
+describe('subcommand argument insertion', () => {
   const parser = new CommandBuilder()
     .flag('flag', {
       defaultValue: 'default',
@@ -112,7 +141,6 @@ describe('subcommand argument pattern validation', () => {
       }).not.toThrow();
     }
   });
-
   test('zero arguments', () => {
     const parser = new CommandBuilder()
       .subcommand('foo', {

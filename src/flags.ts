@@ -1,5 +1,5 @@
 import { ValidationError } from './error';
-import { FlagInputMap, FlagOptionMap, FlagArgValue } from './types';
+import { FlagArgValue, FlagInputMap, FlagOptionMap } from './types';
 import Utils, { Type } from './utils';
 
 export const collect = (

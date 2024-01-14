@@ -1,2 +1,2 @@
 export { ValidationError } from './error';
-export { CommandBuilder } from './builders';
+export { CommandBuilder } from './commands';
