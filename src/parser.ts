@@ -12,16 +12,16 @@ import {
 export class Parser<F extends FlagRecord> {
   #flags: FlagOptionMap;
   #commands: CommandOptionMap<F>;
-  #handler?: DefaultHandler<F>;
+  #defaultHandler?: DefaultHandler<F>;
 
   constructor(
     flags: FlagOptionMap,
     commands: CommandOptionMap<F>,
-    handler?: DefaultHandler<F>,
+    defaultHandler?: DefaultHandler<F>,
   ) {
     this.#flags = flags;
     this.#commands = commands;
-    this.#handler = handler;
+    this.#defaultHandler = defaultHandler;
   }
 
   #validateSubcommandArgs(
@@ -57,8 +57,8 @@ export class Parser<F extends FlagRecord> {
     if (subcommandOpts) {
       this.#validateSubcommandArgs(subcommand, subcommandArgs, subcommandOpts);
       handler = subcommandOpts.handler.bind(this, flags, subcommandArgs);
-    } else if (this.#handler) {
-      handler = this.#handler.bind(this, flags, positionals);
+    } else if (this.#defaultHandler) {
+      handler = this.#defaultHandler.bind(this, flags, positionals);
     }
 
     return {

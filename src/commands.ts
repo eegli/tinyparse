@@ -9,10 +9,10 @@ import {
 } from './types';
 
 export class CommandBuilder<F extends FlagRecord> {
-  #flags: FlagOptionMap;
+  #flags: FlagOptionMap = new Map();
 
-  #handler?: DefaultHandler<F>;
   #commands: CommandOptionMap<F> = new Map();
+  #defaultHandler?: DefaultHandler<F>;
 
   constructor(flags: FlagOptionMap) {
     this.#flags = flags;
@@ -29,8 +29,8 @@ export class CommandBuilder<F extends FlagRecord> {
       ? (flags: T, positionals: string[]) => void
       : never,
   ) {
-    this.#handler = handler;
-    return new Parser<F>(this.#flags, this.#commands, this.#handler);
+    this.#defaultHandler = handler;
+    return new Parser<F>(this.#flags, this.#commands, this.#defaultHandler);
   }
 
   subcommand<P extends CommandArgPattern>(
