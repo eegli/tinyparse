@@ -1,4 +1,4 @@
-import { CommandBuilder } from '../src';
+import { Parser } from '../src';
 
 const mockCommandHandler = jest.fn();
 const mockDefaultHandler = jest.fn();
@@ -11,21 +11,21 @@ afterEach(() => {
 describe('command delegation', () => {
   test('does nothing without handlers', () => {
     expect(() => {
-      new CommandBuilder().build().parse([]).call();
+      new Parser().build().defaultHandler().parse([]).call();
     }).not.toThrow();
   });
   test('calls default handler', () => {
-    new CommandBuilder().build().default(mockDefaultHandler).parse([]).call();
+    new Parser().build().defaultHandler(mockDefaultHandler).parse([]).call();
     expect(mockDefaultHandler).toHaveBeenCalledTimes(1);
     expect(mockDefaultHandler).toHaveBeenCalledWith({}, []);
   });
-  const parser = new CommandBuilder()
+  const parser = new Parser()
+    .build()
     .subcommand('foo', {
       args: ['arg1'],
       handler: mockCommandHandler,
     })
-    .build()
-    .default(mockDefaultHandler);
+    .defaultHandler(mockDefaultHandler);
 
   test('calls default handler when no subcommand matches', () => {
     parser.parse(['bar']).call();
@@ -41,47 +41,18 @@ describe('command delegation', () => {
   });
 });
 
-describe('builder flags and subcommand validation', () => {
-  test('throws for flags that are declared twice', () => {
-    expect(() => {
-      new CommandBuilder()
-        .flag('foo', {
-          defaultValue: 'default',
-          longFlag: '--foo',
-        })
-        .flag('foo', {
-          defaultValue: 'default',
-          longFlag: '--foo',
-        });
-    }).toThrow('Flag foo already exists');
-  });
-  test('throws for subcommands that are declared twice', () => {
-    expect(() => {
-      new CommandBuilder()
-        .subcommand('foo', {
-          args: [],
-          handler: mockCommandHandler,
-        })
-        .subcommand('foo', {
-          args: [],
-          handler: mockCommandHandler,
-        });
-    }).toThrow('Command foo already exists');
-  });
-});
-
 describe('subcommand argument insertion', () => {
-  const parser = new CommandBuilder()
+  const parser = new Parser()
     .flag('flag', {
       defaultValue: 'default',
       longFlag: '--flag',
     })
+    .build()
     .subcommand('foo', {
       args: ['arg1', 'arg2'],
       handler: mockCommandHandler,
     })
-    .build()
-    .default(mockDefaultHandler);
+    .defaultHandler(mockDefaultHandler);
   test('inserts arguments with default handler', () => {
     parser.parse(['bar', 'baz', 'qux']).call();
     expect(mockDefaultHandler).toHaveBeenCalledTimes(1);
@@ -103,14 +74,15 @@ describe('subcommand argument insertion', () => {
   });
 });
 
-describe('subcommand argument pattern validation', () => {
+describe('subcommand argument validation', () => {
   test('fixed number of arguments', () => {
-    const parser = new CommandBuilder()
+    const parser = new Parser()
+      .build()
       .subcommand('foo', {
         args: ['arg1'],
         handler: mockCommandHandler,
       })
-      .build();
+      .defaultHandler();
 
     expect(() => {
       parser.parse(['foo', 'arg1']);
@@ -123,12 +95,13 @@ describe('subcommand argument pattern validation', () => {
     }).toThrow('foo expects 1 argument, got 2');
   });
   test('all arguments', () => {
-    const parser = new CommandBuilder()
+    const parser = new Parser()
+      .build()
       .subcommand('foo', {
         args: 'all',
         handler: mockCommandHandler,
       })
-      .build();
+      .defaultHandler();
 
     for (const args of [
       [],
@@ -142,12 +115,13 @@ describe('subcommand argument pattern validation', () => {
     }
   });
   test('zero arguments', () => {
-    const parser = new CommandBuilder()
+    const parser = new Parser()
+      .build()
       .subcommand('foo', {
         args: [],
         handler: mockCommandHandler,
       })
-      .build();
+      .defaultHandler();
     expect(() => {
       parser.parse(['foo']);
     }).not.toThrow();

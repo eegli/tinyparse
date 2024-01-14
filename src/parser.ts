@@ -1,25 +1,45 @@
 import { transformArgv } from './argv';
-import { validateCommandArgs } from './commands';
 import { collect } from './flags';
-import { CommandOptionMap, FlagOptionMap, FlagRecord } from './types';
+import {
+  CommandArgPattern,
+  CommandOptionMap,
+  DefaultHandler,
+  FlagOptionMap,
+  FlagRecord,
+  Subcommand,
+} from './types';
 
-export class ParserBuilder<F extends FlagRecord> {
-  #handler?: (flags: F, positionals: string[]) => void;
+export class Parser<F extends FlagRecord> {
   #flags: FlagOptionMap;
   #commands: CommandOptionMap<F>;
+  #handler?: DefaultHandler<F>;
 
-  constructor(flags: FlagOptionMap, commands: CommandOptionMap<F>) {
+  constructor(
+    flags: FlagOptionMap,
+    commands: CommandOptionMap<F>,
+    handler?: DefaultHandler<F>,
+  ) {
     this.#flags = flags;
     this.#commands = commands;
+    this.#handler = handler;
   }
 
-  default<T extends F>(
-    handler: T extends FlagRecord
-      ? (flags: T, positionals: string[]) => void
-      : never,
+  #validateSubcommandArgs(
+    command: string,
+    args: string[],
+    commandOpts: Subcommand<F, CommandArgPattern>,
   ) {
-    this.#handler = handler;
-    return this;
+    if (Array.isArray(commandOpts.args)) {
+      const expectedNumArgs = commandOpts.args.length;
+      const actualNumArgs = args.length;
+
+      if (expectedNumArgs !== actualNumArgs) {
+        const wording = expectedNumArgs === 1 ? 'argument' : 'arguments';
+        throw new Error(
+          `${command} expects ${expectedNumArgs} ${wording}, got ${actualNumArgs}`,
+        );
+      }
+    }
   }
 
   parse(argv: string[]): {
@@ -29,27 +49,21 @@ export class ParserBuilder<F extends FlagRecord> {
     const [flagMap, positionals] = transformArgv(argv);
     const flags = collect(flagMap, this.#flags) as F;
 
-    const [command, ...args] = positionals;
-    const commandOpts = this.#commands.get(command);
+    const [subcommand, ...subcommandArgs] = positionals;
+    const subcommandOpts = this.#commands.get(subcommand);
 
-    if (command && commandOpts) {
-      validateCommandArgs(command, commandOpts, args);
-      const call = commandOpts.handler.bind(this, flags, args);
-      return {
-        flags,
-        call,
-      };
+    let handler = () => {};
+
+    if (subcommandOpts) {
+      this.#validateSubcommandArgs(subcommand, subcommandArgs, subcommandOpts);
+      handler = subcommandOpts.handler.bind(this, flags, subcommandArgs);
+    } else if (this.#handler) {
+      handler = this.#handler.bind(this, flags, positionals);
     }
-    if (this.#handler) {
-      const call = this.#handler?.bind(this, flags, positionals);
-      return {
-        flags,
-        call,
-      };
-    }
+
     return {
       flags,
-      call: () => {},
+      call: handler,
     };
   }
 }

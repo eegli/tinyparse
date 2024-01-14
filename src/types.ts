@@ -21,6 +21,8 @@ export type CommandOptionMap<F extends FlagRecord = FlagRecord> = Map<
   Subcommand<F, CommandArgPattern>
 >;
 
+export type DefaultHandler<T> = (flags: T, positionals: string[]) => void;
+
 export type Subcommand<F extends FlagRecord, P extends CommandArgPattern> = {
   args: P;
   description?: string;
