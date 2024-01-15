@@ -1,3 +1,5 @@
+import { Parser } from '.';
+
 export type CustomValidator = {
   isValid: (value: unknown) => value is FlagOptionArgValue;
   errorMessage: (value: unknown, flag: string) => string;
@@ -23,15 +25,17 @@ export type CommandOptionMap<
 
 export type AnyGlobal = Record<string, unknown>;
 
-export type Handler<O, G, A> = ({
-  options,
-  globals,
-  args,
-}: {
+export type HandlerParams<
+  O = Record<string, FlagOptionArgValue>,
+  G = AnyGlobal,
+  A = string[],
+> = {
   options: O;
   globals: G;
   args: A;
-}) => void;
+};
+
+export type Handler<O, G, A> = (params: HandlerParams<O, G, A>) => void;
 
 export type DefaultHandler<O, G> = Handler<O, G, string[]>;
 
@@ -44,6 +48,10 @@ export type Subcommand<O, G, A extends CommandArgPattern> = {
       ? Handler<O, G, string[]>
       : Handler<O, G, never[]>;
 };
+
+export type SubcommandArgs<T> = T extends Parser<infer O, infer G>
+  ? HandlerParams<O, G, string[]>
+  : never;
 
 export type Downcast<T> = T extends unknown[]
   ? {
