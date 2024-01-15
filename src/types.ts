@@ -40,7 +40,11 @@ export type DefaultHandler<O, G> = (
   params: HandlerParams<O, G, string[]>,
 ) => void;
 
-export type Subcommand<O, G, A extends CommandArgPattern> = {
+export type Subcommand<
+  O extends FlagOptionRecord = FlagOptionRecord,
+  G extends AnyGlobal = AnyGlobal,
+  A extends CommandArgPattern = CommandArgPattern,
+> = {
   args: A;
   description?: string;
   handler: A extends string[]

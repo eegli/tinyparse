@@ -1,11 +1,6 @@
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
-import {
-  AnyGlobal,
-  CommandOptionMap,
-  FlagOptionMap,
-  FlagOptionRecord,
-} from '../src/types';
+import { AnyGlobal, FlagOptionMap, Subcommand } from '../src/types';
 
 const commandHandler = jest.fn();
 const defaultHandler = jest.fn();
@@ -18,26 +13,26 @@ afterEach(() => {
 const options: FlagOptionMap = new Map([
   ['flag1', { defaultValue: 0, longFlag: '--flag1' }],
 ]);
-const commands: CommandOptionMap<FlagOptionRecord, AnyGlobal> = new Map([
+const commands: Map<string, Subcommand> = new Map([
   [
     'expect1',
     {
-      args: ['arg1'],
-      handler: commandHandler,
+      args: ['arg1'] as const,
+      handler: (params) => commandHandler(params),
     },
   ],
   [
     'expectAll',
     {
       args: 'all',
-      handler: commandHandler,
+      handler: (params) => commandHandler(params),
     },
   ],
   [
     'expectNone',
     {
       args: [],
-      handler: commandHandler,
+      handler: (params) => commandHandler(params),
     },
   ],
 ]);
@@ -53,10 +48,9 @@ const expectCalledWith = (args: string[]) => ({
 });
 
 describe('parser', () => {
-  test('returns callable and options', () => {
-    const { call, options } = parser.parse([]);
-    expect(call).toBeDefined();
-    expect(options).toEqual({ flag1: 0 });
+  test('returns callable', () => {
+    const { call } = parser.parse([]);
+    expect(call()).toBeUndefined();
   });
   test('does nothing without handlers', () => {
     expect(new Parser(options, commands).parse([]).call()).toBeUndefined();
@@ -91,6 +85,17 @@ describe('parser', () => {
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
     expect(commandHandler).toHaveBeenCalledWith(expectCalledWith([]));
+  });
+  test('never throws if error handler is set', () => {
+    const onError = jest.fn();
+    expect(() => {
+      parser.parse(['expect1'], onError).call();
+    }).not.toThrow();
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith(
+      new ValidationError('expect1 expects 1 argument, got 0'),
+      ['expect1'],
+    );
   });
   test('throws if subcommand is called with too few args', () => {
     expect(() => {

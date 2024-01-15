@@ -48,8 +48,8 @@ export class CommandBuilder<O extends FlagOptionRecord, G extends AnyGlobal> {
     return this;
   }
 
-  globals<T extends G>(globals: T) {
-    this.#globals = globals;
+  globals<T extends G>(setGlobals: (options: O) => T) {
+    this.#globals = setGlobals(Object.fromEntries(this.#flags) as unknown as O);
     return this as unknown as CommandBuilder<O, T>;
   }
 

@@ -6,6 +6,7 @@ describe('command builder', () => {
     const parser = new CommandBuilder().defaultHandler();
     expect(parser).toBeInstanceOf(Parser);
   });
+
   test('throws for subcommands that are declared twice', () => {
     expect(() => {
       new CommandBuilder()

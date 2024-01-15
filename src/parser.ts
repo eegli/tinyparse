@@ -1,6 +1,6 @@
 import { transformArgv } from './argv';
 import { ValidationError } from './error';
-import { collect } from './options';
+import { collect } from './flags';
 import {
   AnyGlobal,
   CommandArgPattern,
@@ -47,36 +47,45 @@ export class Parser<O extends FlagOptionRecord, G extends AnyGlobal> {
     }
   }
 
-  parse(argv: string[]): {
-    options: O;
+  parse<T extends string[]>(
+    argv: T,
+    handleError?: (error: ValidationError, args: T) => void,
+  ): {
     call: () => void;
   } {
     const [flagMap, positionals] = transformArgv(argv);
+    const call = () => {
+      try {
+        const options = collect(flagMap, this.#options) as O;
 
-    const options = collect(flagMap, this.#options) as O;
+        const [subcommand, ...subcommandArgs] = positionals;
+        const subcommandOpts = this.#commands.get(subcommand);
 
-    const [subcommand, ...subcommandArgs] = positionals;
-    const subcommandOpts = this.#commands.get(subcommand);
+        if (subcommandOpts) {
+          this.#validateSubcommandArgs(
+            subcommand,
+            subcommandArgs,
+            subcommandOpts,
+          );
 
-    let handler = this.#defaultHandler.bind(this, {
-      options,
-      globals: this.#globals,
-      args: positionals,
-    });
-
-    if (subcommandOpts) {
-      this.#validateSubcommandArgs(subcommand, subcommandArgs, subcommandOpts);
-
-      handler = subcommandOpts.handler.bind(this, {
-        options,
-        globals: this.#globals,
-        args: subcommandArgs,
-      });
-    }
-
-    return {
-      options,
-      call: handler,
+          return subcommandOpts.handler({
+            options,
+            globals: this.#globals,
+            args: subcommandArgs,
+          });
+        }
+        return this.#defaultHandler({
+          options,
+          globals: this.#globals,
+          args: positionals,
+        });
+      } catch (error) {
+        if (error instanceof ValidationError && handleError) {
+          return handleError(error, positionals as T);
+        }
+        throw error;
+      }
     };
+    return { call };
   }
 }

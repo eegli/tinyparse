@@ -6,6 +6,7 @@ test('todo, docs', () => {
     expect(params.args).toEqual(['barArg']);
     expect(params.options.foo).toBe('fooValue');
     expect(params.globals.database).toBe('db');
+    expect(params.globals.fooGlobal).toBe('fooValue');
   };
 
   const commands = new Parser()
@@ -13,9 +14,10 @@ test('todo, docs', () => {
       longFlag: '--foo',
       defaultValue: 'fooDefault',
     })
-    .globals({
+    .globals((options) => ({
+      fooGlobal: options.foo,
       database: 'db',
-    });
+    }));
 
   commands
     .subcommand('bar', {

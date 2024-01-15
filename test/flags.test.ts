@@ -1,5 +1,5 @@
 import { ValidationError } from '../src';
-import { collect } from '../src/options';
+import { collect } from '../src/flags';
 import {
   FlagInputMap,
   FlagOption,
