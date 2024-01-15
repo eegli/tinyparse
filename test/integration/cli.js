@@ -1,85 +1,54 @@
 // filename: cli.js
 
-import { createParser, ValidationError } from '@eegli/tinyparse';
+import { Parser } from '@eegli/tinyparse';
 
-const { parseSync, help } = createParser(
-  {
-    verbose: false,
-    extensions: '',
-  },
-  {
-    options: {
-      verbose: {
-        shortFlag: 'v',
-        description: 'Show more information about the operation',
-      },
-      extensions: {
-        longFlag: 'ext',
-      },
-    },
-    subcommands: {
-      cp: {
-        args: ['from', 'to'],
-        description: 'Copy files from one folder to another',
-      },
-      ls: {
-        args: ['folder'],
-        description: 'List files in a folder',
-      },
-      rm: {
-        args: '...files',
-      },
-      status: {
-        args: [],
-        description: 'Show the status of the repository',
-      },
-    },
-  },
-);
+const log = (message) => console.log(message);
 
-const copy = (from, to) => `Copying ${from} to ${to}`;
-const list = (folder) => `Listing ${folder}`;
-const remove = (files) => `Removing ${files.join(', ')}`;
-const status = () => 'Showing status';
+const copy = (options, from, to) => log(`Copying ${from} to ${to}`);
+const list = (options, folder) => log(`Listing ${folder}`);
+const remove = (options, files) => log(`Removing ${files.join(', ')}`);
+const status = (options) => log('Showing status');
 
-export const run = (argv) => {
-  if (argv.includes('--help')) {
-    return help();
-  }
+const parser = new Parser()
+  .flag('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+    description: 'Show more information about the operation',
+  })
+  .flag('extensions', {
+    longFlag: '--ext',
+    defaultValue: '',
+  })
+  .build()
+  .subcommand('cp', {
+    handler: copy,
+    args: ['from', 'to'],
+    description: 'Copy files from one folder to another',
+  })
+  .subcommand('ls', {
+    handler: list,
+    args: ['folder'],
+    description: 'List files in a folder',
+  })
+  .subcommand('rm', {
+    handler: remove,
+    args: '...files',
+  })
+  .subcommand('status', {
+    handler: status,
+    args: [],
+    description: 'Show the status of the repository',
+  })
+  .defaultHandler((flags, ...args) => {
+    console.error(`Error: Unknown command ${args[0]}`);
+  });
 
-  try {
-    const { _: commands, verbose, extensions } = parseSync(argv);
+export const run = (args) => {
+  const { call, options } = parser.parse(args);
+  console.log(options);
 
-    const [command] = commands;
-
-    switch (command) {
-      case 'cp':
-        const [, from, to] = commands;
-        return copy(from, to);
-      case 'ls':
-        const [, folder] = commands;
-        return list(folder);
-      case 'rm':
-        const [, ...files] = commands;
-        return remove(files);
-      case 'status':
-        return status();
-      default:
-        if (command) {
-          // Unknown command
-          return `Error: Unknown command ${command}`;
-        }
-
-        // No command
-        return help();
-    }
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      return 'Error: ' + error.message;
-    }
-    throw error;
-  }
+  call();
 };
 
-const result = run(process.argv.slice(2));
-console.log(result);
+run(process.argv.slice(2));

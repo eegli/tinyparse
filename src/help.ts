@@ -1,18 +1,23 @@
-import { FlagOptions, CommandOptionMap, FlagRecord, FlagValue } from './types';
+import {
+  AnyGlobal,
+  CommandOptionMap,
+  FlagOption,
+  FlagOptionRecord,
+} from './types';
 
 export class HelpPrinter {
-  #flags: FlagOptions<FlagValue>[];
-  #commands: CommandOptionMap<FlagRecord>;
+  #options: FlagOption[];
+  #commands: CommandOptionMap<FlagOptionRecord, AnyGlobal>;
 
   constructor(
-    flags: FlagOptions<FlagValue>[] = [],
-    commands: CommandOptionMap<FlagRecord> = new Map(),
+    options: FlagOption[] = [],
+    commands: CommandOptionMap<FlagOptionRecord, AnyGlobal> = new Map(),
   ) {
     this.#commands = commands;
-    this.#flags = this.sortFlags(flags);
+    this.#options = this.sortFlags(options);
   }
 
-  private sortFlags(flags: FlagOptions<FlagValue>[]) {
+  private sortFlags(flags: FlagOption[]) {
     const sortedFlags = flags.sort((a, b) => {
       const { required: aRequired, longFlag: aLongFlag } = a;
       const { required: bRequired, longFlag: bLongFlag } = b;
@@ -55,12 +60,12 @@ export class HelpPrinter {
     }
 
     // Maybe no option is required
-    const hasAnyRequiredFlag = this.#flags.at(0)?.required;
+    const hasAnyRequiredFlag = this.#options.at(0)?.required;
     if (hasAnyRequiredFlag) str += '\nRequired flags\n';
 
     let optionalFlag = true;
 
-    for (const options of this.#flags) {
+    for (const options of this.#options) {
       const { description, required, shortFlag, longFlag, defaultValue } =
         options;
 

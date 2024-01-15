@@ -1,36 +1,48 @@
 export type CustomValidator = {
-  isValid: (value: unknown) => value is FlagArgValue;
+  isValid: (value: unknown) => value is FlagOptionArgValue;
   errorMessage: (value: unknown, flag: string) => string;
 };
 
-export type FlagArgValue = string | number | boolean | Date;
+export type FlagOptionArgValue = string | number | boolean | Date;
 export type FlagInputMap = Map<string, string | null>;
-export type FlagOptions<V extends FlagArgValue> = {
+export type FlagOption<V extends FlagOptionArgValue = FlagOptionArgValue> = {
   longFlag: `--${string}`;
   shortFlag?: `-${string}`;
   defaultValue: Downcast<V>;
   required?: boolean;
   description?: string;
 };
-export type FlagOptionMap = Map<string, FlagOptions<FlagArgValue>>;
-export type FlagRecord = Record<string, FlagArgValue>;
+export type FlagOptionMap = Map<string, FlagOption<FlagOptionArgValue>>;
+export type FlagOptionRecord = Record<string, FlagOptionArgValue>;
 
 export type CommandArgPattern = string[] | string;
-export type CommandOptionMap<F extends FlagRecord = FlagRecord> = Map<
-  string,
-  Subcommand<F, CommandArgPattern>
->;
+export type CommandOptionMap<
+  O extends FlagOptionRecord,
+  G extends AnyGlobal,
+> = Map<string, Subcommand<O, G, CommandArgPattern>>;
 
-export type DefaultHandler<T> = (flags: T, positionals: string[]) => void;
+export type AnyGlobal = Record<string, unknown>;
 
-export type Subcommand<F extends FlagRecord, P extends CommandArgPattern> = {
-  args: P;
+export type Handler<O, G, A> = ({
+  options,
+  globals,
+  args,
+}: {
+  options: O;
+  globals: G;
+  args: A;
+}) => void;
+
+export type DefaultHandler<O, G> = Handler<O, G, string[]>;
+
+export type Subcommand<O, G, A extends CommandArgPattern> = {
+  args: A;
   description?: string;
-  handler: P extends string[]
-    ? (flags: F, positionals: Downcast<P>) => void
-    : P extends string
-      ? (flags: F, positionals: string[]) => void
-      : (flags: F) => void;
+  handler: A extends string[]
+    ? Handler<O, G, Downcast<A>>
+    : A extends string
+      ? Handler<O, G, string[]>
+      : Handler<O, G, never[]>;
 };
 
 export type Downcast<T> = T extends unknown[]

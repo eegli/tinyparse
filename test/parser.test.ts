@@ -1,5 +1,10 @@
 import { Parser } from '../src/parser';
-import { CommandOptionMap, FlagOptionMap, FlagRecord } from '../src/types';
+import {
+  AnyGlobal,
+  CommandOptionMap,
+  FlagOptionMap,
+  FlagOptionRecord,
+} from '../src/types';
 
 const commandHandler = jest.fn();
 const defaultHandler = jest.fn();
@@ -9,10 +14,10 @@ afterEach(() => {
   defaultHandler.mockClear();
 });
 
-const flags: FlagOptionMap = new Map([
+const options: FlagOptionMap = new Map([
   ['flag1', { defaultValue: '', longFlag: '--flag1' }],
 ]);
-const commands: CommandOptionMap<FlagRecord> = new Map([
+const commands: CommandOptionMap<FlagOptionRecord, AnyGlobal> = new Map([
   [
     'expect1',
     {
@@ -35,40 +40,56 @@ const commands: CommandOptionMap<FlagRecord> = new Map([
     },
   ],
 ]);
-const parser = new Parser(flags, commands, defaultHandler);
+const globals: AnyGlobal = {
+  database: 'db',
+};
+const parser = new Parser(options, commands, globals, defaultHandler);
+
+const expectCalledWith = (args: string[]) => ({
+  options: { flag1: '' },
+  globals: globals,
+  args,
+});
 
 describe('parser', () => {
+  test('returns callable and options', () => {
+    const { call, options } = parser.parse([]);
+    expect(call).toBeDefined();
+    expect(options).toEqual({ flag1: '' });
+  });
   test('does nothing without handlers', () => {
-    expect(new Parser(flags, commands).parse([]).call()).toBeUndefined();
+    expect(new Parser(options, commands).parse([]).call()).toBeUndefined();
   });
   test('calls default handler', () => {
     parser.parse([]).call();
     expect(defaultHandler).toHaveBeenCalledTimes(1);
-    expect(defaultHandler).toHaveBeenCalledWith({ flag1: '' }, []);
+    expect(defaultHandler).toHaveBeenCalledWith(expectCalledWith([]));
   });
   test('calls default handler when no subcommand matches', () => {
     parser.parse(['a']).call();
     expect(defaultHandler).toHaveBeenCalledTimes(1);
-    expect(defaultHandler).toHaveBeenCalledWith({ flag1: '' }, ['a']);
+    expect(defaultHandler).toHaveBeenCalledWith(expectCalledWith(['a']));
     expect(commandHandler).not.toHaveBeenCalled();
   });
   test('calls subcommand with fixed args', () => {
     parser.parse(['expect1', 'b']).call();
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
-    expect(commandHandler).toHaveBeenCalledWith({ flag1: '' }, ['b']);
+    expect(commandHandler).toHaveBeenCalledWith(expectCalledWith(['b']));
   });
   test('calls subcommand with all args', () => {
     parser.parse(['expectAll', 'b', 'c', 'd']).call();
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
-    expect(commandHandler).toHaveBeenCalledWith({ flag1: '' }, ['b', 'c', 'd']);
+    expect(commandHandler).toHaveBeenCalledWith(
+      expectCalledWith(['b', 'c', 'd']),
+    );
   });
   test('calls subcommand with no args', () => {
     parser.parse(['expectNone']).call();
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
-    expect(commandHandler).toHaveBeenCalledWith({ flag1: '' }, []);
+    expect(commandHandler).toHaveBeenCalledWith(expectCalledWith([]));
   });
   test('throws if subcommand is called with too few args', () => {
     expect(() => {

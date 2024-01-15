@@ -1,33 +1,76 @@
-import { CommandBuilder } from './commands';
-import {
-  Downcast,
-  FlagArgValue,
-  FlagOptionMap,
-  FlagOptions,
-  FlagRecord,
-} from './types';
+import { ValidationError } from './error';
+import { FlagInputMap, FlagOptionArgValue, FlagOptionMap } from './types';
+import Utils, { Type } from './utils';
 
-export class OptionBuilder<F extends FlagRecord = Record<never, never>> {
-  protected x = 1;
-  #flags: FlagOptionMap = new Map();
-
-  #assertFlagIsValid = (flag: string): void => {
-    if (this.#flags.has(flag)) {
-      throw new Error(`Flag ${flag} already exists`);
+export const collect = (
+  inputFlags: FlagInputMap,
+  flagOptions: FlagOptionMap,
+) => {
+  const output = new Map<string, FlagOptionArgValue>();
+  for (const [key, opts] of flagOptions) {
+    const { longFlag, shortFlag, required, defaultValue } = opts;
+    // Try to match a long flag - null is a valid flag argument which
+    // occurs as a shortcut for boolean flags
+    let flagArg = inputFlags.get(longFlag);
+    if (flagArg === undefined && shortFlag) {
+      // Try to match a short flag
+      flagArg = inputFlags.get(shortFlag);
     }
-  };
+    // The flag is not present but required
+    if (flagArg === undefined) {
+      if (required) {
+        throw new ValidationError(`Missing required option ${longFlag}`);
+      }
+      output.set(key, defaultValue);
+      continue;
+    }
 
-  flag<T extends string, V extends FlagArgValue>(
-    flag: T,
-    opts: FlagOptions<V>,
-  ) {
-    this.#assertFlagIsValid(flag);
-    this.#flags.set(flag, opts);
-    // TODO: Figure out how to make this typecheck properly
-    return this as unknown as OptionBuilder<F & Record<T, Downcast<V>>>;
-  }
+    const expectedArgType = Utils.typeof(defaultValue);
+    const argumentIsNull = flagArg === null;
 
-  build() {
-    return new CommandBuilder<F>(this.#flags);
+    if (expectedArgType === Type.String) {
+      if (!argumentIsNull) {
+        output.set(key, flagArg as string);
+        continue;
+      }
+      throw new ValidationError(`${longFlag} expects an argument`);
+    }
+    if (expectedArgType === Type.Boolean) {
+      if (argumentIsNull) {
+        // No flag argument is a shortcut for trueish boolean flags
+        output.set(key, true);
+      } else if (flagArg === 'true') {
+        output.set(key, true);
+      } else if (flagArg === 'false') {
+        output.set(key, false);
+      } else {
+        throw new ValidationError(
+          `Invalid argument for ${longFlag}. '${flagArg}' must be 'true' or 'false'`,
+        );
+      }
+    }
+    if (expectedArgType === Type.Number) {
+      const asNumber = Utils.tryToNumber(flagArg as string);
+      if (asNumber) {
+        output.set(key, asNumber);
+        continue;
+      }
+      throw new ValidationError(
+        `Invalid type for ${longFlag}. '${
+          flagArg as string
+        }' is not a valid number`,
+      );
+    }
+    if (expectedArgType === Type.Date) {
+      const asDate = Utils.tryToDate(flagArg as string);
+      if (asDate) {
+        output.set(key, asDate);
+        continue;
+      }
+      throw new ValidationError(
+        `Invalid type for ${longFlag}. '${flagArg}' is not a valid date`,
+      );
+    }
   }
-}
+  return Object.fromEntries(output);
+};

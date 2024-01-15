@@ -1,4 +1,4 @@
-import { FlagArgValue } from './types';
+import { FlagOptionArgValue } from './types';
 
 export enum Type {
   String = 'string',
@@ -9,7 +9,7 @@ export enum Type {
 }
 
 export default class Utils {
-  public static typeof(value: FlagArgValue): Type {
+  public static typeof(value: FlagOptionArgValue): Type {
     if (typeof value === 'string') return Type.String;
     if (typeof value === 'number') return Type.Number;
     if (typeof value === 'boolean') return Type.Boolean;

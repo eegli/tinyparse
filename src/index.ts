@@ -1,2 +1,2 @@
+export { CommandBuilder as Parser } from './commands';
 export { ValidationError } from './error';
-export { OptionBuilder as Parser } from './options';

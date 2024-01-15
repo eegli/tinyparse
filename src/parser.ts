@@ -1,33 +1,37 @@
 import { transformArgv } from './argv';
-import { collect } from './flags';
+import { collect } from './options';
 import {
+  AnyGlobal,
   CommandArgPattern,
   CommandOptionMap,
   DefaultHandler,
   FlagOptionMap,
-  FlagRecord,
+  FlagOptionRecord,
   Subcommand,
 } from './types';
 
-export class Parser<F extends FlagRecord> {
-  #flags: FlagOptionMap;
-  #commands: CommandOptionMap<F>;
-  #defaultHandler?: DefaultHandler<F>;
+export class Parser<O extends FlagOptionRecord, G extends AnyGlobal> {
+  #options: FlagOptionMap;
+  #commands: CommandOptionMap<O, G>;
+  #globals: G;
+  #defaultHandler: DefaultHandler<O, G> = () => {};
 
   constructor(
-    flags: FlagOptionMap,
-    commands: CommandOptionMap<F>,
-    defaultHandler?: DefaultHandler<F>,
+    options: FlagOptionMap,
+    commands: CommandOptionMap<O, G>,
+    globals: G = {} as G,
+    defaultHandler: DefaultHandler<O, G> = () => {},
   ) {
-    this.#flags = flags;
+    this.#options = options;
     this.#commands = commands;
+    this.#globals = globals;
     this.#defaultHandler = defaultHandler;
   }
 
   #validateSubcommandArgs(
     command: string,
     args: string[],
-    commandOpts: Subcommand<F, CommandArgPattern>,
+    commandOpts: Subcommand<O, G, CommandArgPattern>,
   ) {
     if (Array.isArray(commandOpts.args)) {
       const expectedNumArgs = commandOpts.args.length;
@@ -43,27 +47,38 @@ export class Parser<F extends FlagRecord> {
   }
 
   parse(argv: string[]): {
-    flags: F;
+    options: O;
     call: () => void;
   } {
     const [flagMap, positionals] = transformArgv(argv);
-    const flags = collect(flagMap, this.#flags) as F;
+    const options = collect(flagMap, this.#options) as O;
 
     const [subcommand, ...subcommandArgs] = positionals;
     const subcommandOpts = this.#commands.get(subcommand);
 
-    let handler = () => {};
-
     if (subcommandOpts) {
       this.#validateSubcommandArgs(subcommand, subcommandArgs, subcommandOpts);
-      handler = subcommandOpts.handler.bind(this, flags, subcommandArgs);
-    } else if (this.#defaultHandler) {
-      handler = this.#defaultHandler.bind(this, flags, positionals);
+      const handler = subcommandOpts.handler.bind(this, {
+        options,
+        globals: this.#globals || {},
+        args: subcommandArgs,
+      });
+
+      return {
+        options,
+        call: () => handler(),
+      };
     }
 
+    const handler = this.#defaultHandler.bind(this, {
+      options,
+      globals: this.#globals,
+      args: positionals,
+    });
+
     return {
-      flags,
-      call: handler,
+      options,
+      call: () => handler(),
     };
   }
 }

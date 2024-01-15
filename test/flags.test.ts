@@ -1,10 +1,10 @@
 import { ValidationError } from '../src';
-import { collect } from '../src/flags';
+import { collect } from '../src/options';
 import {
   FlagInputMap,
+  FlagOption,
+  FlagOptionArgValue,
   FlagOptionMap,
-  FlagOptions,
-  FlagArgValue,
 } from '../src/types';
 
 describe('flags', () => {
@@ -61,12 +61,13 @@ describe('flags', () => {
     );
   });
   test('rejects for invalid types', () => {
-    const inputs: [[string, string | null], FlagOptions<FlagArgValue>][] = [
-      [['--foo', null], { longFlag: '--foo', defaultValue: 'string' }],
-      [['--foo', 'bar'], { longFlag: '--foo', defaultValue: true }],
-      [['--foo', 'bar'], { longFlag: '--foo', defaultValue: 1 }],
-      [['--foo', 'bar'], { longFlag: '--foo', defaultValue: new Date() }],
-    ];
+    const inputs: [[string, string | null], FlagOption<FlagOptionArgValue>][] =
+      [
+        [['--foo', null], { longFlag: '--foo', defaultValue: 'string' }],
+        [['--foo', 'bar'], { longFlag: '--foo', defaultValue: true }],
+        [['--foo', 'bar'], { longFlag: '--foo', defaultValue: 1 }],
+        [['--foo', 'bar'], { longFlag: '--foo', defaultValue: new Date() }],
+      ];
     for (const [input, option] of inputs) {
       const inputs = new Map([input]);
       const options = new Map([[option.longFlag, option]]);
