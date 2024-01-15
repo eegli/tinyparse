@@ -1,3 +1,4 @@
+import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
 import {
   AnyGlobal,
@@ -15,7 +16,7 @@ afterEach(() => {
 });
 
 const options: FlagOptionMap = new Map([
-  ['flag1', { defaultValue: '', longFlag: '--flag1' }],
+  ['flag1', { defaultValue: 0, longFlag: '--flag1' }],
 ]);
 const commands: CommandOptionMap<FlagOptionRecord, AnyGlobal> = new Map([
   [
@@ -46,7 +47,7 @@ const globals: AnyGlobal = {
 const parser = new Parser(options, commands, globals, defaultHandler);
 
 const expectCalledWith = (args: string[]) => ({
-  options: { flag1: '' },
+  options: { flag1: 0 },
   globals: globals,
   args,
 });
@@ -55,7 +56,7 @@ describe('parser', () => {
   test('returns callable and options', () => {
     const { call, options } = parser.parse([]);
     expect(call).toBeDefined();
-    expect(options).toEqual({ flag1: '' });
+    expect(options).toEqual({ flag1: 0 });
   });
   test('does nothing without handlers', () => {
     expect(new Parser(options, commands).parse([]).call()).toBeUndefined();
@@ -94,12 +95,12 @@ describe('parser', () => {
   test('throws if subcommand is called with too few args', () => {
     expect(() => {
       parser.parse(['expect1']).call();
-    }).toThrow('expect1 expects 1 argument, got 0');
+    }).toThrow(new ValidationError('expect1 expects 1 argument, got 0'));
   });
   test('throws if subcommand is called with too many args', () => {
     expect(() => {
       parser.parse(['expectNone', 'b']).call();
-    }).toThrow('expectNone expects 0 arguments, got 1');
+    }).toThrow(new ValidationError('expectNone expects 0 arguments, got 1'));
   });
   test('never throws if subcommand expects all args', () => {
     for (const args of [
@@ -113,6 +114,7 @@ describe('parser', () => {
       }).not.toThrow();
     }
   });
+
   test('binds call', () => {
     const { call } = parser.parse(['a', 'b']);
     call();

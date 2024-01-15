@@ -1,5 +1,4 @@
-import { Parser } from '.';
-
+import { CommandBuilder } from './commands';
 export type CustomValidator = {
   isValid: (value: unknown) => value is FlagOptionArgValue;
   errorMessage: (value: unknown, flag: string) => string;
@@ -37,7 +36,9 @@ export type HandlerParams<
 
 export type Handler<O, G, A> = (params: HandlerParams<O, G, A>) => void;
 
-export type DefaultHandler<O, G> = Handler<O, G, string[]>;
+export type DefaultHandler<O, G> = (
+  params: HandlerParams<O, G, string[]>,
+) => void;
 
 export type Subcommand<O, G, A extends CommandArgPattern> = {
   args: A;
@@ -49,12 +50,10 @@ export type Subcommand<O, G, A extends CommandArgPattern> = {
       : `This is wrong!`;
 };
 
-export type SubcommandArgs<T, A extends string[] = string[]> = T extends Parser<
-  infer O,
-  infer G
->
-  ? HandlerParams<O, G, A>
-  : never;
+export type SubcommandArgs<
+  T,
+  A extends string[] = string[],
+> = T extends CommandBuilder<infer O, infer G> ? HandlerParams<O, G, A> : never;
 
 export type Downcast<T> = T extends unknown[]
   ? {
