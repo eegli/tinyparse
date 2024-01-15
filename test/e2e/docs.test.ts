@@ -2,7 +2,7 @@ import { Parser } from '../../src';
 import { SubcommandArgs } from '../../src/types';
 
 test('todo, docs', () => {
-  const handleBar = (params: SubcommandArgs<typeof commands>) => {
+  const handleBar = (params: SubcommandArgs<typeof commands, [string]>) => {
     expect(params.args).toEqual(['barArg']);
     expect(params.options.foo).toBe('fooValue');
     expect(params.globals.database).toBe('db');
@@ -19,9 +19,9 @@ test('todo, docs', () => {
 
   commands
     .subcommand('bar', {
-      args: 'any',
+      args: ['arg1'] as const,
       handler: handleBar,
     })
     .defaultHandler()
-    .parse(['bar', 'barArg', '--foo', 'fooValue']);
+    .parse(['bar', 'barArg1', '--foo', 'fooValue']);
 });

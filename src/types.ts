@@ -46,11 +46,14 @@ export type Subcommand<O, G, A extends CommandArgPattern> = {
     ? Handler<O, G, Downcast<A>>
     : A extends string
       ? Handler<O, G, string[]>
-      : Handler<O, G, never[]>;
+      : `This is wrong!`;
 };
 
-export type SubcommandArgs<T> = T extends Parser<infer O, infer G>
-  ? HandlerParams<O, G, string[]>
+export type SubcommandArgs<T, A extends string[] = string[]> = T extends Parser<
+  infer O,
+  infer G
+>
+  ? HandlerParams<O, G, A>
   : never;
 
 export type Downcast<T> = T extends unknown[]
