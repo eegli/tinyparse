@@ -1,12 +1,12 @@
-import { CommandOptionMap, FlagOptions } from './types';
+import { CommandOptionsMap, FlagOptions } from './types';
 
 export class HelpPrinter {
   #options: FlagOptions[];
-  #commands: CommandOptionMap;
+  #commands: CommandOptionsMap;
 
   constructor(
     options: FlagOptions[] = [],
-    commands: CommandOptionMap = new Map(),
+    commands: CommandOptionsMap = new Map(),
   ) {
     this.#commands = commands;
     this.#options = this.sortFlags(options);

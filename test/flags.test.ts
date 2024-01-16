@@ -1,20 +1,15 @@
 import { ValidationError } from '../src';
 import { collect } from '../src/flags';
-import {
-  FlagInputMap,
-  FlagOption,
-  FlagOptionArgValue,
-  FlagOptionMap,
-} from '../src/types';
+import { FlagDefaultValue, FlagOptions, FlagOptionsMap } from '../src/types';
 
 describe('flags', () => {
   test('replaces defaults and ignores unknown', () => {
-    const options: FlagOptionMap = new Map([
+    const options: FlagOptionsMap = new Map([
       ['foo', { longFlag: '--foo', defaultValue: 'default' }],
       ['bar', { longFlag: '--bar', shortFlag: '-b', defaultValue: 'default' }],
       ['baz', { longFlag: '--baz', defaultValue: 'default' }],
     ]);
-    const input: FlagInputMap = new Map([
+    const input: Map<string, string | null> = new Map([
       ['--foo', 'bar'],
       ['-b', 'qux'],
     ]);
@@ -22,12 +17,12 @@ describe('flags', () => {
     expect(collected).toStrictEqual({ foo: 'bar', bar: 'qux', baz: 'default' });
   });
   test('allows boolean shortcuts and true, false', () => {
-    const options: FlagOptionMap = new Map([
+    const options: FlagOptionsMap = new Map([
       ['foo', { longFlag: '--foo', defaultValue: false }],
       ['bar', { longFlag: '--bar', defaultValue: false }],
       ['baz', { longFlag: '--baz', defaultValue: true }],
     ]);
-    const input: FlagInputMap = new Map<string, string | null>([
+    const input: Map<string, string | null> = new Map<string, string | null>([
       ['--foo', null],
       ['--bar', 'true'],
       ['--baz', 'false'],
@@ -36,11 +31,11 @@ describe('flags', () => {
     expect(collected).toStrictEqual({ foo: true, bar: true, baz: false });
   });
   test('converts valid dates and numbers', () => {
-    const options: FlagOptionMap = new Map([
+    const options: FlagOptionsMap = new Map([
       ['foo', { longFlag: '--foo', defaultValue: 0 }],
       ['bar', { longFlag: '--bar', defaultValue: new Date() }],
     ]);
-    const input: FlagInputMap = new Map<string, string | null>([
+    const input: Map<string, string | null> = new Map<string, string | null>([
       ['--foo', '1'],
       ['--bar', '2023'],
     ]);
@@ -51,23 +46,22 @@ describe('flags', () => {
     });
   });
   test('rejects for missing required', () => {
-    const options: FlagOptionMap = new Map([
+    const options: FlagOptionsMap = new Map([
       ['foo', { longFlag: '--foo', defaultValue: 'default', required: true }],
     ]);
-    const input: FlagInputMap = new Map([]);
+    const input: Map<string, string | null> = new Map([]);
     expect(() => collect(input, options)).toThrow(ValidationError);
     expect(() => collect(input, options)).toThrow(
       'Missing required option --foo',
     );
   });
   test('rejects for invalid types', () => {
-    const inputs: [[string, string | null], FlagOption<FlagOptionArgValue>][] =
-      [
-        [['--foo', null], { longFlag: '--foo', defaultValue: 'string' }],
-        [['--foo', 'bar'], { longFlag: '--foo', defaultValue: true }],
-        [['--foo', 'bar'], { longFlag: '--foo', defaultValue: 1 }],
-        [['--foo', 'bar'], { longFlag: '--foo', defaultValue: new Date() }],
-      ];
+    const inputs: [[string, string | null], FlagOptions<FlagDefaultValue>][] = [
+      [['--foo', null], { longFlag: '--foo', defaultValue: 'string' }],
+      [['--foo', 'bar'], { longFlag: '--foo', defaultValue: true }],
+      [['--foo', 'bar'], { longFlag: '--foo', defaultValue: 1 }],
+      [['--foo', 'bar'], { longFlag: '--foo', defaultValue: new Date() }],
+    ];
     for (const [input, option] of inputs) {
       const inputs = new Map([input]);
       const options = new Map([[option.longFlag, option]]);

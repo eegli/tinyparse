@@ -1,10 +1,5 @@
 import { HelpPrinter } from '../src/help';
-import {
-  AnyGlobal,
-  CommandOptionMap,
-  FlagOption,
-  FlagOptionRecord,
-} from '../src/types';
+import { CommandOptionsMap, FlagOptions } from '../src/types';
 
 describe('Helper text', () => {
   test('no configuration', () => {
@@ -12,7 +7,7 @@ describe('Helper text', () => {
     expect(printer.print()).toMatchSnapshot();
   });
   test('creates helper text with descriptions', () => {
-    const flags: FlagOption[] = [
+    const flags: FlagOptions[] = [
       {
         longFlag: '--flag-d',
         shortFlag: '-d',
@@ -36,7 +31,7 @@ describe('Helper text', () => {
         required: true,
       },
     ];
-    const commands: CommandOptionMap<FlagOptionRecord, AnyGlobal> = new Map([
+    const commands: CommandOptionsMap = new Map([
       [
         'serve',
         {

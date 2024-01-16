@@ -1,6 +1,6 @@
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
-import { AnyGlobal, FlagOptionMap, Subcommand } from '../src/types';
+import { CommandOptionsMap, FlagOptionsMap } from '../src/types';
 
 const commandHandler = jest.fn();
 const defaultHandler = jest.fn();
@@ -10,10 +10,10 @@ afterEach(() => {
   defaultHandler.mockClear();
 });
 
-const options: FlagOptionMap = new Map([
+const options: FlagOptionsMap = new Map([
   ['flag1', { defaultValue: 0, longFlag: '--flag1' }],
 ]);
-const commands: Map<string, Subcommand> = new Map([
+const commands: CommandOptionsMap = new Map([
   [
     'expect1',
     {
@@ -36,14 +36,14 @@ const commands: Map<string, Subcommand> = new Map([
     },
   ],
 ]);
-const globals: AnyGlobal = {
-  database: 'db',
+const setGlobals = () => {
+  return { database: 'db' };
 };
-const parser = new Parser(options, commands, globals, defaultHandler);
+const parser = new Parser(options, commands, setGlobals, defaultHandler);
 
 const expectCalledWith = (args: string[]) => ({
   options: { flag1: 0 },
-  globals: globals,
+  globals: { database: 'db' },
   args,
 });
 
