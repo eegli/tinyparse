@@ -1,8 +1,8 @@
 import { Parser } from '../../src';
-import { SubcommandArgs } from '../../src/types';
+import { CommandHandler } from '../../src/types';
 
 test('todo, docs', () => {
-  const handleBar = (params: SubcommandArgs<typeof commands, [string]>) => {
+  const handleBar: CommandHandler<typeof commands, [string]> = (params) => {
     expect(params.args).toEqual(['barArg']);
     expect(params.options.foo).toBe('fooValue');
     expect(params.globals.database).toBe('db');

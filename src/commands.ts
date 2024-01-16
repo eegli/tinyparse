@@ -2,20 +2,20 @@ import { Parser } from './parser';
 import {
   AnyGlobal,
   CommandArgPattern,
-  CommandOptionMap,
+  CommandOptionsMap,
   DefaultHandler,
   Downcast,
-  FlagOption,
-  FlagOptionArgValue,
-  FlagOptionMap,
-  FlagOptionRecord,
+  FlagDefaultValue,
+  FlagOptions,
+  FlagOptionsMap,
+  FlagValueRecord,
   Subcommand,
 } from './types';
 
-export class CommandBuilder<O extends FlagOptionRecord, G extends AnyGlobal> {
-  #flags: FlagOptionMap = new Map();
-  #commands: CommandOptionMap<O, G> = new Map();
-  #globals?: G;
+export class CommandBuilder<O extends FlagValueRecord, G extends AnyGlobal> {
+  #flags: FlagOptionsMap = new Map();
+  #commands: CommandOptionsMap<O, G> = new Map();
+  #globalSetter?: (options: O) => G;
 
   #assertCommandIsValid = (command: string): void => {
     if (this.#commands.has(command)) {
@@ -29,9 +29,9 @@ export class CommandBuilder<O extends FlagOptionRecord, G extends AnyGlobal> {
     }
   };
 
-  option<T extends string, V extends FlagOptionArgValue>(
+  option<T extends string, V extends FlagDefaultValue>(
     key: T,
-    opts: FlagOption<V>,
+    opts: FlagOptions<V>,
   ) {
     this.#assertOptionIsValid(key);
     this.#flags.set(key, opts);
@@ -49,7 +49,7 @@ export class CommandBuilder<O extends FlagOptionRecord, G extends AnyGlobal> {
   }
 
   globals<T extends G>(setGlobals: (options: O) => T) {
-    this.#globals = setGlobals(Object.fromEntries(this.#flags) as unknown as O);
+    this.#globalSetter = setGlobals;
     return this as unknown as CommandBuilder<O, T>;
   }
 
@@ -57,7 +57,7 @@ export class CommandBuilder<O extends FlagOptionRecord, G extends AnyGlobal> {
     return new Parser<O, G>(
       this.#flags,
       this.#commands,
-      this.#globals,
+      this.#globalSetter,
       handler,
     );
   }

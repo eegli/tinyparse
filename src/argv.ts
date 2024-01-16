@@ -1,5 +1,6 @@
-import { FlagInputMap } from './types';
 import Utils from './utils';
+
+type FlagInputMap = Map<string, string | null>;
 
 export const transformArgv = (argv: string[]): [FlagInputMap, string[]] => {
   const flagMap: FlagInputMap = new Map();

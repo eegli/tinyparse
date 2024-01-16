@@ -6,7 +6,7 @@
     "module": "commonjs",
     "noEmit": true,
     "checkJs": false,
-    "target": "ES2021",
+    "target": "ESNext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

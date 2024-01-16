@@ -20,9 +20,9 @@ describe('subcommand option and global arguments', () => {
       defaultValue: new Date(),
       longFlag: '--qux',
     })
-    .globals({
+    .globals(() => ({
       database: 'db',
-    }).subcommand;
+    })).subcommand;
 
   type HandlerParams = Parameters<
     Parameters<typeof subcommand>[1]['handler']

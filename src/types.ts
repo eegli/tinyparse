@@ -1,63 +1,76 @@
 import { CommandBuilder } from './commands';
+import { ValidationError } from './error';
+
 export type CustomValidator = {
-  isValid: (value: unknown) => value is FlagOptionArgValue;
+  isValid: (value: unknown) => value is FlagDefaultValue;
   errorMessage: (value: unknown, flag: string) => string;
 };
 
-export type FlagOptionArgValue = string | number | boolean | Date;
-export type FlagInputMap = Map<string, string | null>;
-export type FlagOption<V extends FlagOptionArgValue = FlagOptionArgValue> = {
+/**
+ * The possible default values of a flag option.
+ */
+export type FlagDefaultValue = string | number | boolean | Date;
+
+/**
+ * The user settings for a flag option.
+ */
+export type FlagOptions<V extends FlagDefaultValue = FlagDefaultValue> = {
   longFlag: `--${string}`;
   shortFlag?: `-${string}`;
   defaultValue: Downcast<V>;
   required?: boolean;
   description?: string;
 };
-export type FlagOptionMap = Map<string, FlagOption<FlagOptionArgValue>>;
-export type FlagOptionRecord = Record<string, FlagOptionArgValue>;
 
-export type CommandArgPattern = string[] | string;
-export type CommandOptionMap<
-  O extends FlagOptionRecord,
-  G extends AnyGlobal,
-> = Map<string, Subcommand<O, G, CommandArgPattern>>;
+/**
+ * A record of flags and their default values.
+ */
+export type FlagValueRecord = Record<string, FlagDefaultValue>;
+
+/**
+ * A map of flags and the settings specified by the user.
+ */
+export type FlagOptionsMap = Map<string, FlagOptions>;
 
 export type AnyGlobal = Record<string, unknown>;
 
-export type HandlerParams<
-  O = Record<string, FlagOptionArgValue>,
-  G = AnyGlobal,
-  A = string[],
-> = {
-  options: O;
-  globals: G;
-  args: A;
-};
+export type CommandArgPattern = string[] | string;
 
-export type Handler<O, G, A> = (params: HandlerParams<O, G, A>) => void;
+export type CommandOptionsMap<
+  Options extends FlagValueRecord = FlagValueRecord,
+  Globals extends AnyGlobal = AnyGlobal,
+> = Map<string, Subcommand<Options, Globals, CommandArgPattern>>;
 
-export type DefaultHandler<O, G> = (
-  params: HandlerParams<O, G, string[]>,
-) => void;
+type GenericHandler<Options, Globals, Args> = (params: {
+  options: Options;
+  globals: Globals;
+  args: Args;
+}) => void;
 
-export type Subcommand<
-  O extends FlagOptionRecord = FlagOptionRecord,
-  G extends AnyGlobal = AnyGlobal,
-  A extends CommandArgPattern = CommandArgPattern,
-> = {
-  args: A;
+export type Subcommand<Options, Globals, Args> = {
+  args: Args;
   description?: string;
-  handler: A extends string[]
-    ? Handler<O, G, Downcast<A>>
-    : A extends string
-      ? Handler<O, G, string[]>
-      : `This is wrong!`;
+  handler: Args extends string[]
+    ? GenericHandler<Options, Globals, Downcast<Args>>
+    : Args extends string
+      ? GenericHandler<Options, Globals, string[]>
+      : never;
 };
 
-export type SubcommandArgs<
+export type CommandHandler<
   T,
   A extends string[] = string[],
-> = T extends CommandBuilder<infer O, infer G> ? HandlerParams<O, G, A> : never;
+> = T extends CommandBuilder<infer O, infer G>
+  ? GenericHandler<O, G, A>
+  : never;
+
+export type ErrorHandler = (error: ValidationError, args: string[]) => void;
+
+export type DefaultHandler<Options, Globals> = GenericHandler<
+  Options,
+  Globals,
+  string[]
+>;
 
 export type Downcast<T> = T extends unknown[]
   ? {

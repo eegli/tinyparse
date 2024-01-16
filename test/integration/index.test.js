@@ -1,37 +1,66 @@
-import { test } from 'node:test';
-import { run } from './cli.js';
+import assert from 'assert/strict';
+import { after, afterEach, describe, mock, test } from 'node:test';
+import * as cli from './cli.js';
 
-test('advanced example', async () => {
-  new Proxy(globalThis.console, {
-    get: function (target, prop, receiver) {
-      process.stdout.write('console.log was called with:');
+describe('advanced example', () => {
+  const originalLog = console.log;
+  const originalError = console.error;
+  const logSpy = mock.fn(console.log, () => {});
+  const errorSpy = mock.fn(console.error, () => {});
+  console.log = logSpy;
+  console.error = errorSpy;
 
-      return Reflect.get(target, prop, receiver);
-    },
+  after(() => {
+    console.log = originalLog;
+    console.error = originalError;
   });
 
-  const exampleArgs = [
-    'status',
-    'cp src dest -v',
-    'ls folder --ext=js,ts',
-    'rm file1 file2 file3 file4',
-    '--help',
-    'unknown',
-    '',
-  ];
-  const outputs = [
-    /^Showing status/,
-    /^Copying src to dest/,
-    /^Listing folder/,
-    /^Removing file1, file2, file3, file4/,
-    /^Usage/,
-    /^Error: Unknown command/,
-    /^Usage/,
-  ];
-  for (let i = 0; i < exampleArgs.length; i++) {
-    const args = exampleArgs[i];
-    const output = outputs[i];
-    const result = run(args.split(' '));
-    // assert.match(result, output);
-  }
+  afterEach(() => {
+    logSpy.mock.resetCalls();
+    errorSpy.mock.resetCalls();
+  });
+
+  const expectCalledTimes = (mock, times) => {
+    assert.deepEqual(mock.mock.calls.length, times);
+  };
+
+  const expectCalledWith = (mock, expected) => {
+    assert.deepEqual(mock.mock.calls[0].arguments[0], expected);
+  };
+
+  test('command copy', (t) => {
+    cli.run(['cp', 'a', 'b', '-v']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(logSpy, 'Copying files from a to b');
+  });
+
+  test('command list', (t) => {
+    cli.run(['ls', 'myfolder', '--ext=js,ts']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(
+      logSpy,
+      'Listing files in myfolder with extension js or ts',
+    );
+  });
+
+  test('remove list', (t) => {
+    cli.run(['rm', 'a', 'b', 'c']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(logSpy, 'Removing files a,b,c');
+  });
+
+  test('command status', (t) => {
+    cli.run(['status']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(logSpy, 'Showing status for user: me');
+  });
+
+  test('error handler', (t) => {
+    cli.run(['ls']);
+    expectCalledTimes(errorSpy, 1);
+    expectCalledWith(
+      errorSpy,
+      'Error parsing arguments. Received: ls. ls expects 1 argument, got 0',
+    );
+  });
 });

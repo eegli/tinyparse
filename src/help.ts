@@ -1,23 +1,18 @@
-import {
-  AnyGlobal,
-  CommandOptionMap,
-  FlagOption,
-  FlagOptionRecord,
-} from './types';
+import { CommandOptionMap, FlagOptions } from './types';
 
 export class HelpPrinter {
-  #options: FlagOption[];
-  #commands: CommandOptionMap<FlagOptionRecord, AnyGlobal>;
+  #options: FlagOptions[];
+  #commands: CommandOptionMap;
 
   constructor(
-    options: FlagOption[] = [],
-    commands: CommandOptionMap<FlagOptionRecord, AnyGlobal> = new Map(),
+    options: FlagOptions[] = [],
+    commands: CommandOptionMap = new Map(),
   ) {
     this.#commands = commands;
     this.#options = this.sortFlags(options);
   }
 
-  private sortFlags(flags: FlagOption[]) {
+  private sortFlags(flags: FlagOptions[]) {
     const sortedFlags = flags.sort((a, b) => {
       const { required: aRequired, longFlag: aLongFlag } = a;
       const { required: bRequired, longFlag: bLongFlag } = b;

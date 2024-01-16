@@ -4,28 +4,29 @@ import { collect } from './flags';
 import {
   AnyGlobal,
   CommandArgPattern,
-  CommandOptionMap,
+  CommandOptionsMap,
   DefaultHandler,
-  FlagOptionMap,
-  FlagOptionRecord,
+  ErrorHandler,
+  FlagOptionsMap,
+  FlagValueRecord,
   Subcommand,
 } from './types';
 
-export class Parser<O extends FlagOptionRecord, G extends AnyGlobal> {
-  #options: FlagOptionMap;
-  #commands: CommandOptionMap<O, G>;
-  #globals: G;
+export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
+  #options: FlagOptionsMap;
+  #commands: CommandOptionsMap<O, G>;
+  #globalSetter?: (options: O) => G;
   #defaultHandler: DefaultHandler<O, G>;
 
   constructor(
-    options: FlagOptionMap,
-    commands: CommandOptionMap<O, G>,
-    globals: G = {} as G,
+    options: FlagOptionsMap,
+    commands: CommandOptionsMap<O, G>,
+    globalSetter?: (options: O) => G,
     defaultHandler: DefaultHandler<O, G> = () => {},
   ) {
     this.#options = options;
     this.#commands = commands;
-    this.#globals = globals;
+    this.#globalSetter = globalSetter;
     this.#defaultHandler = defaultHandler;
   }
 
@@ -47,9 +48,9 @@ export class Parser<O extends FlagOptionRecord, G extends AnyGlobal> {
     }
   }
 
-  parse<T extends string[]>(
-    argv: T,
-    handleError?: (error: ValidationError, args: T) => void,
+  parse(
+    argv: string[],
+    handleError?: ErrorHandler,
   ): {
     call: () => void;
   } {
@@ -70,18 +71,18 @@ export class Parser<O extends FlagOptionRecord, G extends AnyGlobal> {
 
           return subcommandOpts.handler({
             options,
-            globals: this.#globals,
+            globals: this.#globalSetter?.(options) as G,
             args: subcommandArgs,
           });
         }
         return this.#defaultHandler({
           options,
-          globals: this.#globals,
+          globals: this.#globalSetter?.(options) as G,
           args: positionals,
         });
       } catch (error) {
         if (error instanceof ValidationError && handleError) {
-          return handleError(error, positionals as T);
+          return handleError(error, positionals);
         }
         throw error;
       }
