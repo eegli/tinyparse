@@ -41,7 +41,7 @@
     "release": "yarn build:release && changeset publish",
     "test": "jest --verbose",
     "test:coverage": "jest --coverage",
-    "test:integration": "yarn build && cd test/integration && npm install --omit=dev --ignore-scripts && npm test",
+    "test:integration": "yarn build && cd test/integration && npm install --omit=dev --ignore-scripts && tsc && npm test",
     "test:types": "tstyche",
     "test:unit": "jest --selectProjects unit",
     "test:watch": "jest  --verbose --watch"
