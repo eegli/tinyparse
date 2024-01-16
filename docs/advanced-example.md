@@ -18,91 +18,88 @@ node cli.js unknown
 node cli.js
 ```
 
-```js
-// filename: cli.js
+```ts
+// filename: cli.ts
 
-// filename: cli.js
+import { CommandHandler, ErrorHandler, Parser } from '@eegli/tinyparse';
 
-import { createParser, ValidationError } from '@eegli/tinyparse';
+type Options = typeof options;
 
-const { parseSync, help } = createParser(
-  {
-    verbose: false,
-    extensions: '',
-  },
-  {
-    options: {
-      verbose: {
-        shortFlag: 'v',
-        description: 'Show more information about the operation',
-      },
-      extensions: {
-        longFlag: 'ext',
-      },
-    },
-    subcommands: {
-      cp: {
-        args: ['from', 'to'],
-        description: 'Copy files from one folder to another',
-      },
-      ls: {
-        args: ['folder'],
-        description: 'List files in a folder',
-      },
-      rm: {
-        args: '...files',
-      },
-      status: {
-        args: [],
-        description: 'Show the status of the repository',
-      },
-    },
-  },
-);
-
-const copy = (from, to) => `Copying ${from} to ${to}`;
-const list = (folder) => `Listing ${folder}`;
-const remove = (files) => `Removing ${files.join(', ')}`;
-const status = () => 'Showing status';
-
-const run = (argv) => {
-  if (argv.includes('--help')) {
-    return help();
-  }
-
-  try {
-    const { _: commands, verbose, extensions } = parseSync(argv);
-
-    const [command] = commands;
-
-    switch (command) {
-      case 'cp':
-        const [, from, to] = commands;
-        return copy(from, to);
-      case 'ls':
-        const [, folder] = commands;
-        return list(folder);
-      case 'rm':
-        const [, ...files] = commands;
-        return remove(files);
-      case 'status':
-        return status();
-      default:
-        if (command) {
-          // Unknown command
-          return `Error: Unknown command ${command}`;
-        }
-        // No command
-        return help();
-    }
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      return 'Error: ' + error.message;
-    }
-    throw error;
-  }
+const copy: CommandHandler<Options, [string, string]> = ({ args }) => {
+  const [from, to] = args;
+  console.log(`Copying files from ${from} to ${to}`);
 };
 
-const result = run(process.argv.slice(2));
-console.log(result);
+const list: CommandHandler<Options, [string]> = ({ args, globals }) => {
+  const [folder] = args;
+  const { extensions } = globals;
+  console.log(
+    `Listing files in ${folder} with extension ${extensions.join(' or ')}`,
+  );
+};
+
+const remove: CommandHandler<Options> = ({ args }) => {
+  console.log(`Removing files ${args}`);
+};
+
+const status: CommandHandler<Options> = ({ globals }) => {
+  const { userName } = globals;
+  console.log(`Showing status for user: ${userName}`);
+};
+
+const handleError: ErrorHandler = (error, args) => {
+  console.error(`Error parsing arguments. Received: ${args}. ${error.message}`);
+};
+
+const handleDefault: CommandHandler<Options> = ({ args, globals, options }) => {
+  console.info({ options, args, globals });
+};
+
+const options = new Parser()
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+    description: 'Show more information about the operation',
+  })
+  .option('extensions', {
+    longFlag: '--ext',
+    defaultValue: '',
+    description: 'Comma-separated list of file extensions to include',
+  })
+  .globals((options) => {
+    return {
+      logger: options.verbose ? console.log : () => {},
+      userName: 'me',
+      extensions: options.extensions.split(','),
+    };
+  });
+
+const parser = options
+  .subcommand('cp', {
+    handler: copy,
+    args: ['from', 'to'] as const,
+    description: 'Copy files from one folder to another',
+  })
+  .subcommand('ls', {
+    handler: list,
+    args: ['folder'] as const,
+    description: 'List files in a folder',
+  })
+  .subcommand('rm', {
+    handler: remove,
+    args: '...files',
+  })
+  .subcommand('status', {
+    handler: status,
+    args: [] as const,
+    description: 'Show the status of the repository',
+  })
+  .defaultHandler(handleDefault);
+
+const run = (args: string[]) => {
+  parser.parse(args, handleError).call();
+};
+
+run(process.argv.slice(2));
 ```

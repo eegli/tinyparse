@@ -4,10 +4,10 @@
 
 Tinyparse:
 
-- Matches **subcommands and their arguments**
-- Parses and validates **long and short flag arguments**
+- Matches **subcommands and their positional arguments**
+- Parses and validates **long and short flag options**
 
-All arguments until the first flag are considered **subcommands** (and their arguments), that is, they are _positional_ arguments. After positional arguments - if there are any - **flags** (also called _options_) may follow. Flags are always global. Long flags start with two hyphens (`--`), short flags with a single hyphen (`-`). A valid _flag-argument_ pair consists of a _flag_ followed by the _flag argument_, separated by a whitespace or equal sign. Whereas the order _does_ matter for positonal arguments, it does _not_ matter for flags.
+All arguments until the first flag are considered **subcommands** (and their arguments), that is, they are _positional_ arguments. After positional arguments - if there are any - **options** (also called _flags_) may follow. Flags are always global. Long flags start with two hyphens (`--`), short flags with a single hyphen (`-`). A valid _flag-argument_ pair consists of a _flag_ followed by the _flag argument_, separated by a whitespace or equal sign. Whereas the order _does_ matter for positonal arguments, it does _not_ matter for flags.
 
 | Example            | Abstract format                                        | Support |
 | ------------------ | ------------------------------------------------------ | ------- |

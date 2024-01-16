@@ -1,6 +1,6 @@
 import { transformArgv } from './argv';
 import { ValidationError } from './error';
-import { collect } from './flags';
+import { collectFlags } from './flags';
 import {
   AnyGlobal,
   CommandArgPattern,
@@ -57,7 +57,7 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     const [flagMap, positionals] = transformArgv(argv);
     const call = () => {
       try {
-        const options = collect(flagMap, this.#options) as O;
+        const options = collectFlags(flagMap, this.#options) as O;
 
         const [subcommand, ...subcommandArgs] = positionals;
         const subcommandOpts = this.#commands.get(subcommand);

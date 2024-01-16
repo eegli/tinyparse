@@ -16,37 +16,106 @@ npm i @eegli/tinyparse
 
 ## Usage
 
+Tinyparse uses a type-safe builder pattern to create a parser. A parser is created with a call to `new Parser()`. Everything that follows is now optional.
+
 ```ts
-import { createParser } from '@eegli/tinyparse';
-import assert from 'node:assert/strict';
+import { Parser } from '@eegli/tinyparse';
 
-const defaultValues = {
-  username: '',
-  active: false,
-};
+const parser = new Parser();
+```
 
-const { parse, parseSync } = createParser(defaultValues);
+First, we can specify any global options (a.k.a. _flags_) and _chain_ them.
 
-const parsed1 = await parse(['hello', '--username', 'john', '--active']);
-const parsed2 = parseSync(['hello', '--username=john', '--active']);
-
-assert.deepStrictEqual(parsed1, parsed2);
-
-assert.deepStrictEqual(parsed1, {
-  username: 'john',
-  active: true,
-  _: ['hello'],
+```ts
+const parser = new Parser().option('verbose', {
+  longFlag: '--verbose',
+  shortFlag: '-v',
+  defaultValue: false,
 });
 ```
 
-Tinyparse binds a parser to some default values you feed it.
+Next, we attach globals. Globals are supposed to _static_ objects that can be used by any subcommand. For example, you could attach a logger to the parser or define constants. Globals have access to all options.
 
-`createParser(defaultValues, options = {})`
+```ts
+const parser = new Parser()
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+  })
+  .globals((options) => ({
+    callDatabase: (name: string) => `Hello, ${name}!`,
+    log: (message: string) => {
+      if (options.verbose) {
+        console.log(message);
+      }
+    },
+  }));
+```
 
-- `defaultValues: Record<string, Value>`: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
+Now, we register a handler for a subcommand. (Subcommand) handlers have access to their arguments, globals and options.
 
-- `options: object`: Options object. You can specify both a _file flag_ (whose flag value will point to a file) and options per key.
+```ts
+const parser = new Parser()
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+  })
+  .globals((options) => ({
+    callDatabase: (name: string) => `Hello, ${name}!`,
+    log: (message: string) => {
+      if (options.verbose) {
+        console.log(message);
+      }
+    },
+  }))
+  .subcommand('fetch-user', {
+    args: ['user-name'] as const,
+    handler: ({ args, globals }) => {
+      const [userName] = args;
+      const result = globals.callDatabase(userName);
+      globals.log(result);
+    },
+  });
+```
 
-Note that most arguments and options are optional. IntelliSense and TypeScript will show you the detailed signatures and what is required.
+Finally, we wrap up the building phase by attaching a _default handler_- a special handler that is called when no subcommand matches.
 
-`createParser` builds both an asynchronous (`parse`) and synchronous (`parseSync`) parser. Apart from their different return types, both functions do the exact same thing.
+```ts
+const parser = new Parser()
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+  })
+  .globals((options) => ({
+    callDatabase: (name: string) => `Hello, ${name}!`,
+    log: (message: string) => {
+      if (options.verbose) {
+        console.log(message);
+      }
+    },
+  }))
+  .subcommand('fetch-user', {
+    args: ['user-name'] as const,
+    handler: ({ args, globals }) => {
+      const [userName] = args;
+      const result = globals.callDatabase(userName);
+      globals.log(result);
+    },
+  })
+  .defaultHandler(({ globals }) => {
+    globals.log('No command specified');
+  });
+```
+
+Now, we are ready to give it an array of strings, which is usually the command line arguments obtained from `process.argv.slice(2)`:
+
+```ts
+parser.parse(['fetch-user', 'John', '-v']).call();
+```
+
+This will print `Hello, John!` to the console.
+
+There are many more things you can do with Tinyparse. Checkout the reference!

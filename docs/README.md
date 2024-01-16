@@ -9,16 +9,30 @@
 _Like [oclif](https://oclif.io/) and [Yargs](https://yargs.js.org/) had a baby._
 
 ```ts
-import { createParser } from '@eegli/tinyparse';
-import assert from 'node:assert/strict';
+import { Parser } from '@eegli/tinyparse';
 
-const { parse } = createParser({
-  username: '',
-});
+new Parser()
+  .option('occasion', {
+    longFlag: '--occasion',
+    shortFlag: '-o',
+    defaultValue: '',
+    required: true,
+  })
+  .subcommand('congratulate', {
+    args: ['name'] as const,
+    handler: ({ args, options }) => {
+      const [name] = args;
+      const { occasion } = options;
+      console.log(`Happy ${occasion}, ${name}!`);
+    },
+  })
+  .defaultHandler(() => {
+    console.log('Please enter your name');
+  })
+  .parse(['congratulate', 'John', '--occasion', 'birthday'])
+  .call();
 
-const parsed = await parse(['hello', '--username', 'eegli']);
-
-assert.deepStrictEqual(parsed, { username: 'eegli', _: ['hello'] });
+// Happy birthday, John!
 ```
 
 I use this mostly for other pet projects of mine so it comes with some opinions 🤪.

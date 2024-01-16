@@ -2,7 +2,7 @@ import { ValidationError } from './error';
 import { FlagDefaultValue, FlagOptions } from './types';
 import Utils, { Type } from './utils';
 
-export const collect = (
+export const collectFlags = (
   inputFlags: Map<string, string | null>,
   flagOptions: Map<string, FlagOptions>,
 ) => {

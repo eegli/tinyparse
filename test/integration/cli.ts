@@ -1,15 +1,15 @@
-// filename: cli.js
+// filename: cli.ts
 
 import { CommandHandler, ErrorHandler, Parser } from '@eegli/tinyparse';
 
-type Commands = typeof commands;
+type Options = typeof options;
 
-export const copy: CommandHandler<Commands, [string, string]> = ({ args }) => {
+const copy: CommandHandler<Options, [string, string]> = ({ args }) => {
   const [from, to] = args;
   console.log(`Copying files from ${from} to ${to}`);
 };
 
-export const list: CommandHandler<Commands, [string]> = ({ args, globals }) => {
+const list: CommandHandler<Options, [string]> = ({ args, globals }) => {
   const [folder] = args;
   const { extensions } = globals;
   console.log(
@@ -17,28 +17,24 @@ export const list: CommandHandler<Commands, [string]> = ({ args, globals }) => {
   );
 };
 
-export const remove: CommandHandler<Commands> = ({ args }) => {
+const remove: CommandHandler<Options> = ({ args }) => {
   console.log(`Removing files ${args}`);
 };
 
-export const status: CommandHandler<Commands> = ({ globals }) => {
+const status: CommandHandler<Options> = ({ globals }) => {
   const { userName } = globals;
   console.log(`Showing status for user: ${userName}`);
 };
 
-export const handleError: ErrorHandler = (error, args) => {
+const handleError: ErrorHandler = (error, args) => {
   console.error(`Error parsing arguments. Received: ${args}. ${error.message}`);
 };
 
-export const handleDefault: CommandHandler<Commands> = ({
-  args,
-  globals,
-  options,
-}) => {
+const handleDefault: CommandHandler<Options> = ({ args, globals, options }) => {
   console.info({ options, args, globals });
 };
 
-const commands = new Parser()
+const options = new Parser()
   .option('verbose', {
     longFlag: '--verbose',
     shortFlag: '-v',
@@ -58,7 +54,7 @@ const commands = new Parser()
     };
   });
 
-const parser = commands
+const parser = options
   .subcommand('cp', {
     handler: copy,
     args: ['from', 'to'] as const,
