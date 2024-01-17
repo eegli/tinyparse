@@ -43,7 +43,7 @@ const parser = new Parser()
     shortFlag: '-v',
     defaultValue: false,
   })
-  .globals((options) => ({
+  .setGlobals((options) => ({
     callDatabase: (name: string) => `Hello, ${name}!`,
     log: (message: string) => {
       if (options.verbose) {
@@ -62,7 +62,7 @@ const parser = new Parser()
     shortFlag: '-v',
     defaultValue: false,
   })
-  .globals((options) => ({
+  .setGlobals((options) => ({
     callDatabase: (name: string) => `Hello, ${name}!`,
     log: (message: string) => {
       if (options.verbose) {
@@ -89,7 +89,7 @@ const parser = new Parser()
     shortFlag: '-v',
     defaultValue: false,
   })
-  .globals((options) => ({
+  .setGlobals((options) => ({
     callDatabase: (name: string) => `Hello, ${name}!`,
     log: (message: string) => {
       if (options.verbose) {

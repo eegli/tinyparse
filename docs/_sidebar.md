@@ -1,6 +1,7 @@
 - [Quick start](quickstart.md)
 - [Command Line Options](reference/cli-options.md)
   - [Options](reference/options.md)
+  - [Globals](reference/globals.md)
   - [Subcommands](reference/subcommands.md)
   - [Handlers](reference/handlers.md)
   - [Printing Arguments](reference/printing-arguments.md)

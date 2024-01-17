@@ -1,12 +1,12 @@
 import { ValidationError } from './error';
-import { FlagDefaultValue, FlagOptions } from './types';
+import { FlagOptionValue, FlagOptions } from './types';
 import Utils, { Type } from './utils';
 
 export const collectFlags = (
   inputFlags: Map<string, string | null>,
   flagOptions: Map<string, FlagOptions>,
 ) => {
-  const output = new Map<string, FlagDefaultValue>();
+  const output = new Map<string, FlagOptionValue>();
   for (const [key, opts] of flagOptions) {
     const { longFlag, shortFlag, required, defaultValue } = opts;
     // Try to match a long flag - null is a valid flag argument which

@@ -1,5 +1,5 @@
 import { ValidationError } from '../src';
-import { collect } from '../src/flags';
+import { collectFlags } from '../src/flags';
 import { FlagDefaultValue, FlagOptions, FlagOptionsMap } from '../src/types';
 
 describe('flags', () => {
@@ -13,7 +13,7 @@ describe('flags', () => {
       ['--foo', 'bar'],
       ['-b', 'qux'],
     ]);
-    const collected = collect(input, options);
+    const collected = collectFlags(input, options);
     expect(collected).toStrictEqual({ foo: 'bar', bar: 'qux', baz: 'default' });
   });
   test('allows boolean shortcuts and true, false', () => {
@@ -27,7 +27,7 @@ describe('flags', () => {
       ['--bar', 'true'],
       ['--baz', 'false'],
     ]);
-    const collected = collect(input, options);
+    const collected = collectFlags(input, options);
     expect(collected).toStrictEqual({ foo: true, bar: true, baz: false });
   });
   test('converts valid dates and numbers', () => {
@@ -39,7 +39,7 @@ describe('flags', () => {
       ['--foo', '1'],
       ['--bar', '2023'],
     ]);
-    const collected = collect(input, options);
+    const collected = collectFlags(input, options);
     expect(collected).toStrictEqual({
       foo: 1,
       bar: new Date('2023'),
@@ -50,8 +50,8 @@ describe('flags', () => {
       ['foo', { longFlag: '--foo', defaultValue: 'default', required: true }],
     ]);
     const input: Map<string, string | null> = new Map([]);
-    expect(() => collect(input, options)).toThrow(ValidationError);
-    expect(() => collect(input, options)).toThrow(
+    expect(() => collectFlags(input, options)).toThrow(ValidationError);
+    expect(() => collectFlags(input, options)).toThrow(
       'Missing required option --foo',
     );
   });
@@ -66,8 +66,8 @@ describe('flags', () => {
       const inputs = new Map([input]);
       const options = new Map([[option.longFlag, option]]);
 
-      expect(() => collect(inputs, options)).toThrow(ValidationError);
-      expect(() => collect(inputs, options)).toThrowErrorMatchingSnapshot(
+      expect(() => collectFlags(inputs, options)).toThrow(ValidationError);
+      expect(() => collectFlags(inputs, options)).toThrowErrorMatchingSnapshot(
         `<${input.join(' ')}>`,
       );
     }

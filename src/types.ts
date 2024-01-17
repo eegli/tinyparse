@@ -2,19 +2,19 @@ import { CommandBuilder } from './commands';
 import { ValidationError } from './error';
 
 export type CustomValidator = {
-  isValid: (value: unknown) => value is FlagDefaultValue;
+  isValid: (value: unknown) => value is FlagOptionValue;
   errorMessage: (value: unknown, flag: string) => string;
 };
 
 /**
  * The possible default values of a flag option.
  */
-export type FlagDefaultValue = string | number | boolean | Date;
+export type FlagOptionValue = string | number | boolean | Date;
 
 /**
  * The user settings for a flag option.
  */
-export type FlagOptions<V extends FlagDefaultValue = FlagDefaultValue> = {
+export type FlagOptions<V extends FlagOptionValue = FlagOptionValue> = {
   longFlag: `--${string}`;
   shortFlag?: `-${string}`;
   defaultValue: Downcast<V>;
@@ -25,7 +25,7 @@ export type FlagOptions<V extends FlagDefaultValue = FlagDefaultValue> = {
 /**
  * A record of flags and their default values.
  */
-export type FlagValueRecord = Record<string, FlagDefaultValue>;
+export type FlagValueRecord = Record<string, FlagOptionValue>;
 
 /**
  * A map of flags and the settings specified by the user.
