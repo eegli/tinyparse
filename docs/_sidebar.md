@@ -6,6 +6,5 @@
   - [Handlers](reference/handlers.md)
   - [Printing Arguments](reference/printing-arguments.md)
   - [Error Handling](reference/error-handling.md)
-- [TypeScript](reference/typescript.md)
 - [Advanced Example](advanced-example.md)
 - [Contributing](contributing.md)

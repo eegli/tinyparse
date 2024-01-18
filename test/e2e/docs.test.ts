@@ -240,3 +240,37 @@ describe('subcommands', () => {
     expect(consoleLog).toHaveBeenCalledWith('GREETINGS FROM JOHN TO MARY!');
   });
 });
+
+describe('handlers', () => {
+  test('default', () => {
+    expect(() => {
+      new Parser().defaultHandler().parse([]).call();
+    }).not.toThrow();
+  });
+
+  test('default handler', () => {
+    const options = new Parser();
+
+    const defaultHandler: CommandHandler<typeof options> = ({
+      args,
+      globals,
+      options,
+    }) => {
+      console.log({ args, globals, options });
+    };
+
+    const executeHandler = new Parser()
+      .defaultHandler(defaultHandler)
+      .parse(['hello', 'world']).call;
+
+    // Time goes by...
+
+    executeHandler();
+
+    expect(consoleLog).toHaveBeenCalledWith({
+      args: ['hello', 'world'],
+      globals: {},
+      options: {},
+    });
+  });
+});

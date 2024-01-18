@@ -2,7 +2,7 @@
 
 > This document describes how **globals** can be used to configure the parser.
 
-Often times, subcommands need access to a shared object such as a database connection or a logger. You can attach such an object in the building phase and it will be passed to the handler of each subcommand (and the default handler).
+Often times, subcommands need access to a shared object such as a database connection or a logger. You can attach such an object in the building phase and it will be passed to the handler of each subcommand (and the default handler). Setting the globals is done via a function that has access to all the options that have been collected while parsing.
 
 Globals are expected to be static and should only be set once. _Calling `.setGlobals()` multiple times will override the previous value._
 

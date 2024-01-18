@@ -1,12 +1,17 @@
-import { CommandOptionsMap, FlagOptions } from './types';
+import {
+  AnyGlobal,
+  CommandOptionsMap,
+  FlagOptions,
+  FlagValueRecord,
+} from './types';
 
-export class HelpPrinter {
+export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
   #options: FlagOptions[];
-  #commands: CommandOptionsMap;
+  #commands: CommandOptionsMap<O, G>;
 
   constructor(
     options: FlagOptions[] = [],
-    commands: CommandOptionsMap = new Map(),
+    commands: CommandOptionsMap<O, G> = new Map(),
   ) {
     this.#commands = commands;
     this.#options = this.sortFlags(options);

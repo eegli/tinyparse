@@ -41,11 +41,15 @@ const setGlobals = () => {
 };
 const parser = new Parser(options, commands, setGlobals, defaultHandler);
 
-const expectCalledWith = (args: string[]) => ({
-  options: { flag1: 0 },
-  globals: { database: 'db' },
-  args,
-});
+const expectCalledWithDefaults = (mock: jest.Mock, args: string[]) => {
+  expect(mock.mock.calls[0][0]).toEqual(
+    expect.objectContaining({
+      options: { flag1: 0 },
+      globals: { database: 'db' },
+      args,
+    }),
+  );
+};
 
 describe('parser', () => {
   test('returns callable', () => {
@@ -58,33 +62,31 @@ describe('parser', () => {
   test('calls default handler', () => {
     parser.parse([]).call();
     expect(defaultHandler).toHaveBeenCalledTimes(1);
-    expect(defaultHandler).toHaveBeenCalledWith(expectCalledWith([]));
+    expectCalledWithDefaults(defaultHandler, []);
   });
   test('calls default handler when no subcommand matches', () => {
     parser.parse(['a']).call();
     expect(defaultHandler).toHaveBeenCalledTimes(1);
-    expect(defaultHandler).toHaveBeenCalledWith(expectCalledWith(['a']));
+    expectCalledWithDefaults(defaultHandler, ['a']);
     expect(commandHandler).not.toHaveBeenCalled();
   });
   test('calls subcommand with fixed args', () => {
     parser.parse(['expect1', 'b']).call();
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
-    expect(commandHandler).toHaveBeenCalledWith(expectCalledWith(['b']));
+    expectCalledWithDefaults(commandHandler, ['b']);
   });
   test('calls subcommand with all args', () => {
     parser.parse(['expectAll', 'b', 'c', 'd']).call();
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
-    expect(commandHandler).toHaveBeenCalledWith(
-      expectCalledWith(['b', 'c', 'd']),
-    );
+    expectCalledWithDefaults(commandHandler, ['b', 'c', 'd']);
   });
   test('calls subcommand with no args', () => {
     parser.parse(['expectNone']).call();
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
-    expect(commandHandler).toHaveBeenCalledWith(expectCalledWith([]));
+    expectCalledWithDefaults(commandHandler, []);
   });
   test('never throws if error handler is set', () => {
     const onError = jest.fn();
@@ -95,6 +97,7 @@ describe('parser', () => {
     expect(onError).toHaveBeenCalledWith(
       new ValidationError('expect1 expects 1 argument, got 0'),
       ['expect1'],
+      expect.any(Function),
     );
   });
   test('throws if subcommand is called with too few args', () => {

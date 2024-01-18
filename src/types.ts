@@ -66,7 +66,11 @@ export type CommandHandler<
   ? GenericHandler<O, G, A>
   : never;
 
-export type ErrorHandler = (error: ValidationError, args: string[]) => void;
+export type ErrorHandler = (
+  error: ValidationError,
+  args: string[],
+  help: (title: string) => string,
+) => void;
 
 export type DefaultHandler<Options, Globals> = GenericHandler<
   Options,

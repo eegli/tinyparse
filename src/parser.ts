@@ -1,6 +1,7 @@
 import { transformArgv } from './argv';
 import { ValidationError } from './error';
 import { collectFlags } from './flags';
+import { HelpPrinter } from './help';
 import {
   AnyGlobal,
   CommandArgPattern,
@@ -17,6 +18,7 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
   #commands: CommandOptionsMap<O, G>;
   #globalSetter?: (options: O) => G;
   #defaultHandler: DefaultHandler<O, G>;
+  #helpPrinter: HelpPrinter<O, G>;
 
   constructor(
     options: FlagOptionsMap,
@@ -28,6 +30,10 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     this.#commands = commands;
     this.#globalSetter = globalSetter;
     this.#defaultHandler = defaultHandler;
+    this.#helpPrinter = new HelpPrinter<O, G>(
+      [...Object.values(options)],
+      commands,
+    );
   }
 
   #validateSubcommandArgs(
@@ -55,12 +61,16 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     call: () => void;
   } {
     const [flagMap, positionals] = transformArgv(argv);
+    const help = (title: string) => this.#helpPrinter.print(title);
+
     const call = () => {
       try {
         const options = collectFlags(flagMap, this.#options) as O;
 
         const [subcommand, ...subcommandArgs] = positionals;
         const subcommandOpts = this.#commands.get(subcommand);
+
+        const globals = (this.#globalSetter?.(options) as G) || {};
 
         if (subcommandOpts) {
           this.#validateSubcommandArgs(
@@ -71,18 +81,18 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
 
           return subcommandOpts.handler({
             options,
-            globals: this.#globalSetter?.(options) as G,
+            globals,
             args: subcommandArgs,
           });
         }
         return this.#defaultHandler({
           options,
-          globals: this.#globalSetter?.(options) as G,
+          globals,
           args: positionals,
         });
       } catch (error) {
         if (error instanceof ValidationError && handleError) {
-          return handleError(error, positionals);
+          return handleError(error, positionals, help);
         }
         throw error;
       }
