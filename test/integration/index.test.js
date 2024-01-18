@@ -28,39 +28,39 @@ describe('advanced example', () => {
     assert.deepEqual(mock.mock.calls[0].arguments[0], expected);
   };
 
-  test('command copy', (t) => {
+  test('command copy', () => {
     cli.run(['cp', 'a', 'b', '-v']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(logSpy, 'Copying files from a to b');
   });
 
-  test('command list', (t) => {
-    cli.run(['ls', 'myfolder', '--ext=js,ts']);
+  test('remove list', () => {
+    cli.run(['rm', 'a', 'b', 'c', '--ext=js,ts']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(
       logSpy,
-      'Listing files in myfolder with extension js or ts',
+      'Removing files a,b,c if they have extension js,ts',
     );
   });
 
-  test('remove list', (t) => {
-    cli.run(['rm', 'a', 'b', 'c']);
-    expectCalledTimes(logSpy, 1);
-    expectCalledWith(logSpy, 'Removing files a,b,c');
-  });
-
-  test('command status', (t) => {
+  test('command status', () => {
     cli.run(['status']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(logSpy, 'Showing status for user: me');
   });
 
-  test('error handler', (t) => {
-    cli.run(['ls']);
+  test('error handler', () => {
+    cli.run(['cp']);
     expectCalledTimes(errorSpy, 1);
     expectCalledWith(
       errorSpy,
-      'Error parsing arguments. Received: ls. ls expects 1 argument, got 0',
+      'Error parsing arguments. cp expects 2 arguments, got 0',
     );
+  });
+
+  test('default handler', () => {
+    cli.run(['unknown']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(logSpy, 'No command specified');
   });
 });

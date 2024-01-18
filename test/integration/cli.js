@@ -1,28 +1,25 @@
-// filename: cli.js
+// filename: cli.ts
 import { Parser } from '@eegli/tinyparse';
-export const copy = ({ args }) => {
+const copy = ({ args }) => {
     const [from, to] = args;
     console.log(`Copying files from ${from} to ${to}`);
 };
-export const list = ({ args, globals }) => {
-    const [folder] = args;
+const remove = ({ args: files, globals }) => {
     const { extensions } = globals;
-    console.log(`Listing files in ${folder} with extension ${extensions.join(' or ')}`);
+    console.log(`Removing files ${files} if they have extension ${extensions}`);
 };
-export const remove = ({ args }) => {
-    console.log(`Removing files ${args}`);
-};
-export const status = ({ globals }) => {
+const status = ({ globals }) => {
     const { userName } = globals;
     console.log(`Showing status for user: ${userName}`);
 };
-export const handleError = (error, args) => {
-    console.error(`Error parsing arguments. Received: ${args}. ${error.message}`);
+const handleError = (error, args) => {
+    console.error(`Error parsing arguments. ${error.message}`);
 };
-export const handleDefault = ({ args, globals, options, }) => {
+const handleDefault = ({ args, globals, options }) => {
+    console.log('No command specified');
     console.info({ options, args, globals });
 };
-const commands = new Parser()
+const options = new Parser()
     .option('verbose', {
     longFlag: '--verbose',
     shortFlag: '-v',
@@ -34,27 +31,21 @@ const commands = new Parser()
     defaultValue: '',
     description: 'Comma-separated list of file extensions to include',
 })
-    .globals((options) => {
+    .setGlobals((options) => {
     return {
-        logger: options.verbose ? console.log : () => { },
         userName: 'me',
         extensions: options.extensions.split(','),
     };
 });
-const parser = commands
+const parser = options
     .subcommand('cp', {
     handler: copy,
     args: ['from', 'to'],
     description: 'Copy files from one folder to another',
 })
-    .subcommand('ls', {
-    handler: list,
-    args: ['folder'],
-    description: 'List files in a folder',
-})
     .subcommand('rm', {
     handler: remove,
-    args: '...files',
+    args: 'files',
 })
     .subcommand('status', {
     handler: status,
@@ -65,4 +56,4 @@ const parser = commands
 export const run = (args) => {
     parser.parse(args, handleError).call();
 };
-// run(process.argv.slice(2));
+run(process.argv.slice(2));

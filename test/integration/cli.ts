@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 // filename: cli.ts
 
 import { CommandHandler, ErrorHandler, Parser } from '@eegli/tinyparse';
@@ -9,16 +11,9 @@ const copy: CommandHandler<Options, [string, string]> = ({ args }) => {
   console.log(`Copying files from ${from} to ${to}`);
 };
 
-const list: CommandHandler<Options, [string]> = ({ args, globals }) => {
-  const [folder] = args;
+const remove: CommandHandler<Options> = ({ args: files, globals }) => {
   const { extensions } = globals;
-  console.log(
-    `Listing files in ${folder} with extension ${extensions.join(' or ')}`,
-  );
-};
-
-const remove: CommandHandler<Options> = ({ args }) => {
-  console.log(`Removing files ${args}`);
+  console.log(`Removing files ${files} if they have extension ${extensions}`);
 };
 
 const status: CommandHandler<Options> = ({ globals }) => {
@@ -27,10 +22,11 @@ const status: CommandHandler<Options> = ({ globals }) => {
 };
 
 const handleError: ErrorHandler = (error, args) => {
-  console.error(`Error parsing arguments. Received: ${args}. ${error.message}`);
+  console.error(`Error parsing arguments. ${error.message}`);
 };
 
 const handleDefault: CommandHandler<Options> = ({ args, globals, options }) => {
+  console.log('No command specified');
   console.info({ options, args, globals });
 };
 
@@ -46,9 +42,8 @@ const options = new Parser()
     defaultValue: '',
     description: 'Comma-separated list of file extensions to include',
   })
-  .globals((options) => {
+  .setGlobals((options) => {
     return {
-      logger: options.verbose ? console.log : () => {},
       userName: 'me',
       extensions: options.extensions.split(','),
     };
@@ -60,14 +55,9 @@ const parser = options
     args: ['from', 'to'] as const,
     description: 'Copy files from one folder to another',
   })
-  .subcommand('ls', {
-    handler: list,
-    args: ['folder'] as const,
-    description: 'List files in a folder',
-  })
   .subcommand('rm', {
     handler: remove,
-    args: '...files',
+    args: 'files',
   })
   .subcommand('status', {
     handler: status,
@@ -80,4 +70,4 @@ export const run = (args: string[]) => {
   parser.parse(args, handleError).call();
 };
 
-// run(process.argv.slice(2));
+run(process.argv.slice(2));
