@@ -2,4 +2,4 @@
 '@eegli/tinyparse': minor
 ---
 
-It is now possible to specify subcommands. Read more in the documentation for [Subcommands and Positional Arguments](https://www.tinyparse.dev/#/reference/subcommands).
+The API has fully changed - it is now easier and cleaner than ever to configure a parser and support for subcommands has been added!

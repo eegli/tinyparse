@@ -1,5 +1,7 @@
+import type { CommandHandler, GlobalSetter } from '../../src';
 import { Parser } from '../../src';
-import { CommandHandler } from '../../src/types';
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -127,29 +129,114 @@ describe('options', () => {
   });
 });
 
-test('todo, docs', () => {
-  const handleBar: CommandHandler<typeof commands, [string]> = (params) => {
-    expect(params.args).toEqual(['barArg']);
-    expect(params.options.foo).toBe('fooValue');
-    expect(params.globals.database).toBe('db');
-    expect(params.globals.fooGlobal).toBe('fooValue');
-  };
+describe('globals', () => {
+  test('default', () => {
+    const globals = {
+      database: (name: string) => name,
+    };
 
-  const commands = new Parser()
-    .option('foo', {
-      longFlag: '--foo',
-      defaultValue: 'fooDefault',
-    })
-    .setGlobals((options) => ({
-      fooGlobal: options.foo,
-      database: 'db',
-    }));
+    new Parser()
+      .setGlobals(() => globals)
+      .defaultHandler(({ globals }) => {
+        const user = globals.database('John');
+        console.log(`Hello, ${user}!`);
+      })
+      .parse([])
+      .call();
 
-  commands
-    .subcommand('bar', {
-      args: ['arg1'] as const,
-      handler: handleBar,
-    })
-    .defaultHandler()
-    .parse(['bar', 'barArg1', '--foo', 'fooValue']);
+    expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
+  });
+  test('external declaration', () => {
+    const options = new Parser().option('verbose', {
+      longFlag: '--verbose',
+      defaultValue: false,
+    });
+
+    const globalSetter: GlobalSetter<typeof options> = (options) => ({
+      log: (message: string) => {
+        if (options.verbose) {
+          console.log(message);
+        }
+      },
+    });
+    const parser = options.setGlobals(globalSetter).defaultHandler();
+    expect(parser.parse(['do-a-thing', '--verbose']).call()).toBeUndefined();
+  });
+});
+
+describe('subcommands', () => {
+  test('default', () => {
+    const parser = new Parser()
+      .subcommand('cmd-one', {
+        args: ['arg1'] as const, // expects exactly one argument (strict)
+        handler: ({ args }) => {
+          // Tuple-length is inferred
+          const [arg1] = args;
+        },
+      })
+      .subcommand('cmd-none-strict', {
+        args: [], // expects no arguments (strict)
+        handler: () => {},
+      })
+
+      .subcommand('cmd-all', {
+        args: 'args', // expects any number of arguments (non-strict)
+        handler: ({ args }) => {
+          // string[] is inferred
+          const [arg1, ...rest] = args;
+        },
+      })
+      .subcommand('cmd-none', {
+        args: undefined, // expects no arguments (non-strict)
+        handler: ({ args }) => {
+          // string[] is inferred
+          const [arg1, ...rest] = args;
+        },
+      })
+      .defaultHandler();
+
+    expect(() => {
+      parser.parse(['cmd-one']).call();
+    }).toThrow('cmd-one expects 1 argument, got 0');
+    expect(() => {
+      parser.parse(['cmd-none-strict', 'hello']).call();
+    }).toThrow('cmd-none-strict expects 0 arguments, got 1');
+  });
+
+  test('external declaration', () => {
+    const subcommandHandler: CommandHandler<typeof options, [string]> = (
+      params,
+    ) => {
+      const { args, options, globals } = params;
+      const [userName] = args;
+      let greeting = `Greetings from ${globals.fromUser} to ${userName}!`;
+
+      if (options.uppercase) {
+        greeting = greeting.toUpperCase();
+      }
+      console.log(greeting);
+    };
+
+    const options = new Parser()
+      .option('uppercase', {
+        longFlag: '--uppercase',
+        shortFlag: '-u',
+        defaultValue: false,
+      })
+      .setGlobals(() => ({
+        fromUser: 'John',
+      }));
+
+    const parser = options
+      .subcommand('send-greeting', {
+        args: ['from'] as const,
+        handler: subcommandHandler,
+      })
+      .defaultHandler();
+
+    parser.parse(['send-greeting', 'Mary']).call();
+    expect(consoleLog).toHaveBeenCalledWith('Greetings from John to Mary!');
+    parser.parse(['send-greeting', 'Mary', '-u']).call();
+    expect(consoleLog).toHaveBeenCalledWith('GREETINGS FROM JOHN TO MARY!');
+  });
 });

@@ -20,6 +20,7 @@ The table above depicts a few common ways of how arguments can be passed to a CL
 
 ## Limitations
 
-As of now, Tinyparse supports only subcommands in the first level. Furthermore, all options are global, meaning you cannot (yet) define options that are only valid for a specific subcommand.
+- Tinyparse supports only subcommands in the first level
+- All options are global, meaning you cannot (yet) define options that are only valid for a specific subcommand.
 
 I am planning to support arbitrary nesting of subcommands and options in the future, maybe via allowing a dedicated subparser for each subcommand.

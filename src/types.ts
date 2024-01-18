@@ -34,7 +34,7 @@ export type FlagOptionsMap = Map<string, FlagOptions>;
 
 export type AnyGlobal = Record<string, unknown>;
 
-export type CommandArgPattern = string[] | string;
+export type CommandArgPattern = string[] | string | undefined;
 
 export type CommandOptionsMap<
   Options extends FlagValueRecord = FlagValueRecord,
@@ -52,10 +52,12 @@ export type Subcommand<Options, Globals, Args> = {
   description?: string;
   handler: Args extends string[]
     ? GenericHandler<Options, Globals, Downcast<Args>>
-    : Args extends string
-      ? GenericHandler<Options, Globals, string[]>
-      : never;
+    : GenericHandler<Options, Globals, string[]>;
 };
+
+export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
+  ? (options: O) => AnyGlobal
+  : never;
 
 export type CommandHandler<
   T,
