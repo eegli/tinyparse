@@ -1879,7 +1879,7 @@ __metadata:
     prettier: "npm:^3.1.1"
     prettier-plugin-organize-imports: "npm:^3.2.4"
     ts-jest: "npm:^29.1.1"
-    tstyche: "npm:^1.0.0-rc"
+    tstyche: "npm:^1.0.0-rc.2"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
@@ -9121,9 +9121,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tstyche@npm:^1.0.0-rc":
-  version: 1.0.0-rc
-  resolution: "tstyche@npm:1.0.0-rc"
+"tstyche@npm:^1.0.0-rc.2":
+  version: 1.0.0-rc.2
+  resolution: "tstyche@npm:1.0.0-rc.2"
   peerDependencies:
     typescript: 4.x || 5.x
   peerDependenciesMeta:
@@ -9131,7 +9131,7 @@ __metadata:
       optional: true
   bin:
     tstyche: ./build/bin.js
-  checksum: 3fcbe6ae9dd20f3c1cc8735c432b31ea3bbcd1dffc2301d325f6b484b831e20f7e654301befffc47130dcc0355d4dc8ae575a37d5a6a15bc2e08861c6883c881
+  checksum: f037db8a582b58b8e814e18b03a9bee97cf83333e41459e10c2c449ba669394268a33cf2baea1855d9b71190af009f65e3b82be582b63ec47b5f9f4e06f9d4dd
   languageName: node
   linkType: hard
 
