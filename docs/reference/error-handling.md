@@ -8,7 +8,7 @@ Parsing may fail if:
 - A required flag is missing
 - A flag is called with an invalid value
 
-If any of these errors occur, a `ValidationError` will be thrown. It contains a `message` property that you can show to the user.
+If any of these errors - they are _parsing errors_ - occur, a `ValidationError` will be thrown. It contains a `message` property that you can show to the user. Note that errors thrown when bootstrapping the parser are regular `Error` instances.
 
 ## Examples
 

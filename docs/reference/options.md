@@ -43,7 +43,7 @@ expect(() => {
 }).not.toThrow();
 ```
 
-Furthermore, _building_ a parser will fail if you declare the same option twice:
+Furthermore, _building_ a parser will fail if you declare the same option or a flag twice:
 
 ```ts
 expect(() => {
@@ -56,7 +56,21 @@ expect(() => {
       longFlag: '--bar',
       defaultValue: '',
     });
-}).toThrow('Option foo has been declared twice');
+}).toThrow('Option "foo" has been declared twice');
+
+expect(() => {
+  new Parser()
+    .option('foo', {
+      longFlag: '--foo',
+      defaultValue: '',
+    })
+    .option('bar', {
+      longFlag: '--foo',
+      defaultValue: '',
+    });
+}).toThrow(
+  'Long flag "--foo" has been declared twice, initially by option "foo"',
+);
 ```
 
 See the docs about [error handling](reference/error-handling.md) for more.

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Helper text creates helper text with descriptions: default 1`] = `
+exports[`Helper text creates helper text with descriptions 1`] = `
 "Usage
 
 Available commands
@@ -13,29 +13,7 @@ Available commands
 Required flags
    --flag-a [string]
    The first flag
-   --flag-b [string]
-
-Optional flags
-   -c, --flag-c [boolean]
-   -d, --flag-d [number]
-   The fourth flag
-"
-`;
-
-exports[`Helper text creates helper text with descriptions: with title 1`] = `
-"How to use my-cli
-
-Available commands
-   serve <path>
-   - Serve a directory
-   info 
-   rm <...files>
-   - Remove files
-
-Required flags
-   --flag-a [string]
-   The first flag
-   --flag-b [string]
+   --flag-b [date]
 
 Optional flags
    -c, --flag-c [boolean]

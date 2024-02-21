@@ -2,38 +2,27 @@ import { transformArgv } from './argv';
 import { ValidationError } from './error';
 import { collectFlags } from './flags';
 import { HelpPrinter } from './help';
+import { CommandConfig, ParserConfig } from './options';
 import {
   AnyGlobal,
   CommandArgPattern,
-  CommandOptionsMap,
-  DefaultHandler,
   ErrorHandler,
-  FlagOptionsMap,
   FlagValueRecord,
   Subcommand,
 } from './types';
 
 export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
-  #options: FlagOptionsMap;
-  #commands: CommandOptionsMap<O, G>;
-  #globalSetter?: (options: O) => G;
-  #defaultHandler: DefaultHandler<O, G>;
-  #helpPrinter: HelpPrinter<O, G>;
+  #config: ParserConfig<O, G>;
 
-  constructor(
-    options: FlagOptionsMap,
-    commands: CommandOptionsMap<O, G>,
-    globalSetter?: (options: O) => G,
-    defaultHandler: DefaultHandler<O, G> = () => {},
-  ) {
-    this.#options = options;
-    this.#commands = commands;
-    this.#globalSetter = globalSetter;
-    this.#defaultHandler = defaultHandler;
-    this.#helpPrinter = new HelpPrinter<O, G>(
-      [...Object.values(options)],
-      commands,
-    );
+  constructor(commandOptions: CommandConfig<O, G>) {
+    this.#config = {
+      ...commandOptions,
+      // TODO move this outside
+      helpPrinter: new HelpPrinter(
+        [...commandOptions.options.values()],
+        commandOptions.commands,
+      ),
+    };
   }
 
   #validateSubcommandArgs(
@@ -61,16 +50,23 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     call: () => void;
   } {
     const [flagMap, positionals] = transformArgv(argv);
-    const help = (title: string) => this.#helpPrinter.print(title);
+    const [subcommand, ...subcommandArgs] = positionals;
+
+    const helpText = this.#config.helpPrinter.print();
 
     const call = () => {
+      for (const identifier of this.#config.helpIdentifiers) {
+        if (flagMap.has(identifier) || subcommand === identifier) {
+          console.log(helpText);
+          return;
+        }
+      }
       try {
-        const options = collectFlags(flagMap, this.#options) as O;
+        const options = collectFlags(flagMap, this.#config.options) as O;
 
-        const [subcommand, ...subcommandArgs] = positionals;
-        const subcommandOpts = this.#commands.get(subcommand);
+        const subcommandOpts = this.#config.commands.get(subcommand);
 
-        const globals = (this.#globalSetter?.(options) as G) || {};
+        const globals = this.#config.globalSetter(options) as G;
 
         if (subcommandOpts) {
           this.#validateSubcommandArgs(
@@ -79,20 +75,21 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
             subcommandOpts,
           );
 
-          return subcommandOpts.handler({
+          subcommandOpts.handler({
             options,
             globals,
             args: subcommandArgs,
           });
+        } else {
+          this.#config.defaultHandler({
+            options,
+            globals,
+            args: positionals,
+          });
         }
-        return this.#defaultHandler({
-          options,
-          globals,
-          args: positionals,
-        });
       } catch (error) {
         if (error instanceof ValidationError && handleError) {
-          return handleError(error, positionals, help);
+          return handleError(error, positionals, helpText);
         }
         throw error;
       }

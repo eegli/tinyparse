@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`help calls help printer 1`] = `
+"Usage
+
+Available commands
+   baz <arg>
+   - Baz command
+
+Required flags
+   -f, --foo [string]
+   Foo option
+
+Optional flags
+   --bar [date]
+   Foo option
+"
+`;

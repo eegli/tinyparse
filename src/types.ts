@@ -69,7 +69,7 @@ export type CommandHandler<
 export type ErrorHandler = (
   error: ValidationError,
   args: string[],
-  help: (title: string) => string,
+  helpText: string,
 ) => void;
 
 export type DefaultHandler<Options, Globals> = GenericHandler<

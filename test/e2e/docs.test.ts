@@ -103,7 +103,22 @@ describe('options', () => {
           longFlag: '--bar',
           defaultValue: '',
         });
-    }).toThrow('Option foo has been declared twice');
+    }).toThrow('Option "foo" has been declared twice');
+  });
+  test('throws for double flags', () => {
+    expect(() => {
+      new Parser()
+        .option('foo', {
+          longFlag: '--foo',
+          defaultValue: '',
+        })
+        .option('bar', {
+          longFlag: '--foo',
+          defaultValue: '',
+        });
+    }).toThrow(
+      'Long flag "--foo" has been declared twice, initially by option "foo"',
+    );
   });
   test('boolean options', () => {
     const parser = new Parser()
@@ -272,5 +287,45 @@ describe('handlers', () => {
       globals: {},
       options: {},
     });
+  });
+});
+
+describe('help', () => {
+  test('calls help printer', () => {
+    const parser = new Parser()
+      .option('foo', {
+        longFlag: '--foo',
+        shortFlag: '-f',
+        required: true,
+        defaultValue: '',
+        description: 'Foo option',
+      })
+      .option('bar', {
+        longFlag: '--bar',
+        defaultValue: new Date(),
+        description: 'Foo option',
+      })
+      .subcommand('baz', {
+        args: ['arg'] as const,
+        handler: () => {},
+        description: 'Baz command',
+      })
+      .setHelp('help', '--help', '-h')
+      .defaultHandler();
+
+    parser.parse(['help']).call();
+    parser.parse(['--help']).call();
+    parser.parse(['-h']).call();
+
+    expect(consoleLog).toHaveBeenCalledTimes(3);
+
+    const firstHelpMessage = consoleLog.mock.calls[0][0];
+    const secondHelpMessage = consoleLog.mock.calls[1][0];
+    const thirdHelpMessage = consoleLog.mock.calls[2][0];
+
+    expect(firstHelpMessage).toEqual(secondHelpMessage);
+    expect(secondHelpMessage).toEqual(thirdHelpMessage);
+
+    expect(firstHelpMessage).toMatchSnapshot();
   });
 });

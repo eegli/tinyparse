@@ -4,6 +4,7 @@ import {
   FlagOptions,
   FlagValueRecord,
 } from './types';
+import Utils from './utils';
 
 export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
   #options: FlagOptions[];
@@ -32,9 +33,9 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
     return sortedFlags;
   }
 
-  public print(title?: string) {
+  public print() {
     const indent = '   ';
-    let str = title || 'Usage';
+    let str = 'Usage';
 
     // Add commands
     const commandNames = [...this.#commands.keys()];
@@ -77,7 +78,7 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
       str += indent;
       if (shortFlag) str += `${shortFlag}, `;
       str += `${longFlag}`;
-      str += ` [${typeof defaultValue}]`;
+      str += ` [${Utils.typeof(defaultValue)}]`;
       if (description) {
         str += `\n${indent}${description}\n`;
       } else {

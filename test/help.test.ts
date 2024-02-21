@@ -27,7 +27,7 @@ describe('Helper text', () => {
       },
       {
         longFlag: '--flag-b',
-        defaultValue: '',
+        defaultValue: new Date(),
         required: true,
       },
     ];
@@ -57,7 +57,6 @@ describe('Helper text', () => {
       ],
     ]);
     const printer = new HelpPrinter(flags, commands);
-    expect(printer.print()).toMatchSnapshot('default');
-    expect(printer.print('How to use my-cli')).toMatchSnapshot('with title');
+    expect(printer.print()).toMatchSnapshot();
   });
 });

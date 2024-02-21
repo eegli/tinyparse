@@ -4,7 +4,7 @@
   - [Globals](reference/globals.md)
   - [Subcommands](reference/subcommands.md)
   - [Handlers](reference/handlers.md)
-  - [Printing Arguments](reference/printing-arguments.md)
+  - [Help](reference/help.md)
   - [Error Handling](reference/error-handling.md)
 - [Advanced Example](advanced-example.md)
 - [Contributing](contributing.md)

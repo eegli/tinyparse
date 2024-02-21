@@ -4,10 +4,12 @@ import { CommandOptionsMap, FlagOptionsMap } from '../src/types';
 
 const commandHandler = jest.fn();
 const defaultHandler = jest.fn();
+const onError = jest.fn();
 
 afterEach(() => {
   commandHandler.mockClear();
   defaultHandler.mockClear();
+  onError.mockClear();
 });
 
 const options: FlagOptionsMap = new Map([
@@ -36,10 +38,17 @@ const commands: CommandOptionsMap = new Map([
     },
   ],
 ]);
-const setGlobals = () => {
+const globalSetter = () => {
   return { database: 'db' };
 };
-const parser = new Parser(options, commands, setGlobals, defaultHandler);
+const helpIdentifiers = new Set<string>(['help']);
+const parser = new Parser({
+  options,
+  commands,
+  helpIdentifiers,
+  globalSetter,
+  defaultHandler,
+});
 
 const expectCalledWithDefaults = (mock: jest.Mock, args: string[]) => {
   expect(mock.mock.calls[0][0]).toEqual(
@@ -55,9 +64,6 @@ describe('parser', () => {
   test('returns callable', () => {
     const { call } = parser.parse([]);
     expect(call()).toBeUndefined();
-  });
-  test('does nothing without handlers', () => {
-    expect(new Parser(options, commands).parse([]).call()).toBeUndefined();
   });
   test('calls default handler', () => {
     parser.parse([]).call();
@@ -88,8 +94,7 @@ describe('parser', () => {
     expect(commandHandler).toHaveBeenCalledTimes(1);
     expectCalledWithDefaults(commandHandler, []);
   });
-  test('never throws if error handler is set', () => {
-    const onError = jest.fn();
+  test('error handler catches invalid subcommand args', () => {
     expect(() => {
       parser.parse(['expect1'], onError).call();
     }).not.toThrow();
@@ -97,7 +102,32 @@ describe('parser', () => {
     expect(onError).toHaveBeenCalledWith(
       new ValidationError('expect1 expects 1 argument, got 0'),
       ['expect1'],
-      expect.any(Function),
+      expect.any(String),
+    );
+  });
+  test('error handler catches handlers throwing ValidationError', () => {
+    defaultHandler.mockImplementationOnce(() => {
+      throw new ValidationError('error');
+    });
+    expect(() => {
+      parser.parse([], onError).call();
+    }).not.toThrow();
+    expect(onError).toHaveBeenCalledWith(
+      new ValidationError('error'),
+      [],
+      expect.any(String),
+    );
+    onError.mockClear();
+    commandHandler.mockImplementationOnce(() => {
+      throw new ValidationError('error');
+    });
+    expect(() => {
+      parser.parse(['expect1', 'arg1'], onError).call();
+    }).not.toThrow();
+    expect(onError).toHaveBeenCalledWith(
+      new ValidationError('error'),
+      ['expect1', 'arg1'],
+      expect.any(String),
     );
   });
   test('throws if subcommand is called with too few args', () => {
@@ -122,7 +152,6 @@ describe('parser', () => {
       }).not.toThrow();
     }
   });
-
   test('binds call', () => {
     const { call } = parser.parse(['a', 'b']);
     call();
