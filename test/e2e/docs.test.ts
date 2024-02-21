@@ -356,16 +356,6 @@ describe('error handling', () => {
       .call();
 
     expect(consoleLog).toHaveBeenCalledTimes(1);
-    expect(consoleLog.mock.calls[0]).toMatchInlineSnapshot(`
-      [
-        "Missing required option --foo",
-        "Usage: my-app [command] <...flags>
-
-      Required flags
-         --foo [boolean]
-
-      To view this help message, run "my-app help"",
-      ]
-    `);
+    expect(consoleLog.mock.calls[0]).toMatchSnapshot();
   });
 });

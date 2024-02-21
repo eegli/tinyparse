@@ -60,4 +60,4 @@ Optional flags
 To view this help message, run "my-cli help" or add --help or -h to any command
 ```
 
-When you set your help configuration, Tinyparse will validate the arguments to make sure there are no conflicts with existing flags or subcommands.
+When you set your help configuration, Tinyparse will validate the arguments to make sure there are no conflicts with existing flags or subcommands. Note that subsequent calls to `.setHelp()` will overwrite the previous configuration.

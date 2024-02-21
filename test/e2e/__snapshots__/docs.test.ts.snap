@@ -1,5 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`error handling catches error 1`] = `
+[
+  "Missing required option --foo",
+  "Usage: my-app [command] <...flags>
+
+Required flags
+   --foo [boolean]
+
+To view this help message, run "my-app help"",
+]
+`;
+
 exports[`help calls help printer 1`] = `
 "A brief description of my-cli
 
