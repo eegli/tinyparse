@@ -1,8 +1,8 @@
 import { transformArgv } from './argv';
+import { CommonConfig } from './config';
 import { ValidationError } from './error';
 import { collectFlags } from './flags';
 import { HelpPrinter } from './help';
-import { CommandConfig, ParserConfig } from './options';
 import {
   AnyGlobal,
   CommandArgPattern,
@@ -12,17 +12,14 @@ import {
 } from './types';
 
 export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
-  #config: ParserConfig<O, G>;
-
-  constructor(commandOptions: CommandConfig<O, G>) {
-    this.#config = {
-      ...commandOptions,
-      // TODO move this outside
-      helpPrinter: new HelpPrinter(
-        [...commandOptions.options.values()],
-        commandOptions.commands,
-      ),
-    };
+  #config: CommonConfig<O, G>;
+  #helpPrinter: HelpPrinter<O, G>;
+  constructor(config: CommonConfig<O, G>) {
+    this.#config = config;
+    this.#helpPrinter = new HelpPrinter(
+      [...config.options.values()],
+      config.commands,
+    );
   }
 
   #validateSubcommandArgs(
@@ -52,11 +49,17 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     const [flagMap, positionals] = transformArgv(argv);
     const [subcommand, ...subcommandArgs] = positionals;
 
-    const helpText = this.#config.helpPrinter.print();
+    const helpText = this.#helpPrinter.print(this.#config.help || {});
+    const helpCommand = this.#config.help?.command;
+    const helpFlags = this.#config.help?.flags || [];
 
     const call = () => {
-      for (const identifier of this.#config.helpIdentifiers) {
-        if (flagMap.has(identifier) || subcommand === identifier) {
+      if (helpCommand && subcommand === helpCommand) {
+        console.log(helpText);
+        return;
+      }
+      for (const flag of helpFlags) {
+        if (flagMap.has(flag)) {
           console.log(helpText);
           return;
         }
@@ -89,7 +92,7 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
         }
       } catch (error) {
         if (error instanceof ValidationError && handleError) {
-          return handleError(error, positionals, helpText);
+          return handleError(error, helpText);
         }
         throw error;
       }

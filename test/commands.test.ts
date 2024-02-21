@@ -74,15 +74,26 @@ describe('command builder', () => {
         handler: () => {},
       });
     expect(() => {
-      builder.setHelp('help');
+      builder.setHelp({
+        command: 'help',
+        appName: '',
+      });
     }).toThrow(
       'Help identifier "help" has already been declared as a subcommand',
     );
     expect(() => {
-      builder.setHelp('--help');
+      builder.setHelp({
+        command: 'h',
+        flags: ['--help'],
+        appName: '',
+      });
     }).toThrow('Help identifier "--help" has already been declared as a flag');
     expect(() => {
-      builder.setHelp('-h');
+      builder.setHelp({
+        command: 'h',
+        flags: ['-h'],
+        appName: '',
+      });
     }).toThrow('Help identifier "-h" has already been declared as a flag');
   });
 });

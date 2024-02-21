@@ -1,9 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Helper text creates helper text with descriptions 1`] = `
-"Usage
+"This is just a text that can be shown to describe the app
 
-Available commands
+Usage: my-cli [command] <...flags>
+
+Commands
    serve <path>
    - Serve a directory
    info 
@@ -19,7 +21,8 @@ Optional flags
    -c, --flag-c [boolean]
    -d, --flag-d [number]
    The fourth flag
-"
+
+To view this help message, run "my-cli help" or add --help1, --help2 or -h to any command"
 `;
 
-exports[`Helper text no configuration 1`] = `"Usage"`;
+exports[`Helper text no configuration 1`] = `""`;

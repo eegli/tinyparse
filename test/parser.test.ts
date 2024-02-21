@@ -1,6 +1,6 @@
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
-import { CommandOptionsMap, FlagOptionsMap } from '../src/types';
+import { CommandOptionsMap, FlagOptionsMap, HelpOptions } from '../src/types';
 
 const commandHandler = jest.fn();
 const defaultHandler = jest.fn();
@@ -41,11 +41,14 @@ const commands: CommandOptionsMap = new Map([
 const globalSetter = () => {
   return { database: 'db' };
 };
-const helpIdentifiers = new Set<string>(['help']);
+const helpOptions: HelpOptions = {
+  appName: 'app',
+  command: 'help',
+};
 const parser = new Parser({
   options,
   commands,
-  helpIdentifiers,
+  help: helpOptions,
   globalSetter,
   defaultHandler,
 });
@@ -101,7 +104,6 @@ describe('parser', () => {
     expect(onError).toHaveBeenCalledTimes(1);
     expect(onError).toHaveBeenCalledWith(
       new ValidationError('expect1 expects 1 argument, got 0'),
-      ['expect1'],
       expect.any(String),
     );
   });
@@ -114,7 +116,6 @@ describe('parser', () => {
     }).not.toThrow();
     expect(onError).toHaveBeenCalledWith(
       new ValidationError('error'),
-      [],
       expect.any(String),
     );
     onError.mockClear();
@@ -126,7 +127,6 @@ describe('parser', () => {
     }).not.toThrow();
     expect(onError).toHaveBeenCalledWith(
       new ValidationError('error'),
-      ['expect1', 'arg1'],
       expect.any(String),
     );
   });

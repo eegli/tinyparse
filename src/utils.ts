@@ -40,4 +40,12 @@ export default class Utils {
   public static isShortFlag(value: string) {
     return value[0] === '-';
   }
+
+  public static joinStr(arr: unknown[], lastSep = 'or') {
+    return arr.reduce((acc, cur, i, arr) => {
+      if (i === 0) return cur;
+      if (i === arr.length - 1) return `${acc} ${lastSep} ${cur}`;
+      return `${acc}, ${cur}`;
+    });
+  }
 }

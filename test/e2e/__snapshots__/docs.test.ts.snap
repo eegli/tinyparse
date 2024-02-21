@@ -1,9 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`help calls help printer 1`] = `
-"Usage
+"A brief description of my-cli
 
-Available commands
+Usage: my-cli [command] <...flags>
+
+Commands
    baz <arg>
    - Baz command
 
@@ -14,5 +16,6 @@ Required flags
 Optional flags
    --bar [date]
    Foo option
-"
+
+To view this help message, run "my-cli help" or add --help or -h to any command"
 `;

@@ -4,7 +4,7 @@ import { CommandOptionsMap, FlagOptions } from '../src/types';
 describe('Helper text', () => {
   test('no configuration', () => {
     const printer = new HelpPrinter();
-    expect(printer.print()).toMatchSnapshot();
+    expect(printer.print({})).toMatchSnapshot();
   });
   test('creates helper text with descriptions', () => {
     const flags: FlagOptions[] = [
@@ -57,6 +57,13 @@ describe('Helper text', () => {
       ],
     ]);
     const printer = new HelpPrinter(flags, commands);
-    expect(printer.print()).toMatchSnapshot();
+    expect(
+      printer.print({
+        summary: 'This is just a text that can be shown to describe the app',
+        appName: 'my-cli',
+        command: 'help',
+        flags: ['--help1', '--help2', '-h'],
+      }),
+    ).toMatchSnapshot();
   });
 });

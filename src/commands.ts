@@ -1,4 +1,4 @@
-import { CommandConfig } from './options';
+import { CommonConfig } from './config';
 import { Parser } from './parser';
 import {
   AnyGlobal,
@@ -8,6 +8,7 @@ import {
   FlagOptionValue,
   FlagOptions,
   FlagValueRecord,
+  HelpOptions,
   Subcommand,
 } from './types';
 
@@ -15,10 +16,9 @@ export class CommandBuilder<
   Options extends FlagValueRecord,
   Globals extends AnyGlobal,
 > {
-  #config: CommandConfig<Options, Globals> = {
+  #config: CommonConfig<Options, Globals> = {
     options: new Map(),
     commands: new Map(),
-    helpIdentifiers: new Set(),
     globalSetter: () => ({}) as Globals,
     defaultHandler: () => {},
   };
@@ -55,16 +55,18 @@ export class CommandBuilder<
     }
   };
 
-  #validateHelpIdentifier = (identifier: string): void => {
-    if (this.#config.commands.has(identifier)) {
+  #validateHelpIdentifiers = (command: string, flags: string[]): void => {
+    if (this.#config.commands.has(command)) {
       throw new Error(
-        `Help identifier "${identifier}" has already been declared as a subcommand`,
+        `Help identifier "${command}" has already been declared as a subcommand`,
       );
     }
-    if (this.#takenFlags.has(identifier)) {
-      throw new Error(
-        `Help identifier "${identifier}" has already been declared as a flag`,
-      );
+    for (const flag of flags) {
+      if (this.#takenFlags.has(flag)) {
+        throw new Error(
+          `Help identifier "${flag}" has already been declared as a flag`,
+        );
+      }
     }
   };
 
@@ -99,11 +101,9 @@ export class CommandBuilder<
     return this as unknown as CommandBuilder<Options, G>;
   }
 
-  setHelp(...identifiers: string[]) {
-    for (const identifier of identifiers) {
-      this.#validateHelpIdentifier(identifier);
-    }
-    this.#config.helpIdentifiers = new Set(identifiers);
+  setHelp(options: HelpOptions) {
+    this.#validateHelpIdentifiers(options.command, options.flags || []);
+    this.#config.help = options;
     return this;
   }
 

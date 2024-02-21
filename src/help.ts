@@ -3,19 +3,20 @@ import {
   CommandOptionsMap,
   FlagOptions,
   FlagValueRecord,
+  HelpOptions,
 } from './types';
 import Utils from './utils';
 
 export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
-  #options: FlagOptions[];
+  #flagOptions: FlagOptions[];
   #commands: CommandOptionsMap<O, G>;
 
   constructor(
-    options: FlagOptions[] = [],
+    flagOptions: FlagOptions[] = [],
     commands: CommandOptionsMap<O, G> = new Map(),
   ) {
     this.#commands = commands;
-    this.#options = this.sortFlags(options);
+    this.#flagOptions = this.sortFlags(flagOptions);
   }
 
   private sortFlags(flags: FlagOptions[]) {
@@ -27,21 +28,30 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
       if (!aRequired && bRequired) return 1;
       if (aLongFlag < bLongFlag) return -1;
       if (aLongFlag > bLongFlag) return 1;
+      // This never happens as longFlag is unique
       return 0;
     });
 
     return sortedFlags;
   }
 
-  public print() {
+  public print(options: Partial<HelpOptions>) {
     const indent = '   ';
-    let str = 'Usage';
+    let str = '';
+
+    if (options.summary) {
+      str += `${options.summary}\n\n`;
+    }
+
+    if (options.appName) {
+      str += `Usage: ${options.appName} [command] <...flags>\n`;
+    }
 
     // Add commands
     const commandNames = [...this.#commands.keys()];
 
     if (commandNames.length > 0) {
-      str += '\n\nAvailable commands\n';
+      str += '\nCommands\n';
       for (const command of commandNames) {
         const { args, description } = this.#commands.get(command)!;
 
@@ -61,12 +71,12 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
     }
 
     // Maybe no option is required
-    const hasAnyRequiredFlag = this.#options.at(0)?.required;
+    const hasAnyRequiredFlag = this.#flagOptions.at(0)?.required;
     if (hasAnyRequiredFlag) str += '\nRequired flags\n';
 
     let optionalFlag = true;
 
-    for (const options of this.#options) {
+    for (const options of this.#flagOptions) {
       const { description, required, shortFlag, longFlag, defaultValue } =
         options;
 
@@ -84,6 +94,14 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
       } else {
         str += '\n';
       }
+    }
+
+    if (options.appName && options.command) {
+      str += `\nTo view this help message, run "${options.appName} ${options.command}"`;
+    }
+
+    if (options.flags && options.flags.length > 0) {
+      str += ` or add ${Utils.joinStr(options.flags, 'or')} to any command`;
     }
 
     return str;

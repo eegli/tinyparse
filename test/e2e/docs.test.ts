@@ -1,4 +1,4 @@
-import type { CommandHandler, GlobalSetter } from '../../src';
+import type { CommandHandler, ErrorHandler, GlobalSetter } from '../../src';
 import { Parser } from '../../src';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -82,7 +82,7 @@ describe('options', () => {
 
     expect(() => {
       parser.parse([]).call();
-    }).toThrow('Missing required option --foo');
+    }).toThrow('Missing required option');
 
     expect(() => {
       parser.parse(['--foo', 'zero']).call();
@@ -310,7 +310,12 @@ describe('help', () => {
         handler: () => {},
         description: 'Baz command',
       })
-      .setHelp('help', '--help', '-h')
+      .setHelp({
+        appName: 'my-cli',
+        summary: 'A brief description of my-cli',
+        command: 'help',
+        flags: ['--help', '-h'],
+      })
       .defaultHandler();
 
     parser.parse(['help']).call();
@@ -327,5 +332,40 @@ describe('help', () => {
     expect(secondHelpMessage).toEqual(thirdHelpMessage);
 
     expect(firstHelpMessage).toMatchSnapshot();
+  });
+});
+
+describe('error handling', () => {
+  test('catches error', () => {
+    const errorHandler: ErrorHandler = (error, help) => {
+      console.log(error.message, help);
+    };
+
+    new Parser()
+      .option('foo', {
+        longFlag: '--foo',
+        required: true,
+        defaultValue: false,
+      })
+      .setHelp({
+        appName: 'my-app',
+        command: 'help',
+      })
+      .defaultHandler()
+      .parse(['fuzz', '--bar'], errorHandler)
+      .call();
+
+    expect(consoleLog).toHaveBeenCalledTimes(1);
+    expect(consoleLog.mock.calls[0]).toMatchInlineSnapshot(`
+      [
+        "Missing required option --foo",
+        "Usage: my-app [command] <...flags>
+
+      Required flags
+         --foo [boolean]
+
+      To view this help message, run "my-app help"",
+      ]
+    `);
   });
 });

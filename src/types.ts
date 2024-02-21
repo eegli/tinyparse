@@ -59,6 +59,13 @@ export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
   ? (options: O) => AnyGlobal
   : never;
 
+export type HelpOptions = {
+  appName: string;
+  command: string;
+  flags?: string[];
+  summary?: string;
+};
+
 export type CommandHandler<
   T,
   A extends string[] = string[],
@@ -66,11 +73,7 @@ export type CommandHandler<
   ? GenericHandler<O, G, A>
   : never;
 
-export type ErrorHandler = (
-  error: ValidationError,
-  args: string[],
-  helpText: string,
-) => void;
+export type ErrorHandler = (error: ValidationError, helpText: string) => void;
 
 export type DefaultHandler<Options, Globals> = GenericHandler<
   Options,
