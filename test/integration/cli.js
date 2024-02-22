@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // filename: cli.ts
-import { Parser, } from '@eegli/tinyparse';
+import { Parser, ValidationError, } from '@eegli/tinyparse';
 // Define the flag options
 const options = new Parser()
     .option('verbose', {
@@ -28,12 +28,12 @@ const status = ({ globals }) => {
     console.log(`Showing status for user: ${userName}`);
 };
 // Define handlers and setters
-const handleError = (error, args) => {
+const handleError = (error, usage) => {
     console.error(`Error parsing arguments. ${error.message}`);
+    console.log(usage);
 };
 const handleDefault = ({ args, globals, options }) => {
-    console.log('No command specified');
-    console.info({ options, args, globals });
+    throw new ValidationError('No command specified'); // Redirect to error handler
 };
 const setGlobals = (options) => {
     return {

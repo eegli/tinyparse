@@ -7,6 +7,7 @@ import {
   ErrorHandler,
   GlobalSetter,
   Parser,
+  ValidationError,
 } from '@eegli/tinyparse';
 
 type Options = typeof options;
@@ -42,13 +43,13 @@ const status: CommandHandler<Options> = ({ globals }) => {
 };
 
 // Define handlers and setters
-const handleError: ErrorHandler = (error, args) => {
+const handleError: ErrorHandler = (error, usage) => {
   console.error(`Error parsing arguments. ${error.message}`);
+  console.log(usage);
 };
 
 const handleDefault: CommandHandler<Options> = ({ args, globals, options }) => {
-  console.log('No command specified');
-  console.info({ options, args, globals });
+  throw new ValidationError('No command specified'); // Redirect to error handler
 };
 
 const setGlobals: GlobalSetter<Options> = (options) => {

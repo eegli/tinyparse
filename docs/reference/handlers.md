@@ -52,4 +52,4 @@ expect(consoleLog).toHaveBeenCalledWith({
 });
 ```
 
-Default handlers can be a good place to handle things that Tinyparse is not opinionated about. For example, you can print an error to the console and tell the user that they should select one of the available subcommands.
+Default handlers can be a good place to handle things that Tinyparse is not opinionated about. For example, you can print an error to the console and tell the user that they should select one of the available subcommands. You can also throw a `ValidationError` here and capture it in the error handler. See the advanced example for more information.

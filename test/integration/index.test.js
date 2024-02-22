@@ -64,8 +64,9 @@ describe('advanced example', () => {
 
   test('default handler', () => {
     cli.run(['unknown']);
-    expectCalledTimes(logSpy, 1);
-    expectCalledWith(logSpy, 'No command specified');
+    expectCalledTimes(errorSpy, 1);
+    expectCalledWith(errorSpy, 'Error parsing arguments. No command specified');
+    expectCalledTimes(logSpy, 1); // Usage
   });
 
   test('version', () => {

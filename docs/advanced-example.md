@@ -13,6 +13,8 @@ node cli.js help
 node cli.js
 ```
 
+In this example, the default handler throws a `ValidationError` to be caught by the error handler. The error handler can then print the error as well as the usage information. This is the pattern to follow when you require that a subcommand is always specified.
+
 ```ts
 // filename: cli.ts
 
@@ -21,6 +23,7 @@ import {
   ErrorHandler,
   GlobalSetter,
   Parser,
+  ValidationError,
 } from '@eegli/tinyparse';
 
 type Options = typeof options;
@@ -56,13 +59,13 @@ const status: CommandHandler<Options> = ({ globals }) => {
 };
 
 // Define handlers and setters
-const handleError: ErrorHandler = (error, args) => {
+const handleError: ErrorHandler = (error, usage) => {
   console.error(`Error parsing arguments. ${error.message}`);
+  console.log(usage);
 };
 
 const handleDefault: CommandHandler<Options> = ({ args, globals, options }) => {
-  console.log('No command specified');
-  console.info({ options, args, globals });
+  throw new ValidationError('No command specified'); // Redirect to error handler
 };
 
 const setGlobals: GlobalSetter<Options> = (options) => {
