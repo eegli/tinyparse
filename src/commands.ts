@@ -8,7 +8,7 @@ import {
   FlagOptionValue,
   FlagOptions,
   FlagValueRecord,
-  HelpOptions,
+  MetaOptions,
   Subcommand,
 } from './types';
 
@@ -17,6 +17,7 @@ export class CommandBuilder<
   Globals extends AnyGlobal,
 > {
   #config: CommonConfig<Options, Globals> = {
+    meta: {},
     options: new Map(),
     commands: new Map(),
     globalSetter: () => ({}) as Globals,
@@ -55,13 +56,13 @@ export class CommandBuilder<
     }
   };
 
-  #validateHelpIdentifiers = (command: string, flags: string[]): void => {
-    if (this.#config.commands.has(command)) {
+  #validateHelpIdentifiers = (command?: string, flags?: string[]): void => {
+    if (command && this.#config.commands.has(command)) {
       throw new Error(
         `Help identifier "${command}" has already been declared as a subcommand`,
       );
     }
-    for (const flag of flags) {
+    for (const flag of flags || []) {
       if (this.#takenFlags.has(flag)) {
         throw new Error(
           `Help identifier "${flag}" has already been declared as a flag`,
@@ -101,9 +102,9 @@ export class CommandBuilder<
     return this as unknown as CommandBuilder<Options, G>;
   }
 
-  setHelp(options: HelpOptions) {
-    this.#validateHelpIdentifiers(options.command, options.flags || []);
-    this.#config.help = options;
+  setMeta(meta: MetaOptions) {
+    this.#validateHelpIdentifiers(meta.helpCommand, meta.helpFlags);
+    this.#config.meta = meta;
     return this;
   }
 

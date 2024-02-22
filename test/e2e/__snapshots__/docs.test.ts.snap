@@ -8,7 +8,7 @@ exports[`error handling catches error 1`] = `
 Required flags
    --foo [boolean]
 
-To view this help message, run "my-app help"",
+For more information, run help",
 ]
 `;
 
@@ -29,5 +29,5 @@ Optional flags
    --bar [date]
    Foo option
 
-To view this help message, run "my-cli help" or add --help or -h to any command"
+For more information, run help or append --help or -h to the command"
 `;

@@ -3,23 +3,27 @@ import {
   CommandOptionsMap,
   FlagOptions,
   FlagValueRecord,
-  HelpOptions,
+  MetaOptions,
 } from './types';
 import Utils from './utils';
 
 export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
   #flagOptions: FlagOptions[];
   #commands: CommandOptionsMap<O, G>;
+  #meta?: MetaOptions;
+  #indent = '   ';
 
   constructor(
+    meta: MetaOptions = {},
     flagOptions: FlagOptions[] = [],
     commands: CommandOptionsMap<O, G> = new Map(),
   ) {
+    this.#meta = meta;
     this.#commands = commands;
-    this.#flagOptions = this.sortFlags(flagOptions);
+    this.#flagOptions = this.#sortFlags(flagOptions);
   }
 
-  private sortFlags(flags: FlagOptions[]) {
+  #sortFlags(flags: FlagOptions[]) {
     const sortedFlags = flags.sort((a, b) => {
       const { required: aRequired, longFlag: aLongFlag } = a;
       const { required: bRequired, longFlag: bLongFlag } = b;
@@ -35,75 +39,87 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
     return sortedFlags;
   }
 
-  public print(options: Partial<HelpOptions>) {
-    const indent = '   ';
+  formatHeader() {
     let str = '';
+    const summary = this.#meta?.summary;
+    const appName = this.#meta?.appName;
 
-    if (options.summary) {
-      str += `${options.summary}\n\n`;
-    }
+    if (summary) str += `${summary}\n\n`;
+    str += 'Usage:';
+    if (appName) str += ` ${appName} [command] <...flags>`;
+    return str;
+  }
 
-    if (options.appName) {
-      str += `Usage: ${options.appName} [command] <...flags>\n`;
-    }
-
+  formatCommands() {
     // Add commands
-    const commandNames = [...this.#commands.keys()];
+    const commands = [...this.#commands.entries()];
+    if (commands.length === 0) return '';
+    return commands.reduce((str, [cmd, { args, description }], i) => {
+      const isLast = i === commands.length - 1;
+      str += this.#indent + cmd;
 
-    if (commandNames.length > 0) {
-      str += '\nCommands\n';
-      for (const command of commandNames) {
-        const { args, description } = this.#commands.get(command)!;
-
-        str += indent;
-        str += `${command}`;
-        if (Array.isArray(args)) {
-          str += ` ${args.map((a) => `<${a}>`).join(' ')}`;
-        } else {
-          str += ` <${args}>`;
-        }
-        if (description) {
-          str += `\n${indent}- ${description}\n`;
-        } else {
-          str += '\n';
-        }
+      if (Array.isArray(args)) {
+        str += ` ${args.map((a) => `<${a}>`).join(' ')}`;
+      } else {
+        str += ` <${args}>`;
       }
-    }
-
-    // Maybe no option is required
+      if (description) {
+        str += `\n${this.#indent}- ${description}`;
+      }
+      if (!isLast) str += '\n';
+      return str;
+    }, 'Commands\n');
+  }
+  formatFlags() {
+    let str = '';
     const hasAnyRequiredFlag = this.#flagOptions.at(0)?.required;
-    if (hasAnyRequiredFlag) str += '\nRequired flags\n';
+    if (hasAnyRequiredFlag) str += 'Required flags\n';
 
-    let optionalFlag = true;
+    let insertOptionalFlagHeader = true;
 
-    for (const options of this.#flagOptions) {
+    return this.#flagOptions.reduce((str, options, i) => {
       const { description, required, shortFlag, longFlag, defaultValue } =
         options;
-
-      if (optionalFlag && !required) {
-        str += '\nOptional flags\n';
-        optionalFlag = false;
+      const isLast = i === this.#flagOptions.length - 1;
+      if (!required && insertOptionalFlagHeader) {
+        if (hasAnyRequiredFlag) str += '\n';
+        str += 'Optional flags\n';
+        insertOptionalFlagHeader = false;
       }
-
-      str += indent;
+      str += this.#indent;
       if (shortFlag) str += `${shortFlag}, `;
       str += `${longFlag}`;
       str += ` [${Utils.typeof(defaultValue)}]`;
       if (description) {
-        str += `\n${indent}${description}\n`;
-      } else {
-        str += '\n';
+        str += `\n${this.#indent}${description}`;
       }
-    }
+      if (!isLast) str += '\n';
+      return str;
+    }, str);
+  }
 
-    if (options.appName && options.command) {
-      str += `\nTo view this help message, run "${options.appName} ${options.command}"`;
-    }
+  formatHelpAndVersion() {
+    const helpCommand = this.#meta?.helpCommand;
+    const helpFlags = this.#meta?.helpFlags;
+    if (!helpCommand && !helpFlags) return '';
 
-    if (options.flags && options.flags.length > 0) {
-      str += ` or add ${Utils.joinStr(options.flags, 'or')} to any command`;
+    let str = 'For more information, ';
+    if (helpCommand) str += `run ${helpCommand}`;
+    if (helpFlags) {
+      if (helpCommand) str += ' or ';
+      str += `append ${Utils.joinStr(helpFlags, 'or')} to the command`;
     }
-
     return str;
+  }
+
+  print() {
+    return [
+      this.formatHeader(),
+      this.formatCommands(),
+      this.formatFlags(),
+      this.formatHelpAndVersion(),
+    ]
+      .filter(Boolean)
+      .join('\n\n');
   }
 }

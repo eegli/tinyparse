@@ -59,12 +59,12 @@ export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
   ? (options: O) => AnyGlobal
   : never;
 
-export type HelpOptions = {
-  appName: string;
-  command: string;
-  flags?: string[];
+export interface MetaOptions {
+  appName?: string;
   summary?: string;
-};
+  helpCommand?: string;
+  helpFlags?: string[];
+}
 
 export type CommandHandler<
   T,

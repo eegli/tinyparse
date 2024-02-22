@@ -17,6 +17,7 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
   constructor(config: CommonConfig<O, G>) {
     this.#config = config;
     this.#helpPrinter = new HelpPrinter(
+      config.meta,
       [...config.options.values()],
       config.commands,
     );
@@ -49,9 +50,9 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     const [flagMap, positionals] = transformArgv(argv);
     const [subcommand, ...subcommandArgs] = positionals;
 
-    const helpText = this.#helpPrinter.print(this.#config.help || {});
-    const helpCommand = this.#config.help?.command;
-    const helpFlags = this.#config.help?.flags || [];
+    const helpText = this.#helpPrinter.print();
+    const helpCommand = this.#config.meta.helpCommand;
+    const helpFlags = this.#config.meta.helpFlags || [];
 
     const call = () => {
       if (helpCommand && subcommand === helpCommand) {

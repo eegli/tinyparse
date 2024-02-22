@@ -80,6 +80,39 @@ const parser = new Parser()
   });
 ```
 
+To allow the user to get help, we register metadata such as the app name, a summary, and a help command. We also register which flags trigger the help text. All of this is optional but recommended. If you do not specify a help command, Tinyparse will not assume one for you.
+
+```ts
+const parser = new Parser()
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+  })
+  .setGlobals((options) => ({
+    callDatabase: (name: string) => `Hello, ${name}!`,
+    log: (message: string) => {
+      if (options.verbose) {
+        console.log(message);
+      }
+    },
+  }))
+  .subcommand('fetch-user', {
+    args: ['user-name'] as const,
+    handler: ({ args, globals }) => {
+      const [userName] = args;
+      const result = globals.callDatabase(userName);
+      globals.log(result);
+    },
+  })
+  .setMeta({
+    appName: 'my-cli',
+    summary: 'A brief description of my-cli',
+    helpCommand: 'help',
+    helpFlags: ['--help', '-h'],
+  });
+```
+
 Finally, we wrap up the building phase by attaching a _default handler_- a special handler that is called when no subcommand matches.
 
 ```ts
@@ -105,6 +138,12 @@ const parser = new Parser()
       globals.log(result);
     },
   })
+  .setMeta({
+    appName: 'my-cli',
+    summary: 'A brief description of my-cli',
+    helpCommand: 'help',
+    helpFlags: ['--help', '-h'],
+  })
   .defaultHandler(({ globals }) => {
     globals.log('No command specified');
   });
@@ -117,5 +156,11 @@ parser.parse(['fetch-user', 'John', '-v']).call();
 ```
 
 This will print `Hello, John!` to the console.
+
+To see all available commands, we can also do:
+
+```ts
+parser.parse(['--help']).call();
+```
 
 There are many more things you can do with Tinyparse. Checkout the reference!

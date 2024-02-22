@@ -59,12 +59,23 @@ describe('quickstart', () => {
           globals.log(result);
         },
       })
+      .setMeta({
+        appName: 'my-cli',
+        summary: 'A brief description of my-cli',
+        helpCommand: 'help',
+        helpFlags: ['--help', '-h'],
+      })
       .defaultHandler(({ globals }) => {
         globals.log('No command specified');
       });
 
     parser.parse(['fetch-user', 'John', '-v']).call();
-    expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
+    expect(consoleLog).toHaveBeenLastCalledWith('Hello, John!');
+
+    parser.parse(['--help']).call();
+    expect(consoleLog).toHaveBeenLastCalledWith(
+      expect.stringMatching(/^A brief description of my-cli/),
+    );
   });
 });
 
@@ -310,11 +321,11 @@ describe('help', () => {
         handler: () => {},
         description: 'Baz command',
       })
-      .setHelp({
+      .setMeta({
         appName: 'my-cli',
         summary: 'A brief description of my-cli',
-        command: 'help',
-        flags: ['--help', '-h'],
+        helpCommand: 'help',
+        helpFlags: ['--help', '-h'],
       })
       .defaultHandler();
 
@@ -347,9 +358,9 @@ describe('error handling', () => {
         required: true,
         defaultValue: false,
       })
-      .setHelp({
+      .setMeta({
         appName: 'my-app',
-        command: 'help',
+        helpCommand: 'help',
       })
       .defaultHandler()
       .parse(['fuzz', '--bar'], errorHandler)

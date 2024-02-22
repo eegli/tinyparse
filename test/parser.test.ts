@@ -1,6 +1,6 @@
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
-import { CommandOptionsMap, FlagOptionsMap, HelpOptions } from '../src/types';
+import { CommandOptionsMap, FlagOptionsMap } from '../src/types';
 
 const commandHandler = jest.fn();
 const defaultHandler = jest.fn();
@@ -41,14 +41,14 @@ const commands: CommandOptionsMap = new Map([
 const globalSetter = () => {
   return { database: 'db' };
 };
-const helpOptions: HelpOptions = {
-  appName: 'app',
-  command: 'help',
-};
+
 const parser = new Parser({
+  meta: {
+    appName: 'app',
+    helpCommand: 'help',
+  },
   options,
   commands,
-  help: helpOptions,
   globalSetter,
   defaultHandler,
 });

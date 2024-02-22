@@ -1,10 +1,10 @@
 # Help
 
-> This document describes how **help options** can be configured.
+> This document describes how **help and meta options** can be configured.
 
 All good CLI apps have some way of providing help to the user. Tinyparse is no different. You can register usage information and tokens that, when present in the input, will trigger the help text to be printed to the console .
 
-You can register which a subcommand and flags trigger the help text with the `.setHelp()` method:
+You can register which a subcommand and flags trigger the help text and other metadata with the `.setMeta()` method. You need to do this _manually_. If you do not specify a help command or help flags, Tinyparse will not assume them for you.
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
@@ -27,11 +27,11 @@ const parser = new Parser()
     handler: () => {},
     description: 'Baz command',
   })
-  .setHelp({
+  .setMeta({
     appName: 'my-cli',
     summary: 'A brief description of my-cli',
-    command: 'help',
-    flags: ['--help', '-h'],
+    helpCommand: 'help',
+    helpFlags: ['--help', '-h'],
   })
   .defaultHandler()
   .parse(['help'])
@@ -57,7 +57,7 @@ Optional flags
    --bar [date]
    Foo option
 
-To view this help message, run "my-cli help" or add --help or -h to any command
+For more information, run help or append --help or -h to the command
 ```
 
-When you set your help configuration, Tinyparse will validate the arguments to make sure there are no conflicts with existing flags or subcommands. Note that subsequent calls to `.setHelp()` will overwrite the previous configuration.
+When you set your help configuration, Tinyparse will validate the arguments to make sure there are no conflicts with existing flags or subcommands. Note that subsequent calls to `.setMeta()` will overwrite the previous configuration.

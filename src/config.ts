@@ -4,13 +4,13 @@ import {
   DefaultHandler,
   FlagOptionsMap,
   FlagValueRecord,
-  HelpOptions,
+  MetaOptions,
 } from './types';
 
 export interface CommonConfig<O extends FlagValueRecord, G extends AnyGlobal> {
+  meta: MetaOptions;
   options: FlagOptionsMap;
   commands: CommandOptionsMap<O, G>;
-  help?: HelpOptions;
   globalSetter: (options: O) => G;
   defaultHandler: DefaultHandler<O, G>;
 }
