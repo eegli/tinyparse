@@ -1,17 +1,19 @@
-/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
+/** @type {import('ts-jest/dist/types').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   snapshotFormat: {
     printBasicPrototype: false,
   },
-  roots: ['<rootDir>/src', '<rootDir>/test'],
+  rootDir: '.',
+  roots: ['<rootDir>'],
   collectCoverageFrom: ['<rootDir>/src/**', '!<rootDir>/src/lib/**'],
   coverageThreshold: {
     global: {
       statements: 90,
     },
   },
+  modulePathIgnorePatterns: ['<rootDir>/dist', '<rootDir>/_release'],
   projects: [
     {
       displayName: {
@@ -20,6 +22,8 @@ module.exports = {
       },
       testMatch: ['<rootDir>/test/*.test.ts'],
       setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
+      // https://jestjs.io/docs/configuration/#prettierpath-string
+      prettierPath: require.resolve('prettier-2'),
     },
     {
       displayName: {
@@ -28,6 +32,7 @@ module.exports = {
       },
       testMatch: ['<rootDir>/test/e2e/*.test.ts'],
       setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
+      prettierPath: require.resolve('prettier-2'),
     },
     {
       displayName: {
@@ -36,6 +41,7 @@ module.exports = {
       },
       runner: 'jest-runner-tsd',
       testMatch: ['<rootDir>/test/types/*.test.ts'],
+      prettierPath: require.resolve('prettier-2'),
     },
   ],
 };

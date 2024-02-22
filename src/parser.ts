@@ -1,115 +1,117 @@
-import { Collector } from './collector';
+import { transformArgv } from './argv';
+import { CommonConfig } from './config';
 import { ValidationError } from './error';
-import { BaseFlagOption, PrimitiveRecord, Value } from './types';
-import Utils from './utils';
+import { collectFlags } from './flags';
+import { HelpPrinter } from './help';
+import {
+  AnyGlobal,
+  CommandArgPattern,
+  ErrorHandler,
+  FlagValueRecord,
+  Subcommand,
+} from './types';
 
-type InputState = Map<
-  string,
-  {
-    value: unknown;
-    // Keep track of how the input was received for error reporting
-    receivedAs: string;
-  }
->;
-
-export class Parser<T extends PrimitiveRecord> {
-  private _argvInput: InputState = new Map();
-  private _fileInput: InputState = new Map();
-
-  constructor(private readonly _options: Map<string, BaseFlagOption>) {}
-
-  public withArgvInput(
-    input: Map<string, unknown>,
-    aliases: Map<string, string> = new Map()
-  ): this {
-    // New state on new input
-    this._argvInput.clear();
-
-    for (const [key, value] of input) {
-      const maybeAlias = aliases.get(key);
-      this._argvInput.set(maybeAlias ?? key, {
-        value,
-        receivedAs: key,
-      });
-    }
-    return this;
+export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
+  #config: CommonConfig<O, G>;
+  #helpPrinter: HelpPrinter<O, G>;
+  constructor(config: CommonConfig<O, G>) {
+    this.#config = config;
+    this.#helpPrinter = new HelpPrinter(
+      config.meta,
+      [...config.options.values()],
+      config.commands,
+    );
   }
 
-  public withFileInput(...flags: string[]): this {
-    this._fileInput.clear();
+  #validateSubcommandArgs(
+    command: string,
+    args: string[],
+    commandOpts: Subcommand<O, G, CommandArgPattern>,
+  ) {
+    if (Array.isArray(commandOpts.args)) {
+      const expectedNumArgs = commandOpts.args.length;
+      const actualNumArgs = args.length;
 
-    const filePaths = flags
-      .map((v) => this._argvInput.get(v)?.value)
-      .filter((v) => typeof v === 'string') as string[];
-
-    if (filePaths.length === 0) return this;
-
-    // Long flag takes precedence over short flag
-    const filePath = filePaths[0];
-
-    for (const [key, content] of Utils.parseJSONFile(filePath)) {
-      this._fileInput.set(key, {
-        value: content,
-        receivedAs: key,
-      });
+      if (expectedNumArgs !== actualNumArgs) {
+        const wording = expectedNumArgs === 1 ? 'argument' : 'arguments';
+        throw new ValidationError(
+          `${command} expects ${expectedNumArgs} ${wording}, got ${actualNumArgs}`,
+        );
+      }
     }
-
-    // The file flags are not part of the output
-    for (const flag of flags) {
-      this._argvInput.delete(flag);
-    }
-
-    return this;
   }
 
-  public parse(): Collector<T> {
-    const output: Map<string, Value> = new Map();
+  parse(
+    argv: string[],
+    handleError?: ErrorHandler,
+  ): {
+    call: () => void;
+  } {
+    const [flagMap, positionals] = transformArgv(argv);
+    const [subcommand, ...subcommandArgs] = positionals;
 
-    // Go through all expected keys and try to find them in the input
-    for (const option of this._options) {
-      const [key, keyOptions] = option;
+    const helpText = this.#helpPrinter.print();
 
-      // Input from argv takes precedence over input from a file
-      const entry = this._argvInput.get(key) ?? this._fileInput.get(key);
+    const helpCommand = this.#config.meta.help?.command;
+    const versionCommand = this.#config.meta.version?.command;
+    const longHelpFlag = this.#config.meta.help?.longFlag;
+    const shortHelpFlag = this.#config.meta.help?.shortFlag;
+    const longVersionFlag = this.#config.meta.version?.longFlag;
+    const shortVersionFlag = this.#config.meta.version?.shortFlag;
 
-      if (!entry) {
-        if (keyOptions?.isRequired) {
-          throw new ValidationError(`Missing required argument ${key}`);
-        }
-        // Set default
-        output.set(key, keyOptions.value);
-        continue;
+    const call = () => {
+      if (
+        (helpCommand && subcommand === helpCommand) ||
+        (longHelpFlag && flagMap.has(longHelpFlag)) ||
+        (shortHelpFlag && flagMap.has(shortHelpFlag))
+      ) {
+        console.log(helpText);
+        return;
       }
 
-      const customValidator = keyOptions?.validator;
-      const expectedType = typeof keyOptions.value;
-
-      // Iif the expected type is a number and not NaN, try to convert
-      // the value
-      if (expectedType === 'number') {
-        entry.value = Utils.toNumber(entry.value);
+      if (
+        (versionCommand && subcommand === versionCommand) ||
+        (longVersionFlag && flagMap.has(longVersionFlag)) ||
+        (shortVersionFlag && flagMap.has(shortVersionFlag))
+      ) {
+        // If this condition is true, the version is guaranteed to be defined
+        console.log(this.#config.meta.version?.version);
+        return;
       }
 
-      if (customValidator) {
-        if (customValidator.isValid(entry.value)) {
-          output.set(key, entry.value);
-        } else {
-          throw new ValidationError(
-            customValidator.errorMessage(entry.value, entry.receivedAs)
+      try {
+        const options = collectFlags(flagMap, this.#config.options) as O;
+
+        const subcommandOpts = this.#config.commands.get(subcommand);
+
+        const globals = this.#config.globalSetter(options) as G;
+
+        if (subcommandOpts) {
+          this.#validateSubcommandArgs(
+            subcommand,
+            subcommandArgs,
+            subcommandOpts,
           );
-        }
-      } else {
-        const receivedType = typeof entry.value;
-        if (Utils.isValueType(entry.value) && receivedType === expectedType) {
-          output.set(key, entry.value);
-        } else {
-          throw new ValidationError(
-            `Invalid type for ${entry.receivedAs}. "${entry.value}" is not a ${expectedType}`
-          );
-        }
-      }
-    }
 
-    return new Collector<T>(Object.fromEntries(output) as T);
+          subcommandOpts.handler({
+            options,
+            globals,
+            args: subcommandArgs,
+          });
+        } else {
+          this.#config.defaultHandler({
+            options,
+            globals,
+            args: positionals,
+          });
+        }
+      } catch (error) {
+        if (error instanceof ValidationError && handleError) {
+          return handleError(error, helpText);
+        }
+        throw error;
+      }
+    };
+    return { call };
   }
 }

@@ -1,34 +1,5 @@
 # Quickstart
 
-Tinyparse is made for parsing simple user input. It can process **command line input**, i.e., `process.argv` - an array of strings - and build an object literal from it. The object to parse _into_ may only have `string`, `number` or `boolean` property values. These three primitive types are further denoted as a `Value` type.
-
-CLI arguments can either be separated by a whitespace or an equal sign.
-
-```ts
-import { createParser } from '@eegli/tinyparse';
-import assert from 'node:assert/strict';
-
-const defaultValues = {
-  username: '',
-  active: false,
-};
-
-const { parse, parseSync } = createParser(defaultValues);
-
-const parsed1 = await parse(['hello', '--username', 'john', '--active']);
-const parsed2 = parseSync(['hello', '--username=john', '--active']);
-
-assert.deepStrictEqual(parsed1, parsed2);
-
-assert.deepStrictEqual(parsed1, {
-  username: 'john',
-  active: true,
-  _: ['hello'],
-});
-```
-
-`createParser` builds both an asynchronous (`parse`) and synchronous (`parseSync`) parser. Apart from their different return types, both functions do the exact same thing.
-
 ## Install
 
 Node.js v18 or later is required.
@@ -45,65 +16,165 @@ npm i @eegli/tinyparse
 
 ## Usage
 
-Tinyparse binds a parser to some default values you feed it.
-
-`createParser(defaultValues, options = {})`
-
-- `defaultValues: Record<string, Value>`: An object literal that specifies the **exact types** that are desired for the parsed arguments. Its **exact values** will be used as a fallback/default.
-
-- `options: object`: Options object. You can specify both a _file flag_ (whose flag value will point to a file) and options per key.
-
-Note that most arguments and options are optional. IntelliSense and
-TypeScript will show you the detailed signatures and what is required.
-
-### Advanced Example
+Tinyparse uses a type-safe builder pattern to create a parser. A parser is created with a call to `new Parser()`. Everything that follows is now optional.
 
 ```ts
-import { createParser } from '@eegli/tinyparse';
-import assert from 'node:assert/strict';
+import { Parser } from '@eegli/tinyparse';
 
-const defaultValues = {
-  to: '',
-  from: '',
-  hasGithubProfile: false,
-  hasGithubPlus: true,
-  followerCount: 0,
-  birthYear: '',
-  unchanged: 'unchanged',
-};
-const { parse } = createParser(defaultValues, {
-  options: {
-    followerCount: {
-      required: true,
-      shortFlag: 'fc',
-    },
-    hasGithubProfile: {
-      longFlag: 'github',
-    },
-  },
-});
-const parsed = await parse([
-  'congratulations', // Positional argument
-  '--to', // Long flag
-  'John', // Long flag value
-  '--from=Anna', // Equal sign instead of space
-  '--github', // Custom long boolean flag
-  '--hasGithubPlus', // Another boolean flag
-  '-fc', // Custom short flag
-  '10', // Will be parsed as number
-  'ignoredProperty', // This property is ignored
-  '--birthYear', // Long flag
-  '2018', // Will remain a string
-]);
+const parser = new Parser();
+```
 
-assert.deepStrictEqual(parsed, {
-  _: ['congratulations'],
-  to: 'John',
-  from: 'Anna',
-  hasGithubPlus: true,
-  hasGithubProfile: true,
-  followerCount: 10,
-  birthYear: '2018',
-  unchanged: 'unchanged',
+First, we can specify any global options (a.k.a. _flags_) and _chain_ them.
+
+```ts
+const parser = new Parser().option('verbose', {
+  longFlag: '--verbose',
+  shortFlag: '-v',
+  defaultValue: false,
 });
 ```
+
+Next, we attach globals. Globals are supposed to _static_ objects that can be used by any subcommand. For example, you could attach a logger to the parser or define constants. Globals have access to all options.
+
+```ts
+const parser = new Parser()
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+  })
+  .setGlobals((options) => ({
+    callDatabase: (name: string) => `Hello, ${name}!`,
+    log: (message: string) => {
+      if (options.verbose) {
+        console.log(message);
+      }
+    },
+  }));
+```
+
+Now, we register a handler for a subcommand. (Subcommand) handlers have access to their arguments, globals and options.
+
+```ts
+const parser = new Parser()
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+  })
+  .setGlobals((options) => ({
+    callDatabase: (name: string) => `Hello, ${name}!`,
+    log: (message: string) => {
+      if (options.verbose) {
+        console.log(message);
+      }
+    },
+  }))
+  .subcommand('fetch-user', {
+    args: ['user-name'] as const,
+    handler: ({ args, globals }) => {
+      const [userName] = args;
+      const result = globals.callDatabase(userName);
+      globals.log(result);
+    },
+  });
+```
+
+To allow the user to get help, we register metadata such as the app name, a summary as well as version and help commands. All of this is optional but recommended. If you do not specify a help command, Tinyparse will not assume one for you.
+
+```ts
+const parser = new Parser()
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+  })
+  .setGlobals((options) => ({
+    callDatabase: (name: string) => `Hello, ${name}!`,
+    log: (message: string) => {
+      if (options.verbose) {
+        console.log(message);
+      }
+    },
+  }))
+  .subcommand('fetch-user', {
+    args: ['user-name'] as const,
+    handler: ({ args, globals }) => {
+      const [userName] = args;
+      const result = globals.callDatabase(userName);
+      globals.log(result);
+    },
+  })
+  .setMeta({
+    appName: 'my-cli',
+    summary: 'A brief description of my-cli',
+    help: {
+      command: 'help',
+      longFlag: '--help',
+    },
+    version: {
+      version: '1.0.0',
+      command: 'version',
+      longFlag: '--version',
+    },
+  });
+```
+
+Finally, we wrap up the building phase by attaching a _default handler_- a special handler that is called when no subcommand matches.
+
+```ts
+const parser = new Parser()
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+  })
+  .setGlobals((options) => ({
+    callDatabase: (name: string) => `Hello, ${name}!`,
+    log: (message: string) => {
+      if (options.verbose) {
+        console.log(message);
+      }
+    },
+  }))
+  .subcommand('fetch-user', {
+    args: ['user-name'] as const,
+    handler: ({ args, globals }) => {
+      const [userName] = args;
+      const result = globals.callDatabase(userName);
+      globals.log(result);
+    },
+  })
+  .setMeta({
+    appName: 'my-cli',
+    summary: 'A brief description of my-cli',
+    help: {
+      command: 'help',
+      longFlag: '--help',
+    },
+    version: {
+      version: '1.0.0',
+      command: 'version',
+      longFlag: '--version',
+    },
+  })
+  .defaultHandler(({ globals }) => {
+    globals.log('No command specified');
+  });
+```
+
+Now, we are ready to give it an array of strings, which is usually the command line arguments obtained from `process.argv.slice(2)`:
+
+```ts
+parser.parse(['fetch-user', 'John', '-v']).call();
+```
+
+This will print `Hello, John!` to the console.
+
+To see all available commands, we can also do:
+
+```ts
+parser.parse(['--help']).call();
+```
+
+There are many more things you can do with Tinyparse. Checkout the reference!

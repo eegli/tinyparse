@@ -1,79 +1,88 @@
-import { createParser } from '@eegli/tinyparse';
-import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import assert from 'assert/strict';
+import { after, afterEach, describe, mock, test } from 'node:test';
+import * as cli from './cli.js';
 
-test('landing page example', async () => {
-  const { parse } = createParser({
-    username: '',
+describe('advanced example', () => {
+  const originalLog = console.log;
+  const originalError = console.error;
+  const logSpy = mock.fn(console.log, () => {});
+  const errorSpy = mock.fn(console.error, () => {});
+  console.log = logSpy;
+  console.error = errorSpy;
+
+  after(() => {
+    console.log = originalLog;
+    console.error = originalError;
   });
 
-  const parsed = await parse(['hello', '--username', 'eegli']);
+  afterEach(() => {
+    logSpy.mock.resetCalls();
+    errorSpy.mock.resetCalls();
+  });
 
-  assert.deepStrictEqual(parsed, { username: 'eegli', _: ['hello'] });
-});
-test('quickstart example', async () => {
-  const defaultValues = {
-    username: '',
-    active: false,
+  const expectCalledTimes = (mock, times) => {
+    assert.deepEqual(mock.mock.calls.length, times);
   };
 
-  const { parse, parseSync } = createParser(defaultValues);
-
-  const parsed1 = await parse(['hello', '--username', 'john', '--active']);
-  const parsed2 = parseSync(['hello', '--username=john', '--active']);
-
-  assert.deepStrictEqual(parsed1, parsed2);
-
-  assert.deepStrictEqual(parsed1, {
-    username: 'john',
-    active: true,
-    _: ['hello'],
-  });
-});
-
-test('quickstart advanced example', async () => {
-  const defaultValues = {
-    to: '',
-    from: '',
-    hasGithubProfile: false,
-    hasGithubPlus: true,
-    followerCount: 0,
-    birthYear: '',
-    unchanged: 'unchanged',
+  const expectCalledWith = (mock, expected) => {
+    assert.deepEqual(mock.mock.calls[0].arguments[0], expected);
   };
-  const { parse } = createParser(defaultValues, {
-    options: {
-      followerCount: {
-        required: true,
-        shortFlag: 'fc',
-      },
-      hasGithubProfile: {
-        longFlag: 'github',
-      },
-    },
-  });
-  const parsed = await parse([
-    'congratulations', // Positional argument
-    '--to', // Long flag
-    'John', // Long flag value
-    '--from=Anna', // Equal sign instead of space
-    '--github', // Custom long boolean flag
-    '--hasGithubPlus', // Another boolean flag
-    '-fc', // Custom short flag
-    '10', // Will be parsed as number
-    'ignoredProperty', // This property is ignored
-    '--birthYear', // Long flag
-    '2018', // Will remain a string
-  ]);
 
-  assert.deepStrictEqual(parsed, {
-    _: ['congratulations'],
-    to: 'John',
-    from: 'Anna',
-    hasGithubPlus: true,
-    hasGithubProfile: true,
-    followerCount: 10,
-    birthYear: '2018',
-    unchanged: 'unchanged',
+  const expectCalledWithMatch = (mock, expected) => {
+    assert.match(mock.mock.calls[0].arguments[0], expected);
+  };
+
+  test('command copy', () => {
+    cli.run(['cp', 'a', 'b', '-v']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(logSpy, 'Copying files from a to b');
+  });
+
+  test('remove list', () => {
+    cli.run(['rm', 'a', 'b', 'c', '--ext=js,ts']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(
+      logSpy,
+      'Removing files a,b,c if they have extension js,ts',
+    );
+  });
+
+  test('command status', () => {
+    cli.run(['status']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(logSpy, 'Showing status for user: me');
+  });
+
+  test('error handler', () => {
+    cli.run(['cp']);
+    expectCalledTimes(errorSpy, 1);
+    expectCalledWith(
+      errorSpy,
+      'Error parsing arguments. cp expects 2 arguments, got 0',
+    );
+  });
+
+  test('default handler', () => {
+    cli.run(['unknown']);
+    expectCalledTimes(errorSpy, 1);
+    expectCalledWith(errorSpy, 'Error parsing arguments. No command specified');
+    expectCalledTimes(logSpy, 1); // Usage
+  });
+
+  test('version', () => {
+    for (const v of ['version', '-V', '--version']) {
+      cli.run([v]);
+      expectCalledTimes(logSpy, 1);
+      expectCalledWith(logSpy, '1.0.0');
+      logSpy.mock.resetCalls();
+    }
+  });
+  test('help', () => {
+    for (const v of ['help', '-h', '--help']) {
+      cli.run([v]);
+      expectCalledTimes(logSpy, 1);
+      expectCalledWithMatch(logSpy, /Work with files and folders/);
+      logSpy.mock.resetCalls();
+    }
   });
 });

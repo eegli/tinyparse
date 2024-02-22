@@ -8,12 +8,12 @@ A custom validator has the following signature. It receives the received value a
 
 ```ts
 type CustomValidator = {
-  isValid: (value: unknown) => value is Value;
+  isValid: (value: unknown) => value is FlagValue;
   errorMessage: (value: unknown, flag: string) => string;
 };
 ```
 
-Note that, when you're using TypeScript, custom validators need to be [explicitly annotated](https://github.com/microsoft/TypeScript/issues/14826#issuecomment-288870523) using the `Value` type as in the example below.
+Note that, when you're using TypeScript, custom validators need to be [explicitly annotated](https://github.com/microsoft/TypeScript/issues/14826#issuecomment-288870523) using the `FlagValue` type as in the example below.
 
 **Good to know**
 
@@ -22,10 +22,10 @@ Note that, when you're using TypeScript, custom validators need to be [explicitl
 
 ## Example
 
-<!-- doctest: custom validation -->
+<!-- doctest: default -->
 
 ```ts
-import { createParser, Value } from '@eegli/tinyparse';
+import { createParser, FlagValue } from '@eegli/tinyparse';
 
 const { parseSync } = createParser(
   { birthDate: '2000-01-01' },
@@ -34,7 +34,7 @@ const { parseSync } = createParser(
       birthDate: {
         longFlag: 'bday',
         customValidator: {
-          isValid(value): value is Value {
+          isValid(value): value is FlagValue {
             if (typeof value !== 'string') return false;
             return !isNaN(new Date(value).getTime());
           },
@@ -44,7 +44,7 @@ const { parseSync } = createParser(
         },
       },
     },
-  }
+  },
 );
 // Valid date string
 expect(() => {
@@ -55,6 +55,6 @@ expect(() => {
 expect(() => {
   parseSync(['--bday', '2000-22']);
 }).toThrow(
-  "Invalid value '2000-22' for option '--bday'. Expected a valid date string"
+  "Invalid value '2000-22' for option '--bday'. Expected a valid date string",
 );
 ```

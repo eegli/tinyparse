@@ -42,11 +42,13 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
         run: yarn install --immutable
-      - name: Run test
+      - name: Run unit test
         run: yarn test --coverage --verbose
       - name: Run integration tests
         if: matrix.node == '20'
         run: yarn test:integration
+      - name: Run type test
+        run: yarn test:types
       - name: Run build
         run: yarn build
       - name: Upload coverage to Codecov

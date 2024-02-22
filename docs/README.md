@@ -2,23 +2,37 @@
 
 ![npm](https://img.shields.io/npm/v/@eegli/tinyparse) ![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/eegli/tinyparse/ci.yml?branch=main) [![codecov](https://codecov.io/gh/eegli/tinyparse/branch/main/graph/badge.svg?token=8MFDR4SWYM)](https://codecov.io/gh/eegli/tinyparse) ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/min/@eegli/tinyparse)
 
-> A tiny, type-safe and flexible utility for parsing & validating command line arguments in Node.js
+> A tiny, type-safe and flexible utility for creating command line tools in Node.js
 
 ## What it is
 
 _Like [oclif](https://oclif.io/) and [Yargs](https://yargs.js.org/) had a baby._
 
 ```ts
-import { createParser } from '@eegli/tinyparse';
-import assert from 'node:assert/strict';
+import { Parser } from '@eegli/tinyparse';
 
-const { parse } = createParser({
-  username: '',
-});
+new Parser()
+  .option('occasion', {
+    longFlag: '--occasion',
+    shortFlag: '-o',
+    defaultValue: '',
+    required: true,
+  })
+  .subcommand('congratulate', {
+    args: ['name'] as const,
+    handler: ({ args, options }) => {
+      const [name] = args;
+      const { occasion } = options;
+      console.log(`Happy ${occasion}, ${name}!`);
+    },
+  })
+  .defaultHandler(() => {
+    console.log('Please enter your name');
+  })
+  .parse(['congratulate', 'John', '--occasion', 'birthday'])
+  .call();
 
-const parsed = await parse(['hello', '--username', 'eegli']);
-
-assert.deepStrictEqual(parsed, { username: 'eegli', _: ['hello'] });
+// Happy birthday, John!
 ```
 
 I use this mostly for other pet projects of mine so it comes with some opinions 🤪.
@@ -26,9 +40,9 @@ I use this mostly for other pet projects of mine so it comes with some opinions 
 ## Features
 
 - TypeScript first - 100% type-safety
-- Support for positional and flag arguments
+- Supports subcommands and flag options
 - Lightweight - Zero dependencies
-- JSON parsing, custom validation and more
+- Mega customizable
 
 ## Examples
 

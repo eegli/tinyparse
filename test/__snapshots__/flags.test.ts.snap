@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`flags rejects for invalid types: <--foo > 1`] = `"--foo expects an argument"`;
+
+exports[`flags rejects for invalid types: <--foo bar> 1`] = `"Invalid argument for --foo. 'bar' must be 'true' or 'false'"`;
+
+exports[`flags rejects for invalid types: <--foo bar> 2`] = `"Invalid type for --foo. 'bar' is not a valid number"`;
+
+exports[`flags rejects for invalid types: <--foo bar> 3`] = `"Invalid type for --foo. 'bar' is not a valid date"`;

@@ -1,8 +1,8 @@
-import { ArgvTransformer } from '../src/argv';
+import { transformArgv } from '../src/argv';
 
 describe('Argv transformer', () => {
   test('parses empty', () => {
-    expect(ArgvTransformer.transform([])).toStrictEqual([new Map(), []]);
+    expect(transformArgv([])).toStrictEqual([new Map(), []]);
   });
 
   const orders = [
@@ -39,19 +39,19 @@ describe('Argv transformer', () => {
   ];
   orders.forEach((argv, idx) => {
     test('works with order ' + idx, () => {
-      const [transformed, positionals] = ArgvTransformer.transform(argv);
+      const [transformed, positionals] = transformArgv(argv);
 
       expect(Object.fromEntries(transformed)).toStrictEqual({
-        '--boolProp1': true,
+        '--boolProp1': null,
         '--stringProp': 'hello from node',
         '--numProp': '123',
-        '--boolProp2': true,
+        '--boolProp2': null,
       });
       expect(positionals).toStrictEqual([]);
     });
   });
   test('ignores invalid flags', () => {
-    const [transformed, positionals] = ArgvTransformer.transform([
+    const [transformed, positionals] = transformArgv([
       'positional_1',
       'positional_2',
       '-short',
@@ -77,7 +77,7 @@ describe('Argv transformer', () => {
       '--secret': '123',
       '--password': 'MyPassword',
       '-short': 'short',
-      '--bool': true,
+      '--bool': null,
       '--input-message': 'this is a string',
       '--sinlgeQuotes': '"-this is a string"',
       '-doubleQuotes': "'-this is a string'",

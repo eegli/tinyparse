@@ -1,50 +1,115 @@
-type CustomValidator = {
-  isValid: (value: unknown) => value is Value;
+import { CommandBuilder } from './commands';
+import { ValidationError } from './error';
+
+export type CustomValidator = {
+  isValid: (value: unknown) => value is FlagOptionValue;
   errorMessage: (value: unknown, flag: string) => string;
 };
 
-// The parser requires a subset of options to work
-export interface BaseFlagOption {
-  isRequired?: boolean;
-  validator?: CustomValidator;
-  value: Value;
-}
+export type LongFlag = `--${string}`;
+export type ShortFlag = `-${string}`;
 
-// All options for a flag
-export interface FlagOption extends BaseFlagOption {
-  longFlag: string;
-  shortFlag?: string;
-  description?: string;
-}
+/**
+ * The possible default values of a flag option.
+ */
+export type FlagOptionValue = string | number | boolean | Date;
 
-export type FilePathArg = {
-  longFlag: string;
-  shortFlag?: string;
+/**
+ * The user settings for a flag option.
+ */
+export type FlagOptions<V extends FlagOptionValue = FlagOptionValue> = {
+  longFlag: LongFlag;
+  shortFlag?: ShortFlag;
+  defaultValue: Downcast<V>;
+  required?: boolean;
   description?: string;
 };
 
-export interface HelpOptions {
-  title?: string;
-  base?: string;
+/**
+ * A record of flags and their default values.
+ */
+export type FlagValueRecord = Record<string, FlagOptionValue>;
+
+/**
+ * A map of flags and the settings specified by the user.
+ */
+export type FlagOptionsMap = Map<string, FlagOptions>;
+
+export type AnyGlobal = Record<string, unknown>;
+
+export type CommandArgPattern = string[] | string | undefined;
+
+export type CommandOptionsMap<
+  Options extends FlagValueRecord = FlagValueRecord,
+  Globals extends AnyGlobal = AnyGlobal,
+> = Map<string, Subcommand<Options, Globals, CommandArgPattern>>;
+
+type GenericHandler<Options, Globals, Args> = (params: {
+  options: Options;
+  globals: Globals;
+  args: Args;
+}) => void;
+
+export type Subcommand<Options, Globals, Args> = {
+  args: Args;
+  description?: string;
+  handler: Args extends string[]
+    ? GenericHandler<Options, Globals, Downcast<Args>>
+    : GenericHandler<Options, Globals, string[]>;
+};
+
+export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
+  ? (options: O) => AnyGlobal
+  : never;
+
+export type HelpOptions = {
+  command?: string;
+  longFlag: LongFlag;
+  shortFlag?: ShortFlag;
+};
+
+export type VersionOptions = {
+  version: string;
+  command?: string;
+  longFlag: LongFlag;
+  shortFlag?: ShortFlag;
+};
+export interface MetaOptions {
+  appName?: string;
+  summary?: string;
+  help?: HelpOptions;
+  version?: VersionOptions;
 }
 
-export type ParserOptions<T extends PrimitiveRecord = PrimitiveRecord> = {
-  options?: {
-    [K in keyof T]?: {
-      required?: boolean;
-      description?: string;
-      shortFlag?: string;
-      longFlag?: string;
-      customValidator?: CustomValidator;
-    };
-  };
-  decamelize?: boolean;
-  filePathArg?: FilePathArg;
-};
-export type PositionalArgs = string[];
+export type CommandHandler<
+  T,
+  A extends string[] = string[],
+> = T extends CommandBuilder<infer O, infer G>
+  ? GenericHandler<O, G, A>
+  : never;
 
-export type WithPositionalArgs<T> = T & { _: PositionalArgs };
+export type ErrorHandler = (error: ValidationError, helpText: string) => void;
 
-export type PrimitiveRecord = Record<string, Value>;
+export type DefaultHandler<Options, Globals> = GenericHandler<
+  Options,
+  Globals,
+  string[]
+>;
 
-export type Value = string | number | boolean;
+export type Downcast<T> = T extends unknown[]
+  ? {
+      [P in keyof T]: T[P] extends number
+        ? number
+        : T[P] extends string
+          ? string
+          : T[P] extends boolean
+            ? boolean
+            : T[P];
+    }
+  : T extends number
+    ? number
+    : T extends string
+      ? string
+      : T extends boolean
+        ? boolean
+        : T;
