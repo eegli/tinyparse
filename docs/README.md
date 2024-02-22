@@ -4,6 +4,8 @@
 
 > A tiny, type-safe and flexible utility for creating command line tools in Node.js
 
+⚠️ **Tinyparse has recently been rewritten completely. It is possible that the docs contain typos or errors. Please open an issue if you find any** ⚠️
+
 ## What it is
 
 _Like [oclif](https://oclif.io/) and [Yargs](https://yargs.js.org/) had a baby._
