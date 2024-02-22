@@ -306,7 +306,7 @@ describe('handlers', () => {
   });
 });
 
-describe('help', () => {
+describe('help and meta', () => {
   test('calls help printer', () => {
     const parser = new Parser()
       .setMeta({
@@ -351,6 +351,35 @@ describe('help', () => {
     expect(secondHelpMessage).toEqual(thirdHelpMessage);
 
     expect(firstHelpMessage).toMatchSnapshot();
+  });
+  test('displays version', () => {
+    const parser = new Parser()
+      .setMeta({
+        appName: 'my-cli',
+        summary: 'A brief description of my-cli',
+        version: {
+          version: '1.0.0',
+          command: 'version',
+          longFlag: '--version',
+          shortFlag: '-V',
+        },
+      })
+      .defaultHandler();
+
+    parser.parse(['version']).call();
+    parser.parse(['--version']).call();
+    parser.parse(['-V']).call();
+
+    expect(consoleLog).toHaveBeenCalledTimes(3);
+
+    const firstVersionMessage = consoleLog.mock.calls[0][0];
+    const secondVersionMessage = consoleLog.mock.calls[1][0];
+    const thirdVersionMessage = consoleLog.mock.calls[2][0];
+
+    expect(firstVersionMessage).toEqual(secondVersionMessage);
+    expect(secondVersionMessage).toEqual(thirdVersionMessage);
+
+    expect(firstVersionMessage).toMatchSnapshot();
   });
 });
 

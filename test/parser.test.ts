@@ -43,10 +43,7 @@ const globalSetter = () => {
 };
 
 const parser = new Parser({
-  meta: {
-    appName: 'app',
-    helpCommand: 'help',
-  },
+  meta: {},
   options,
   commands,
   globalSetter,

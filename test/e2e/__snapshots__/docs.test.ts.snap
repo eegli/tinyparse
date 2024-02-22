@@ -18,7 +18,7 @@ Optional flags
 ]
 `;
 
-exports[`help calls help printer 1`] = `
+exports[`help and meta calls help printer 1`] = `
 "A brief description of my-cli
 
 Usage: my-cli [command] <...flags>
@@ -39,3 +39,5 @@ Optional flags
    -h, --help
    Print this help message"
 `;
+
+exports[`help and meta displays version 1`] = `"1.0.0"`;
