@@ -68,9 +68,7 @@ expect(() => {
       longFlag: '--foo',
       defaultValue: '',
     });
-}).toThrow(
-  'Long flag "--foo" has been declared twice, initially by option "foo"',
-);
+}).toThrow('Long flag "--foo" has been declared twice');
 ```
 
 See the docs about [error handling](reference/error-handling.md) for more.

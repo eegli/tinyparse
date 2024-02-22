@@ -43,9 +43,7 @@ describe('command builder', () => {
           defaultValue: 'default',
           longFlag: '--foo',
         });
-    }).toThrow(
-      'Long flag "--foo" has been declared twice, initially by option "foo"',
-    );
+    }).toThrow('Long flag "--foo" has been declared twice');
     expect(() => {
       new CommandBuilder()
         .option('foo', {
@@ -58,9 +56,7 @@ describe('command builder', () => {
           longFlag: '--bar',
           shortFlag: '-f',
         });
-    }).toThrow(
-      'Short flag "-f" has been declared twice, initially by option "foo"',
-    );
+    }).toThrow('Short flag "-f" has been declared twice');
   });
   test('throws for taken help command tokens', () => {
     const builder = new CommandBuilder()
@@ -85,15 +81,33 @@ describe('command builder', () => {
       builder.setMeta({
         helpCommand: 'h',
         helpFlags: ['--help'],
-        appName: '',
       });
     }).toThrow('Help identifier "--help" has already been declared as a flag');
     expect(() => {
       builder.setMeta({
         helpCommand: 'h',
         helpFlags: ['-h'],
-        appName: '',
       });
     }).toThrow('Help identifier "-h" has already been declared as a flag');
+    expect(() => {
+      new CommandBuilder()
+        .setMeta({
+          helpFlags: ['--help'],
+        })
+        .option('any', {
+          longFlag: '--help',
+          defaultValue: '',
+        });
+    }).toThrow('Long flag "--help" has been declared twice');
+    expect(() => {
+      new CommandBuilder()
+        .setMeta({
+          helpCommand: 'help',
+        })
+        .subcommand('help', {
+          handler: () => {},
+          args: [],
+        });
+    }).toThrow('Subcommand "help" has already been declared as a help command');
   });
 });

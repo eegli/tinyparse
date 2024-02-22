@@ -127,9 +127,7 @@ describe('options', () => {
           longFlag: '--foo',
           defaultValue: '',
         });
-    }).toThrow(
-      'Long flag "--foo" has been declared twice, initially by option "foo"',
-    );
+    }).toThrow('Long flag "--foo" has been declared twice');
   });
   test('boolean options', () => {
     const parser = new Parser()
@@ -304,6 +302,12 @@ describe('handlers', () => {
 describe('help', () => {
   test('calls help printer', () => {
     const parser = new Parser()
+      .setMeta({
+        appName: 'my-cli',
+        summary: 'A brief description of my-cli',
+        helpCommand: 'help',
+        helpFlags: ['--help', '-h'],
+      })
       .option('foo', {
         longFlag: '--foo',
         shortFlag: '-f',
@@ -321,12 +325,7 @@ describe('help', () => {
         handler: () => {},
         description: 'Baz command',
       })
-      .setMeta({
-        appName: 'my-cli',
-        summary: 'A brief description of my-cli',
-        helpCommand: 'help',
-        helpFlags: ['--help', '-h'],
-      })
+
       .defaultHandler();
 
     parser.parse(['help']).call();

@@ -10,6 +10,12 @@ You can register which a subcommand and flags trigger the help text and other me
 import { Parser } from '@eegli/tinyparse';
 
 const parser = new Parser()
+  .setMeta({
+    appName: 'my-cli',
+    summary: 'A brief description of my-cli',
+    helpCommand: 'help',
+    helpFlags: ['--help', '-h'],
+  })
   .option('foo', {
     longFlag: '--foo',
     shortFlag: '-f',
@@ -27,12 +33,7 @@ const parser = new Parser()
     handler: () => {},
     description: 'Baz command',
   })
-  .setMeta({
-    appName: 'my-cli',
-    summary: 'A brief description of my-cli',
-    helpCommand: 'help',
-    helpFlags: ['--help', '-h'],
-  })
+
   .defaultHandler()
   .parse(['help'])
   .call();
@@ -60,4 +61,4 @@ Optional flags
 For more information, run help or append --help or -h to the command
 ```
 
-When you set your help configuration, Tinyparse will validate the arguments to make sure there are no conflicts with existing flags or subcommands. Note that subsequent calls to `.setMeta()` will overwrite the previous configuration.
+When you set your help and metadata configuration, Tinyparse will validate the arguments to make sure there are no conflicts with existing flags or subcommands. Note that subsequent calls to `.setMeta()` will overwrite the previous configuration.

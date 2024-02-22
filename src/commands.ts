@@ -24,11 +24,17 @@ export class CommandBuilder<
     defaultHandler: () => {},
   };
 
-  #takenFlags = new Map<string, string>();
+  #takenFlags = new Set<string>();
 
   #validateCommand = (command: string): void => {
     if (this.#config.commands.has(command)) {
       throw new Error(`Command "${command}" has been declared twice`);
+    }
+
+    if (command === this.#config.meta.helpCommand) {
+      throw new Error(
+        `Subcommand "${command}" has already been declared as a help command`,
+      );
     }
   };
 
@@ -41,18 +47,13 @@ export class CommandBuilder<
       throw new Error(`Option "${key}" has been declared twice`);
     }
 
-    const longFlagConflict = this.#takenFlags.get(longFlag);
-    if (longFlagConflict) {
-      throw new Error(
-        `Long flag "${longFlag}" has been declared twice, initially by option "${longFlagConflict}"`,
-      );
+    if (this.#takenFlags.has(longFlag)) {
+      throw new Error(`Long flag "${longFlag}" has been declared twice`);
     }
     if (!shortFlag) return;
-    const shortFlagConflict = this.#takenFlags.get(shortFlag);
-    if (shortFlagConflict) {
-      throw new Error(
-        `Short flag "${shortFlag}" has been declared twice, initially by option "${shortFlagConflict}"`,
-      );
+
+    if (this.#takenFlags.has(shortFlag)) {
+      throw new Error(`Short flag "${shortFlag}" has been declared twice`);
     }
   };
 
@@ -78,8 +79,8 @@ export class CommandBuilder<
     const { longFlag, shortFlag } = opts;
     this.#validateOption(key, longFlag, shortFlag);
     this.#config.options.set(key, opts);
-    this.#takenFlags.set(longFlag, key);
-    if (shortFlag) this.#takenFlags.set(shortFlag, key);
+    this.#takenFlags.add(longFlag);
+    if (shortFlag) this.#takenFlags.add(shortFlag);
 
     // TODO: Figure out how to make this typecheck properly
     return this as unknown as CommandBuilder<
@@ -104,6 +105,9 @@ export class CommandBuilder<
 
   setMeta(meta: MetaOptions) {
     this.#validateHelpIdentifiers(meta.helpCommand, meta.helpFlags);
+    for (const flag of meta.helpFlags || []) {
+      this.#takenFlags.add(flag);
+    }
     this.#config.meta = meta;
     return this;
   }
