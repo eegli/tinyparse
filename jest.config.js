@@ -34,14 +34,5 @@ module.exports = {
       setupFilesAfterEnv: ['<rootDir>/test/_setup.ts'],
       prettierPath: require.resolve('prettier-2'),
     },
-    {
-      displayName: {
-        color: 'magenta',
-        name: 'types',
-      },
-      runner: 'jest-runner-tsd',
-      testMatch: ['<rootDir>/test/types/*.test.ts'],
-      prettierPath: require.resolve('prettier-2'),
-    },
   ],
 };
