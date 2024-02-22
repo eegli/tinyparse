@@ -20,7 +20,7 @@ describe('subcommand option and global arguments', () => {
       defaultValue: new Date(),
       longFlag: '--qux',
     })
-    .globals(() => ({
+    .setGlobals(() => ({
       database: 'db',
     })).subcommand;
 
