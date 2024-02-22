@@ -28,6 +28,10 @@ describe('advanced example', () => {
     assert.deepEqual(mock.mock.calls[0].arguments[0], expected);
   };
 
+  const expectCalledWithMatch = (mock, expected) => {
+    assert.match(mock.mock.calls[0].arguments[0], expected);
+  };
+
   test('command copy', () => {
     cli.run(['cp', 'a', 'b', '-v']);
     expectCalledTimes(logSpy, 1);
@@ -62,5 +66,22 @@ describe('advanced example', () => {
     cli.run(['unknown']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(logSpy, 'No command specified');
+  });
+
+  test('version', () => {
+    for (const v of ['version', '-V', '--version']) {
+      cli.run([v]);
+      expectCalledTimes(logSpy, 1);
+      expectCalledWith(logSpy, '1.0.0');
+      logSpy.mock.resetCalls();
+    }
+  });
+  test('help', () => {
+    for (const v of ['help', '-h', '--help']) {
+      cli.run([v]);
+      expectCalledTimes(logSpy, 1);
+      expectCalledWithMatch(logSpy, /Work with files and folders/);
+      logSpy.mock.resetCalls();
+    }
   });
 });
