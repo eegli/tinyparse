@@ -317,6 +317,11 @@ describe('help and meta', () => {
           longFlag: '--help',
           shortFlag: '-h',
         },
+        version: {
+          version: '1.0.0',
+          longFlag: '--version',
+          shortFlag: '-V',
+        },
       })
       .option('foo', {
         longFlag: '--foo',
@@ -328,7 +333,7 @@ describe('help and meta', () => {
       .option('bar', {
         longFlag: '--bar',
         defaultValue: new Date(),
-        description: 'Foo option',
+        description: 'Bar option',
       })
       .subcommand('baz', {
         args: ['arg'] as const,
@@ -350,7 +355,29 @@ describe('help and meta', () => {
     expect(firstHelpMessage).toEqual(secondHelpMessage);
     expect(secondHelpMessage).toEqual(thirdHelpMessage);
 
-    expect(firstHelpMessage).toMatchSnapshot();
+    expect(firstHelpMessage).toMatchInlineSnapshot(`
+      "A brief description of my-cli
+
+      Usage: my-cli [command] <...flags>
+
+      Commands
+         baz <arg>
+         - Baz command
+         help
+         - Print this help message
+
+      Required flags
+         -f, --foo [string]
+         Foo option
+
+      Optional flags
+         --bar [date]
+         Bar option
+         -h, --help
+         Print this help message
+         -V, --version
+         Print the version"
+    `);
   });
   test('displays version', () => {
     const parser = new Parser()
@@ -379,7 +406,7 @@ describe('help and meta', () => {
     expect(firstVersionMessage).toEqual(secondVersionMessage);
     expect(secondVersionMessage).toEqual(thirdVersionMessage);
 
-    expect(firstVersionMessage).toMatchSnapshot();
+    expect(firstVersionMessage).toBe('1.0.0');
   });
 });
 
@@ -407,6 +434,22 @@ describe('error handling', () => {
       .call();
 
     expect(consoleLog).toHaveBeenCalledTimes(1);
-    expect(consoleLog.mock.calls[0]).toMatchSnapshot();
+    expect(consoleLog.mock.calls[0]).toMatchInlineSnapshot(`
+      [
+        "Missing required option --foo",
+        "Usage: my-app [command] <...flags>
+
+      Commands
+         help
+         - Print this help message
+
+      Required flags
+         --foo [boolean]
+
+      Optional flags
+         --help
+         Print this help message",
+      ]
+    `);
   });
 });

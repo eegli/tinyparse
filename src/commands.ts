@@ -31,9 +31,12 @@ export class CommandBuilder<
       throw new Error(`Command "${command}" has been declared twice`);
     }
 
-    if (command === this.#config.meta.help?.command) {
+    if (
+      command === this.#config.meta.help?.command ||
+      command === this.#config.meta.version?.command
+    ) {
       throw new Error(
-        `Subcommand "${command}" has already been declared as a help command`,
+        `Subcommand "${command}" has already been declared as a help or version command`,
       );
     }
   };
@@ -58,20 +61,15 @@ export class CommandBuilder<
   };
 
   #validateIdentifiers = (
-    identifier: string,
     command?: string,
     flags?: (string | undefined)[],
   ): void => {
     if (command && this.#config.commands.has(command)) {
-      throw new Error(
-        `${identifier} identifier "${command}" has already been declared as a subcommand`,
-      );
+      throw new Error(`"${command}" has already been declared as a subcommand`);
     }
     for (const flag of flags || []) {
       if (flag && this.#takenFlags.has(flag)) {
-        throw new Error(
-          `${identifier} identifier "${flag}" has already been declared as a flag`,
-        );
+        throw new Error(`"${flag}" has already been declared as a flag`);
       }
     }
   };
@@ -108,11 +106,11 @@ export class CommandBuilder<
   }
 
   setMeta(meta: MetaOptions) {
-    this.#validateIdentifiers('Help', meta.help?.command, [
+    this.#validateIdentifiers(meta.help?.command, [
       meta.help?.longFlag,
       meta.help?.shortFlag,
     ]);
-    this.#validateIdentifiers('Version', meta.version?.command, [
+    this.#validateIdentifiers(meta.version?.command, [
       meta.version?.longFlag,
       meta.version?.shortFlag,
     ]);

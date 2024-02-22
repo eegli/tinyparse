@@ -60,13 +60,22 @@ describe('command builder', () => {
   });
   test('throws for taken tokens (meta last)', () => {
     const builder = new CommandBuilder()
-      .option('any', {
+      .option('opthelp', {
         defaultValue: '',
         longFlag: '--help',
         shortFlag: '-h',
       })
+      .option('optversion', {
+        defaultValue: '',
+        longFlag: '--version',
+        shortFlag: '-v',
+      })
       .subcommand('help', {
-        args: [],
+        args: undefined,
+        handler: () => {},
+      })
+      .subcommand('version', {
+        args: undefined,
         handler: () => {},
       });
     expect(() => {
@@ -75,27 +84,34 @@ describe('command builder', () => {
           command: 'help',
           longFlag: '--help',
         },
-        appName: '',
       });
-    }).toThrow(
-      'Help identifier "help" has already been declared as a subcommand',
-    );
+    }).toThrow('"help" has already been declared as a subcommand');
     expect(() => {
       builder.setMeta({
         help: {
           longFlag: '--help',
         },
       });
-    }).toThrow('Help identifier "--help" has already been declared as a flag');
+    }).toThrow('"--help" has already been declared as a flag');
     expect(() => {
       builder.setMeta({
         help: {
-          longFlag: '--other',
+          longFlag: '--ignore',
           shortFlag: '-h',
         },
       });
-    }).toThrow('Help identifier "-h" has already been declared as a flag');
+    }).toThrow('"-h" has already been declared as a flag');
+    expect(() => {
+      builder.setMeta({
+        version: {
+          version: '1.0.0',
+          command: 'version',
+          longFlag: '--version',
+        },
+      });
+    }).toThrow('"version" has already been declared as a subcommand');
   });
+
   test('throws for taken tokens (meta first)', () => {
     expect(() => {
       new CommandBuilder()
@@ -121,6 +137,24 @@ describe('command builder', () => {
           handler: () => {},
           args: [],
         });
-    }).toThrow('Subcommand "help" has already been declared as a help command');
+    }).toThrow(
+      'Subcommand "help" has already been declared as a help or version command',
+    );
+    expect(() => {
+      new CommandBuilder()
+        .setMeta({
+          version: {
+            version: '1.0.0',
+            command: 'version',
+            longFlag: '--version',
+          },
+        })
+        .subcommand('version', {
+          handler: () => {},
+          args: [],
+        });
+    }).toThrow(
+      'Subcommand "version" has already been declared as a help or version command',
+    );
   });
 });
