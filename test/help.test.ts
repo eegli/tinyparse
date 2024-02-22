@@ -1,5 +1,10 @@
 import { HelpPrinter as Help } from '../src/help';
-import { CommandOptionsMap, FlagOptions } from '../src/types';
+import {
+  CommandOptionsMap,
+  FlagOptions,
+  HelpOptions,
+  VersionOptions,
+} from '../src/types';
 
 describe('Helper text', () => {
   const requiredflags: FlagOptions[] = [
@@ -53,10 +58,28 @@ describe('Helper text', () => {
         handler: () => {},
       },
     ],
+    [
+      'ls',
+      {
+        args: undefined,
+        description: 'List a directory',
+        handler: () => {},
+      },
+    ],
   ]);
 
-  const helpCommand = 'help';
-  const helpFlags = ['--help1', '--help2', '-h'];
+  const help: HelpOptions = {
+    command: 'help',
+    longFlag: '--help',
+    shortFlag: '-h',
+  };
+
+  const version: VersionOptions = {
+    command: 'version',
+    version: '1.0.0',
+    longFlag: '--version',
+    shortFlag: '-v',
+  };
   const appName = 'my-app';
   const summary = 'This is just a text that can be shown to describe the app';
 
@@ -84,7 +107,9 @@ describe('Helper text', () => {
          - Serve a directory
          info 
          rm <...files>
-         - Remove files"
+         - Remove files
+         ls
+         - List a directory"
     `);
   });
   test('required flags formatting', () => {
@@ -97,17 +122,33 @@ describe('Helper text', () => {
     `);
   });
   test('optional flags formatting', () => {
-    const p = new Help({}, optionalFlags, new Map());
-    expect(p.formatFlags()).toMatchInlineSnapshot(`
+    expect(
+      new Help(
+        {
+          help: {
+            longFlag: '--help',
+          },
+        },
+        optionalFlags,
+        new Map(),
+      ).formatFlags(),
+    ).toMatchInlineSnapshot(`
       "Optional flags
          -c, --flag-c [boolean]
          -d, --flag-d [number]
-         The fourth flag"
+         The fourth flag
+         --help
+         Print this help message"
     `);
   });
   test('required and optional flags formatting', () => {
-    const p = new Help({}, [...requiredflags, ...optionalFlags], new Map());
-    expect(p.formatFlags()).toMatchInlineSnapshot(`
+    expect(
+      new Help(
+        {},
+        [...requiredflags, ...optionalFlags],
+        new Map(),
+      ).formatFlags(),
+    ).toMatchInlineSnapshot(`
       "Required flags
          --flag-a [string]
          The first flag
@@ -119,36 +160,23 @@ describe('Helper text', () => {
          The fourth flag"
     `);
   });
-  test('help and version formatting', () => {
-    expect(
-      new Help({ helpCommand }, [], new Map()).formatHelpAndVersion(),
-    ).toMatchInlineSnapshot(`"For more information, run help"`);
-    expect(
-      new Help({ helpFlags }, [], new Map()).formatHelpAndVersion(),
-    ).toMatchInlineSnapshot(
-      `"For more information, append --help1, --help2 or -h to the command"`,
-    );
-    expect(
-      new Help(
-        { helpCommand, helpFlags },
-        [],
-        new Map(),
-      ).formatHelpAndVersion(),
-    ).toMatchInlineSnapshot(
-      `"For more information, run help or append --help1, --help2 or -h to the command"`,
-    );
-  });
+
   test('no configuration', () => {
-    const printer = new Help();
-    expect(printer.print()).toMatchInlineSnapshot(`"Usage:"`);
+    expect(new Help().print()).toMatchInlineSnapshot(`"Usage:"`);
   });
   test('full configuration', () => {
-    const printer = new Help(
-      { appName, summary, helpCommand, helpFlags },
-      [...requiredflags, ...optionalFlags],
-      commands,
-    );
-    expect(printer.print()).toMatchInlineSnapshot(`
+    expect(
+      new Help(
+        {
+          appName,
+          summary,
+          help,
+          version,
+        },
+        [...requiredflags, ...optionalFlags],
+        commands,
+      ).print(),
+    ).toMatchInlineSnapshot(`
       "This is just a text that can be shown to describe the app
 
       Usage: my-app [command] <...flags>
@@ -159,6 +187,12 @@ describe('Helper text', () => {
          info 
          rm <...files>
          - Remove files
+         ls
+         - List a directory
+         help
+         - Print this help message
+         version
+         - Print the version
 
       Required flags
          --flag-a [string]
@@ -169,8 +203,10 @@ describe('Helper text', () => {
          -c, --flag-c [boolean]
          -d, --flag-d [number]
          The fourth flag
-
-      For more information, run help or append --help1, --help2 or -h to the command"
+         -h, --help
+         Print this help message
+         -v, --version
+         Print the version"
     `);
   });
 });

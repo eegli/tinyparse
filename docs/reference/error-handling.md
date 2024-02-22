@@ -32,7 +32,10 @@ new Parser()
   })
   .setMeta({
     appName: 'my-app',
-    helpCommand: 'help',
+    help: {
+      command: 'help',
+      longFlag: '--help',
+    },
   })
   .defaultHandler()
   .parse(['fuzz', '--bar'], errorHandler)

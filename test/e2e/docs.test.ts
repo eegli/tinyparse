@@ -62,8 +62,15 @@ describe('quickstart', () => {
       .setMeta({
         appName: 'my-cli',
         summary: 'A brief description of my-cli',
-        helpCommand: 'help',
-        helpFlags: ['--help', '-h'],
+        help: {
+          command: 'help',
+          longFlag: '--help',
+        },
+        version: {
+          version: '1.0.0',
+          command: 'version',
+          longFlag: '--version',
+        },
       })
       .defaultHandler(({ globals }) => {
         globals.log('No command specified');
@@ -191,7 +198,7 @@ describe('globals', () => {
 describe('subcommands', () => {
   test('default', () => {
     const parser = new Parser()
-      .subcommand('cmd-one', {
+      .subcommand('cmd-one-strict', {
         args: ['arg1'] as const, // expects exactly one argument (strict)
         handler: ({ args }) => {
           // Tuple-length is inferred
@@ -220,8 +227,8 @@ describe('subcommands', () => {
       .defaultHandler();
 
     expect(() => {
-      parser.parse(['cmd-one']).call();
-    }).toThrow('cmd-one expects 1 argument, got 0');
+      parser.parse(['cmd-one-strict']).call();
+    }).toThrow('cmd-one-strict expects 1 argument, got 0');
     expect(() => {
       parser.parse(['cmd-none-strict', 'hello']).call();
     }).toThrow('cmd-none-strict expects 0 arguments, got 1');
@@ -305,8 +312,11 @@ describe('help', () => {
       .setMeta({
         appName: 'my-cli',
         summary: 'A brief description of my-cli',
-        helpCommand: 'help',
-        helpFlags: ['--help', '-h'],
+        help: {
+          command: 'help',
+          longFlag: '--help',
+          shortFlag: '-h',
+        },
       })
       .option('foo', {
         longFlag: '--foo',
@@ -325,7 +335,6 @@ describe('help', () => {
         handler: () => {},
         description: 'Baz command',
       })
-
       .defaultHandler();
 
     parser.parse(['help']).call();
@@ -359,7 +368,10 @@ describe('error handling', () => {
       })
       .setMeta({
         appName: 'my-app',
-        helpCommand: 'help',
+        help: {
+          command: 'help',
+          longFlag: '--help',
+        },
       })
       .defaultHandler()
       .parse(['fuzz', '--bar'], errorHandler)

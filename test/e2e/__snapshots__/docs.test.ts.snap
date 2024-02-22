@@ -5,10 +5,16 @@ exports[`error handling catches error 1`] = `
   "Missing required option --foo",
   "Usage: my-app [command] <...flags>
 
+Commands
+   help
+   - Print this help message
+
 Required flags
    --foo [boolean]
 
-For more information, run help",
+Optional flags
+   --help
+   Print this help message",
 ]
 `;
 
@@ -20,6 +26,8 @@ Usage: my-cli [command] <...flags>
 Commands
    baz <arg>
    - Baz command
+   help
+   - Print this help message
 
 Required flags
    -f, --foo [string]
@@ -28,6 +36,6 @@ Required flags
 Optional flags
    --bar [date]
    Foo option
-
-For more information, run help or append --help or -h to the command"
+   -h, --help
+   Print this help message"
 `;

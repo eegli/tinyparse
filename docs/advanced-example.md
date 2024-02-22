@@ -77,8 +77,17 @@ const parser = options
   .setMeta({
     appName: 'my-cli',
     summary: 'Work with files and folders',
-    helpCommand: 'help',
-    helpFlags: ['--help', '-h'],
+    help: {
+      command: 'help',
+      longFlag: '--help',
+      shortFlag: '-h',
+    },
+    version: {
+      command: 'version',
+      version: '1.0.0',
+      longFlag: '--version',
+      shortFlag: '-V',
+    },
   })
   .setGlobals(setGlobals)
   .subcommand('cp', {

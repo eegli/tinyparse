@@ -8,7 +8,7 @@ Here, we define four subcommands and the positional arguments they expect. Every
 import { Parser } from '@eegli/tinyparse';
 
 const parser = new Parser()
-  .subcommand('cmd-one', {
+  .subcommand('cmd-one-strict', {
     args: ['arg1'] as const, // expects exactly one argument (strict)
     handler: ({ args }) => {
       // Tuple-length is inferred
@@ -52,8 +52,8 @@ If the number of provided arguments does not match the pattern (i.e., any of `[]
 
 ```ts
 expect(() => {
-  parser.parse(['cmd-one']).call();
-}).toThrow('cmd-one expects 1 argument, got 0');
+  parser.parse(['cmd-one-strict']).call();
+}).toThrow('cmd-one-strict expects 1 argument, got 0');
 expect(() => {
   parser.parse(['cmd-none-strict', 'hello']).call();
 }).toThrow('cmd-none-strict expects 0 arguments, got 1');

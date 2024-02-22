@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
-    "lib": ["ES2019"],
+    "lib": ["ES2021"],
     "sourceMap": true,
     "module": "commonjs",
     "noEmit": true,

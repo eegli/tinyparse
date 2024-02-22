@@ -6,6 +6,9 @@ export type CustomValidator = {
   errorMessage: (value: unknown, flag: string) => string;
 };
 
+export type LongFlag = `--${string}`;
+export type ShortFlag = `-${string}`;
+
 /**
  * The possible default values of a flag option.
  */
@@ -15,8 +18,8 @@ export type FlagOptionValue = string | number | boolean | Date;
  * The user settings for a flag option.
  */
 export type FlagOptions<V extends FlagOptionValue = FlagOptionValue> = {
-  longFlag: `--${string}`;
-  shortFlag?: `-${string}`;
+  longFlag: LongFlag;
+  shortFlag?: ShortFlag;
   defaultValue: Downcast<V>;
   required?: boolean;
   description?: string;
@@ -59,11 +62,23 @@ export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
   ? (options: O) => AnyGlobal
   : never;
 
+export type HelpOptions = {
+  command?: string;
+  longFlag: LongFlag;
+  shortFlag?: ShortFlag;
+};
+
+export type VersionOptions = {
+  version: string;
+  command?: string;
+  longFlag: LongFlag;
+  shortFlag?: ShortFlag;
+};
 export interface MetaOptions {
   appName?: string;
   summary?: string;
-  helpCommand?: string;
-  helpFlags?: string[];
+  help?: HelpOptions;
+  version?: VersionOptions;
 }
 
 export type CommandHandler<

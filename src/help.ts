@@ -21,10 +21,44 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
     this.#meta = meta;
     this.#commands = commands;
     this.#flagOptions = this.#sortFlags(flagOptions);
+
+    if (meta.help?.command) {
+      this.#commands.set(meta.help.command, {
+        args: undefined,
+        handler: () => {},
+        description: 'Print this help message',
+      });
+    }
+
+    if (meta.version?.command) {
+      this.#commands.set(meta.version.command, {
+        args: undefined,
+        handler: () => {},
+        description: 'Print the version',
+      });
+    }
+
+    if (meta.help?.longFlag) {
+      this.#flagOptions.push({
+        longFlag: meta.help.longFlag,
+        shortFlag: meta.help?.shortFlag,
+        defaultValue: false,
+        description: 'Print this help message',
+      });
+    }
+
+    if (meta.version?.longFlag) {
+      this.#flagOptions.push({
+        longFlag: meta.version.longFlag,
+        shortFlag: meta.version?.shortFlag,
+        defaultValue: false,
+        description: 'Print the version',
+      });
+    }
   }
 
   #sortFlags(flags: FlagOptions[]) {
-    const sortedFlags = flags.sort((a, b) => {
+    const sortedFlags = [...flags].sort((a, b) => {
       const { required: aRequired, longFlag: aLongFlag } = a;
       const { required: bRequired, longFlag: bLongFlag } = b;
       // Sort according to required flags, then alphabetically
@@ -51,7 +85,6 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
   }
 
   formatCommands() {
-    // Add commands
     const commands = [...this.#commands.entries()];
     if (commands.length === 0) return '';
     return commands.reduce((str, [cmd, { args, description }], i) => {
@@ -60,7 +93,7 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
 
       if (Array.isArray(args)) {
         str += ` ${args.map((a) => `<${a}>`).join(' ')}`;
-      } else {
+      } else if (args) {
         str += ` <${args}>`;
       }
       if (description) {
@@ -70,13 +103,12 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
       return str;
     }, 'Commands\n');
   }
+
   formatFlags() {
     let str = '';
     const hasAnyRequiredFlag = this.#flagOptions.at(0)?.required;
     if (hasAnyRequiredFlag) str += 'Required flags\n';
-
     let insertOptionalFlagHeader = true;
-
     return this.#flagOptions.reduce((str, options, i) => {
       const { description, required, shortFlag, longFlag, defaultValue } =
         options;
@@ -89,7 +121,13 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
       str += this.#indent;
       if (shortFlag) str += `${shortFlag}, `;
       str += `${longFlag}`;
-      str += ` [${Utils.typeof(defaultValue)}]`;
+      // Help and version flags have no value
+      if (
+        longFlag !== this.#meta?.help?.longFlag &&
+        longFlag !== this.#meta?.version?.longFlag
+      ) {
+        str += ` [${Utils.typeof(defaultValue)}]`;
+      }
       if (description) {
         str += `\n${this.#indent}${description}`;
       }
@@ -98,27 +136,8 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
     }, str);
   }
 
-  formatHelpAndVersion() {
-    const helpCommand = this.#meta?.helpCommand;
-    const helpFlags = this.#meta?.helpFlags;
-    if (!helpCommand && !helpFlags) return '';
-
-    let str = 'For more information, ';
-    if (helpCommand) str += `run ${helpCommand}`;
-    if (helpFlags) {
-      if (helpCommand) str += ' or ';
-      str += `append ${Utils.joinStr(helpFlags, 'or')} to the command`;
-    }
-    return str;
-  }
-
   print() {
-    return [
-      this.formatHeader(),
-      this.formatCommands(),
-      this.formatFlags(),
-      this.formatHelpAndVersion(),
-    ]
+    return [this.formatHeader(), this.formatCommands(), this.formatFlags()]
       .filter(Boolean)
       .join('\n\n');
   }

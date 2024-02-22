@@ -1,4 +1,4 @@
-# Help
+# Help and Metadata
 
 > This document describes how **help and meta options** can be configured.
 
@@ -13,8 +13,11 @@ const parser = new Parser()
   .setMeta({
     appName: 'my-cli',
     summary: 'A brief description of my-cli',
-    helpCommand: 'help',
-    helpFlags: ['--help', '-h'],
+    help: {
+      command: 'help',
+      longFlag: '--help',
+      shortFlag: '-h',
+    },
   })
   .option('foo', {
     longFlag: '--foo',
@@ -33,7 +36,6 @@ const parser = new Parser()
     handler: () => {},
     description: 'Baz command',
   })
-
   .defaultHandler()
   .parse(['help'])
   .call();

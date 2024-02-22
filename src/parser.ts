@@ -51,20 +51,34 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     const [subcommand, ...subcommandArgs] = positionals;
 
     const helpText = this.#helpPrinter.print();
-    const helpCommand = this.#config.meta.helpCommand;
-    const helpFlags = this.#config.meta.helpFlags || [];
+
+    const helpCommand = this.#config.meta.help?.command;
+    const versionCommand = this.#config.meta.version?.command;
+    const longHelpFlag = this.#config.meta.help?.longFlag;
+    const shortHelpFlag = this.#config.meta.help?.shortFlag;
+    const longVersionFlag = this.#config.meta.version?.longFlag;
+    const shortVersionFlag = this.#config.meta.version?.shortFlag;
 
     const call = () => {
-      if (helpCommand && subcommand === helpCommand) {
+      if (
+        (helpCommand && subcommand === helpCommand) ||
+        (longHelpFlag && flagMap.has(longHelpFlag)) ||
+        (shortHelpFlag && flagMap.has(shortHelpFlag))
+      ) {
         console.log(helpText);
         return;
       }
-      for (const flag of helpFlags) {
-        if (flagMap.has(flag)) {
-          console.log(helpText);
-          return;
-        }
+
+      if (
+        (versionCommand && subcommand === versionCommand) ||
+        (longVersionFlag && flagMap.has(longVersionFlag)) ||
+        (shortVersionFlag && flagMap.has(shortVersionFlag))
+      ) {
+        // If this condition is true, the version is guaranteed to be defined
+        console.log(this.#config.meta.version?.version);
+        return;
       }
+
       try {
         const options = collectFlags(flagMap, this.#config.options) as O;
 
