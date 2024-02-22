@@ -1,5 +1,11 @@
 # @eegli/tinyparse
 
+## 0.16.0
+
+### Minor Changes
+
+- bc648c4: The API has fully changed - it is now easier and cleaner than ever to configure a parser and support for subcommands has been added!
+
 ## 0.15.1
 
 ### Patch Changes
