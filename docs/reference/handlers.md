@@ -4,12 +4,16 @@
 
 Because of the way the builder pattern works with TypeScript, you should always declare any options and globals _before_ you set any subcommand handlers. Handlers "see" what has previously been chained to the parser but now what will come. Hence, TypeScript will complain, although the parsing result will be correct.
 
-The order of operations when parsing is as follows:
+## How Parsing Works
 
-1. **Options/flags are collected** and validated
-2. **Globals are set** using the global setter function and the options as arguments
-3. **A bound handler is created** with the globals, the options, and the positional arguments
-4. An object with a `.call()` method is returned
+The **order of operations when parsing** is as follows:
+
+1. The _first_ positional argument is matched against a token that identifies a **subparser**. If a subparser is found, the remaining positional arguments are passed to the subparser. This could go on recursively if the subparser has its own subparsers. If no subparser is found, the token is matched against a possible **metacommand** (like `help` or `version`). If no metacommand is registered, we check for a **subcommand**. If no subcommand is found, the default handler is chosen to be invoked later.
+
+2. **Options/flags are collected** and validated
+3. **Globals are set** using the global setter function and the options as arguments
+4. **A bound handler is created** with the globals, the options, and the positional arguments
+5. An object with a `.call()` method is returned, which, when called, will invoke the default or subcommand handler
 
 Setting a default handler is optional. If a parser is created without a default handler, it simply does nothing when no subcommand matches. Hence, the minimal (noop) parser looks like this:
 
@@ -52,4 +56,4 @@ expect(consoleLog).toHaveBeenCalledWith({
 });
 ```
 
-Default handlers can be a good place to handle things that Tinyparse is not opinionated about. For example, you can print an error to the console and tell the user that they should select one of the available subcommands. You can also throw a `ValidationError` here and capture it in the error handler. See the advanced example for more information.
+Default handlers can be a good place to handle things that Tinyparse is not opinionated about. For example, you can print an error to the console and tell the user that they should select one of the available subcommands. If you need to display the full help text, you can throw a `ValidationError` here and capture it in the error handler, which has access to the help text. See the advanced example for more information.

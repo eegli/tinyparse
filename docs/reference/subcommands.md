@@ -71,8 +71,8 @@ const subcommandHandler: CommandHandler<typeof options, [string]> = (
   params,
 ) => {
   const { args, options, globals } = params;
-  const [userName] = args;
-  let greeting = `Greetings from ${globals.fromUser} to ${userName}!`;
+  const [toUser] = args;
+  let greeting = `Greetings from ${globals.fromUser} to ${toUser}!`;
 
   if (options.uppercase) {
     greeting = greeting.toUpperCase();
@@ -92,7 +92,7 @@ const options = new Parser()
 
 const parser = options
   .subcommand('send-greeting', {
-    args: ['from'] as const,
+    args: ['to'] as const,
     handler: subcommandHandler,
   })
   .defaultHandler();

@@ -6,7 +6,6 @@ import { HelpPrinter } from './help';
 import {
   AnyGlobal,
   CommandArgPattern,
-  ErrorHandler,
   FlagValueRecord,
   Subcommand,
 } from './types';
@@ -14,6 +13,7 @@ import {
 export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
   #config: CommonConfig<O, G>;
   #helpPrinter: HelpPrinter<O, G>;
+
   constructor(config: CommonConfig<O, G>) {
     this.#config = config;
     this.#helpPrinter = new HelpPrinter(
@@ -41,40 +41,38 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     }
   }
 
-  parse(
-    argv: string[],
-    handleError?: ErrorHandler,
-  ): {
+  parse(argv: string[]): {
     call: () => void;
   } {
     const [flagMap, positionals] = transformArgv(argv);
     const [subcommand, ...subcommandArgs] = positionals;
 
-    const helpText = this.#helpPrinter.print();
+    const subparser = this.#config.parsers.get(subcommand);
 
-    const helpCommand = this.#config.meta.help?.command;
-    const versionCommand = this.#config.meta.version?.command;
-    const longHelpFlag = this.#config.meta.help?.longFlag;
-    const shortHelpFlag = this.#config.meta.help?.shortFlag;
-    const longVersionFlag = this.#config.meta.version?.longFlag;
-    const shortVersionFlag = this.#config.meta.version?.shortFlag;
+    if (subparser) {
+      return subparser.parse(argv.slice(1));
+    }
 
     const call = () => {
+      const helpCommand = this.#config.meta.help?.command;
+      const longHelpFlag = this.#config.meta.help?.longFlag;
+      const shortHelpFlag = this.#config.meta.help?.shortFlag;
       if (
         (helpCommand && subcommand === helpCommand) ||
         (longHelpFlag && flagMap.has(longHelpFlag)) ||
         (shortHelpFlag && flagMap.has(shortHelpFlag))
       ) {
-        console.log(helpText);
+        console.log(this.#helpPrinter.print());
         return;
       }
-
+      const versionCommand = this.#config.meta.version?.command;
+      const longVersionFlag = this.#config.meta.version?.longFlag;
+      const shortVersionFlag = this.#config.meta.version?.shortFlag;
       if (
         (versionCommand && subcommand === versionCommand) ||
         (longVersionFlag && flagMap.has(longVersionFlag)) ||
         (shortVersionFlag && flagMap.has(shortVersionFlag))
       ) {
-        // If this condition is true, the version is guaranteed to be defined
         console.log(this.#config.meta.version?.version);
         return;
       }
@@ -106,8 +104,9 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
           });
         }
       } catch (error) {
-        if (error instanceof ValidationError && handleError) {
-          return handleError(error, helpText);
+        if (error instanceof ValidationError && this.#config.errorHandler) {
+          const helpText = this.#helpPrinter.print();
+          return this.#config.errorHandler(error, helpText);
         }
         throw error;
       }

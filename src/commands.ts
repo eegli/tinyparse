@@ -5,6 +5,7 @@ import {
   CommandArgPattern,
   DefaultHandler,
   Downcast,
+  ErrorHandler,
   FlagOptionValue,
   FlagOptions,
   FlagValueRecord,
@@ -20,57 +21,43 @@ export class CommandBuilder<
     meta: {},
     options: new Map(),
     commands: new Map(),
+    parsers: new Map(),
     globalSetter: () => ({}) as Globals,
     defaultHandler: () => {},
   };
 
   #takenFlags = new Set<string>();
+  #takenCommands = new Set<string>();
 
   #validateCommand = (command: string): void => {
-    if (this.#config.commands.has(command)) {
+    if (this.#takenCommands.has(command)) {
       throw new Error(`Command "${command}" has been declared twice`);
-    }
-
-    if (
-      command === this.#config.meta.help?.command ||
-      command === this.#config.meta.version?.command
-    ) {
-      throw new Error(
-        `Subcommand "${command}" has already been declared as a help or version command`,
-      );
     }
   };
 
-  #validateOption = (
-    key: string,
-    longFlag: string,
-    shortFlag?: string,
-  ): void => {
+  #validateFlag = (flag: string): void => {
+    if (this.#takenFlags.has(flag)) {
+      throw new Error(`Flag "${flag}" has been declared twice`);
+    }
+  };
+
+  #validateOption = (key: string): void => {
     if (this.#config.options.has(key)) {
       throw new Error(`Option "${key}" has been declared twice`);
     }
+  };
 
-    if (this.#takenFlags.has(longFlag)) {
-      throw new Error(`Long flag "${longFlag}" has been declared twice`);
-    }
-    if (!shortFlag) return;
-
-    if (this.#takenFlags.has(shortFlag)) {
-      throw new Error(`Short flag "${shortFlag}" has been declared twice`);
+  #tryRegisterCommandToken = (command?: string) => {
+    if (command) {
+      this.#validateCommand(command);
+      this.#takenCommands.add(command);
     }
   };
 
-  #validateIdentifiers = (
-    command?: string,
-    flags?: (string | undefined)[],
-  ): void => {
-    if (command && this.#config.commands.has(command)) {
-      throw new Error(`"${command}" has already been declared as a subcommand`);
-    }
-    for (const flag of flags || []) {
-      if (flag && this.#takenFlags.has(flag)) {
-        throw new Error(`"${flag}" has already been declared as a flag`);
-      }
+  #tryRegisterFlagToken = (flag?: string) => {
+    if (flag) {
+      this.#validateFlag(flag);
+      this.#takenFlags.add(flag);
     }
   };
 
@@ -79,10 +66,11 @@ export class CommandBuilder<
     opts: FlagOptions<V>,
   ) {
     const { longFlag, shortFlag } = opts;
-    this.#validateOption(key, longFlag, shortFlag);
+    this.#validateOption(key);
     this.#config.options.set(key, opts);
-    this.#takenFlags.add(longFlag);
-    if (shortFlag) this.#takenFlags.add(shortFlag);
+
+    this.#tryRegisterFlagToken(longFlag);
+    this.#tryRegisterFlagToken(shortFlag);
 
     // TODO: Figure out how to make this typecheck properly
     return this as unknown as CommandBuilder<
@@ -95,8 +83,20 @@ export class CommandBuilder<
     command: string,
     opts: Subcommand<Options, Globals, A>,
   ) {
-    this.#validateCommand(command);
+    this.#tryRegisterCommandToken(command);
     this.#config.commands.set(command, opts);
+    return this;
+  }
+
+  subparser<O extends FlagValueRecord, G extends AnyGlobal>(
+    command: string,
+    parser: Parser<O, G>,
+  ) {
+    this.#tryRegisterCommandToken(command);
+    this.#config.parsers.set(
+      command,
+      parser as Parser<FlagValueRecord, AnyGlobal>,
+    );
     return this;
   }
 
@@ -106,24 +106,20 @@ export class CommandBuilder<
   }
 
   setMeta(meta: MetaOptions) {
-    this.#validateIdentifiers(meta.help?.command, [
-      meta.help?.longFlag,
-      meta.help?.shortFlag,
-    ]);
-    this.#validateIdentifiers(meta.version?.command, [
-      meta.version?.longFlag,
-      meta.version?.shortFlag,
-    ]);
-    for (const flag of [
-      meta.help?.longFlag,
-      meta.help?.shortFlag,
-      meta.version?.longFlag,
-      meta.version?.shortFlag,
-    ].filter(Boolean) as string[]) {
-      this.#takenFlags.add(flag);
-    }
+    this.#tryRegisterCommandToken(meta.help?.command);
+    this.#tryRegisterCommandToken(meta.version?.command);
+
+    this.#tryRegisterFlagToken(meta.help?.longFlag);
+    this.#tryRegisterFlagToken(meta.help?.shortFlag);
+    this.#tryRegisterFlagToken(meta.version?.longFlag);
+    this.#tryRegisterFlagToken(meta.version?.shortFlag);
 
     this.#config.meta = meta;
+    return this;
+  }
+
+  onError(handler: ErrorHandler) {
+    this.#config.errorHandler = handler;
     return this;
   }
 

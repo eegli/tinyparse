@@ -43,7 +43,7 @@ describe('command builder', () => {
           defaultValue: 'default',
           longFlag: '--foo',
         });
-    }).toThrow('Long flag "--foo" has been declared twice');
+    }).toThrow('Flag "--foo" has been declared twice');
     expect(() => {
       new CommandBuilder()
         .option('foo', {
@@ -56,25 +56,26 @@ describe('command builder', () => {
           longFlag: '--bar',
           shortFlag: '-f',
         });
-    }).toThrow('Short flag "-f" has been declared twice');
+    }).toThrow('Flag "-f" has been declared twice');
+  });
+  test('throws for taken subparsers', () => {
+    const builder = new CommandBuilder();
+    builder.subcommand('foo', {
+      args: [],
+      handler: () => {},
+    });
+    expect(() => {
+      builder.subparser('foo', new CommandBuilder().defaultHandler());
+    }).toThrow('Command "foo" has been declared twice');
   });
   test('throws for taken tokens (meta last)', () => {
     const builder = new CommandBuilder()
       .option('opthelp', {
-        defaultValue: '',
+        defaultValue: false,
         longFlag: '--help',
         shortFlag: '-h',
       })
-      .option('optversion', {
-        defaultValue: '',
-        longFlag: '--version',
-        shortFlag: '-v',
-      })
       .subcommand('help', {
-        args: undefined,
-        handler: () => {},
-      })
-      .subcommand('version', {
         args: undefined,
         handler: () => {},
       });
@@ -82,17 +83,17 @@ describe('command builder', () => {
       builder.setMeta({
         help: {
           command: 'help',
-          longFlag: '--help',
+          longFlag: '--ignore',
         },
       });
-    }).toThrow('"help" has already been declared as a subcommand');
+    }).toThrow('Command "help" has been declared twice');
     expect(() => {
       builder.setMeta({
         help: {
           longFlag: '--help',
         },
       });
-    }).toThrow('"--help" has already been declared as a flag');
+    }).toThrow('Flag "--help" has been declared twice');
     expect(() => {
       builder.setMeta({
         help: {
@@ -100,61 +101,34 @@ describe('command builder', () => {
           shortFlag: '-h',
         },
       });
-    }).toThrow('"-h" has already been declared as a flag');
-    expect(() => {
-      builder.setMeta({
-        version: {
-          version: '1.0.0',
-          command: 'version',
-          longFlag: '--version',
-        },
-      });
-    }).toThrow('"version" has already been declared as a subcommand');
+    }).toThrow('Flag "-h" has been declared twice');
   });
-
   test('throws for taken tokens (meta first)', () => {
+    const builder = new CommandBuilder().setMeta({
+      help: {
+        command: 'help',
+        longFlag: '--help',
+        shortFlag: '-h',
+      },
+    });
     expect(() => {
-      new CommandBuilder()
-        .setMeta({
-          help: {
-            longFlag: '--help',
-          },
-        })
-        .option('any', {
-          longFlag: '--help',
-          defaultValue: '',
-        });
-    }).toThrow('Long flag "--help" has been declared twice');
+      builder.subcommand('help', {
+        handler: () => {},
+        args: [],
+      });
+    }).toThrow('Command "help" has been declared twice');
     expect(() => {
-      new CommandBuilder()
-        .setMeta({
-          help: {
-            command: 'help',
-            longFlag: '--help',
-          },
-        })
-        .subcommand('help', {
-          handler: () => {},
-          args: [],
-        });
-    }).toThrow(
-      'Subcommand "help" has already been declared as a help or version command',
-    );
+      builder.option('ignore1', {
+        longFlag: '--help',
+        defaultValue: false,
+      });
+    }).toThrow('Flag "--help" has been declared twice');
     expect(() => {
-      new CommandBuilder()
-        .setMeta({
-          version: {
-            version: '1.0.0',
-            command: 'version',
-            longFlag: '--version',
-          },
-        })
-        .subcommand('version', {
-          handler: () => {},
-          args: [],
-        });
-    }).toThrow(
-      'Subcommand "version" has already been declared as a help or version command',
-    );
+      builder.option('ignore2', {
+        longFlag: '--ignore',
+        shortFlag: '-h',
+        defaultValue: false,
+      });
+    }).toThrow('Flag "-h" has been declared twice');
   });
 });
