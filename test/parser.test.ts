@@ -1,53 +1,50 @@
+import { CommandBuilder } from '../src/commands';
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
-import { CommandOptionsMap, FlagOptionsMap } from '../src/types';
 
 const commandHandler = jest.fn();
 const defaultHandler = jest.fn();
-const onError = jest.fn();
+const defaultHandlerSubparser = jest.fn();
+const errorHandler = jest.fn();
+
+const subparser = new CommandBuilder().defaultHandler(defaultHandlerSubparser);
 
 afterEach(() => {
   commandHandler.mockClear();
   defaultHandler.mockClear();
-  onError.mockClear();
+  errorHandler.mockClear();
 });
-
-const options: FlagOptionsMap = new Map([
-  ['flag1', { defaultValue: 0, longFlag: '--flag1' }],
-]);
-const commands: CommandOptionsMap = new Map([
-  [
-    'expect1',
-    {
-      args: ['arg1'] as const,
-      handler: (params) => commandHandler(params),
-    },
-  ],
-  [
-    'expectAll',
-    {
-      args: 'all',
-      handler: (params) => commandHandler(params),
-    },
-  ],
-  [
-    'expectNone',
-    {
-      args: [],
-      handler: (params) => commandHandler(params),
-    },
-  ],
-]);
-const globalSetter = () => {
-  return { database: 'db' };
-};
 
 const parser = new Parser({
   meta: {},
-  options,
-  commands,
-  globalSetter,
+  options: new Map([['flag1', { defaultValue: 0, longFlag: '--flag1' }]]),
+  commands: new Map([
+    [
+      'expect1',
+      {
+        args: ['arg1'] as const,
+        handler: (params) => commandHandler(params),
+      },
+    ],
+    [
+      'expectAll',
+      {
+        args: 'all',
+        handler: (params) => commandHandler(params),
+      },
+    ],
+    [
+      'expectNone',
+      {
+        args: [],
+        handler: (params) => commandHandler(params),
+      },
+    ],
+  ]),
+  parsers: new Map([['subparser', subparser]]),
+  globalSetter: () => ({ database: 'db' }),
   defaultHandler,
+  errorHandler,
 });
 
 const expectCalledWithDefaults = (mock: jest.Mock, args: string[]) => {
@@ -69,6 +66,10 @@ describe('parser', () => {
     parser.parse([]).call();
     expect(defaultHandler).toHaveBeenCalledTimes(1);
     expectCalledWithDefaults(defaultHandler, []);
+  });
+  test('calls subparser', () => {
+    parser.parse(['subparser']).call();
+    expect(defaultHandlerSubparser).toHaveBeenCalledTimes(1);
   });
   test('calls default handler when no subcommand matches', () => {
     parser.parse(['a']).call();
@@ -96,10 +97,10 @@ describe('parser', () => {
   });
   test('error handler catches invalid subcommand args', () => {
     expect(() => {
-      parser.parse(['expect1'], onError).call();
+      parser.parse(['expect1']).call();
     }).not.toThrow();
-    expect(onError).toHaveBeenCalledTimes(1);
-    expect(onError).toHaveBeenCalledWith(
+    expect(errorHandler).toHaveBeenCalledTimes(1);
+    expect(errorHandler).toHaveBeenCalledWith(
       new ValidationError('expect1 expects 1 argument, got 0'),
       expect.any(String),
     );
@@ -109,30 +110,25 @@ describe('parser', () => {
       throw new ValidationError('error');
     });
     expect(() => {
-      parser.parse([], onError).call();
+      parser.parse([]).call();
     }).not.toThrow();
-    expect(onError).toHaveBeenCalledWith(
-      new ValidationError('error'),
-      expect.any(String),
-    );
-    onError.mockClear();
-    commandHandler.mockImplementationOnce(() => {
-      throw new ValidationError('error');
-    });
-    expect(() => {
-      parser.parse(['expect1', 'arg1'], onError).call();
-    }).not.toThrow();
-    expect(onError).toHaveBeenCalledWith(
+    expect(errorHandler).toHaveBeenCalledWith(
       new ValidationError('error'),
       expect.any(String),
     );
   });
   test('throws if subcommand is called with too few args', () => {
+    errorHandler.mockImplementationOnce((err) => {
+      throw err;
+    });
     expect(() => {
       parser.parse(['expect1']).call();
     }).toThrow(new ValidationError('expect1 expects 1 argument, got 0'));
   });
   test('throws if subcommand is called with too many args', () => {
+    errorHandler.mockImplementationOnce((err) => {
+      throw err;
+    });
     expect(() => {
       parser.parse(['expectNone', 'b']).call();
     }).toThrow(new ValidationError('expectNone expects 0 arguments, got 1'));
