@@ -4,11 +4,12 @@
 
 Subparsers can be seen as an _extension_ to subcommands. Although they behave and are used similarly, there are a few key differences:
 
-| Feature              | Subcommands    | Subparsers                            |
-| -------------------- | -------------- | ------------------------------------- |
-| **Parent options**   | Can access     | Can only access local options         |
-| **Help and version** | Cannot specify | Can only specify own help and version |
-| **Configuration**    | More simple    | More complex                          |
+| Feature              | Subcommands    | Subparsers                         |
+| -------------------- | -------------- | ---------------------------------- |
+| **Parent options**   | Can access     | Can only access local options      |
+| **Parent globals**   | Can access     | Can only access local globals      |
+| **Help and version** | Cannot specify | Can specify local help and version |
+| **Configuration**    | More simple    | More complex                       |
 
 <sub>\*_Global_ refers to the parent parser, _local_ to the subparser.</sub>
 
