@@ -1,5 +1,12 @@
 # @eegli/tinyparse
 
+## 0.17.0
+
+### Minor Changes
+
+- f1fb8fe: - Subparsers: Added support for subparsers
+  - Error handling: Slight API change
+
 ## 0.16.0
 
 ### Minor Changes
