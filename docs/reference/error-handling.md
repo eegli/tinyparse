@@ -12,16 +12,16 @@ Parsing may fail if:
 
 If any of these errors - they are _parsing errors_ - occur, a `ValidationError` will be thrown. It contains a `message` property that you can show to the user. Note that errors thrown when bootstrapping the parser are regular `Error` instances.
 
-**If you do not provide an error handler, the error will be thrown as usual.** When an error handler is provided, the app is guaranteed to never throw. You can provide an error handler using the `ErrorHandler` type and send it along in the `parse()` call:
+**If you do not provide an error handler, the error will be thrown as usual.** When an error handler is provided, the app is guaranteed to never throw. You can provide an error handler using the `ErrorHandler` type and set it with the `onError` method:
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
 import type { ErrorHandler } from '@eegli/tinyparse';
 
 const errorHandler: ErrorHandler = (error, help) => {
-  console.log(error.message, help);
-  // "Missing required option --foo"
-  // "Usage: my-app ...."
+  console.log(error.message);
+  // Missing required option --foo
+  console.log(help);
 };
 
 new Parser()
@@ -30,15 +30,9 @@ new Parser()
     required: true,
     defaultValue: false,
   })
-  .setMeta({
-    appName: 'my-app',
-    help: {
-      command: 'help',
-      longFlag: '--help',
-    },
-  })
+  .onError(errorHandler)
   .defaultHandler()
-  .parse(['fuzz', '--bar'], errorHandler)
+  .parse(['--bar'])
   .call();
 ```
 

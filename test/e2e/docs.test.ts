@@ -110,32 +110,6 @@ describe('options', () => {
       parser.parse(['--foo', '12']).call();
     }).not.toThrow();
   });
-  test('throws for double options', () => {
-    expect(() => {
-      new Parser()
-        .option('foo', {
-          longFlag: '--foo',
-          defaultValue: '',
-        })
-        .option('foo', {
-          longFlag: '--bar',
-          defaultValue: '',
-        });
-    }).toThrow('Option "foo" has been declared twice');
-  });
-  test('throws for double flags', () => {
-    expect(() => {
-      new Parser()
-        .option('foo', {
-          longFlag: '--foo',
-          defaultValue: '',
-        })
-        .option('bar', {
-          longFlag: '--foo',
-          defaultValue: '',
-        });
-    }).toThrow('Long flag "--foo" has been declared twice');
-  });
   test('boolean options', () => {
     const parser = new Parser()
       .option('foo', {
@@ -239,8 +213,8 @@ describe('subcommands', () => {
       params,
     ) => {
       const { args, options, globals } = params;
-      const [userName] = args;
-      let greeting = `Greetings from ${globals.fromUser} to ${userName}!`;
+      const [toUser] = args;
+      let greeting = `Greetings from ${globals.fromUser} to ${toUser}!`;
 
       if (options.uppercase) {
         greeting = greeting.toUpperCase();
@@ -260,7 +234,7 @@ describe('subcommands', () => {
 
     const parser = options
       .subcommand('send-greeting', {
-        args: ['from'] as const,
+        args: ['to'] as const,
         handler: subcommandHandler,
       })
       .defaultHandler();
@@ -303,6 +277,34 @@ describe('handlers', () => {
       globals: {},
       options: {},
     });
+  });
+});
+
+describe('subparsers', () => {
+  test('default', () => {
+    const subparser = new Parser()
+      .setMeta({
+        version: {
+          version: '2.0.0',
+          longFlag: '--version',
+        },
+      })
+      .defaultHandler();
+
+    const parser = new Parser()
+      .subparser('v2', subparser)
+      .setMeta({
+        version: {
+          version: '1.0.0',
+          longFlag: '--version',
+        },
+      })
+      .defaultHandler();
+
+    parser.parse(['--version']).call();
+    expect(consoleLog).toHaveBeenLastCalledWith('1.0.0');
+    parser.parse(['v2', '--version']).call();
+    expect(consoleLog).toHaveBeenLastCalledWith('2.0.0');
   });
 });
 
@@ -413,7 +415,9 @@ describe('help and meta', () => {
 describe('error handling', () => {
   test('catches error', () => {
     const errorHandler: ErrorHandler = (error, help) => {
-      console.log(error.message, help);
+      console.log(error.message);
+      // Missing required option --foo
+      console.log(help);
     };
 
     new Parser()
@@ -422,33 +426,18 @@ describe('error handling', () => {
         required: true,
         defaultValue: false,
       })
-      .setMeta({
-        appName: 'my-app',
-        help: {
-          command: 'help',
-          longFlag: '--help',
-        },
-      })
+      .onError(errorHandler)
       .defaultHandler()
-      .parse(['fuzz', '--bar'], errorHandler)
+      .parse(['--bar'])
       .call();
 
-    expect(consoleLog).toHaveBeenCalledTimes(1);
-    expect(consoleLog.mock.calls[0]).toMatchInlineSnapshot(`
+    expect(consoleLog).toHaveBeenCalledTimes(2);
+    expect(consoleLog.mock.calls[1]).toMatchInlineSnapshot(`
       [
-        "Missing required option --foo",
-        "Usage: my-app [command] <...flags>
-
-      Commands
-         help
-         - Print this help message
+        "Usage:
 
       Required flags
-         --foo [boolean]
-
-      Optional flags
-         --help
-         Print this help message",
+         --foo [boolean]",
       ]
     `);
   });

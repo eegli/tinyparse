@@ -43,33 +43,7 @@ expect(() => {
 }).not.toThrow();
 ```
 
-Furthermore, _building_ a parser will fail if you declare the same option or a flag twice:
-
-```ts
-expect(() => {
-  new Parser()
-    .option('foo', {
-      longFlag: '--foo',
-      defaultValue: '',
-    })
-    .option('foo', {
-      longFlag: '--bar',
-      defaultValue: '',
-    });
-}).toThrow('Option "foo" has been declared twice');
-
-expect(() => {
-  new Parser()
-    .option('foo', {
-      longFlag: '--foo',
-      defaultValue: '',
-    })
-    .option('bar', {
-      longFlag: '--foo',
-      defaultValue: '',
-    });
-}).toThrow('Long flag "--foo" has been declared twice');
-```
+Furthermore, _building_ a parser will fail if you declare the same option or a flag twice. This also holds for any unique identifier (such as a subcommand or subparser).
 
 See the docs about [error handling](reference/error-handling.md) for more.
 

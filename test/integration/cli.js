@@ -73,8 +73,9 @@ const parser = options
     args: [],
     description: 'Show the status of the repository',
 })
+    .onError(handleError)
     .defaultHandler(handleDefault);
 export const run = (args) => {
-    parser.parse(args, handleError).call();
+    parser.parse(args).call();
 };
 run(process.argv.slice(2));

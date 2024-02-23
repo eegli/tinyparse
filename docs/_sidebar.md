@@ -4,6 +4,7 @@
   - [Globals](reference/globals.md)
   - [Subcommands](reference/subcommands.md)
   - [Handlers](reference/handlers.md)
+  - [Subparsers](reference/subparsers.md)
   - [Help and Metadata](reference/help-and-meta.md)
   - [Error Handling](reference/error-handling.md)
 - [Advanced Example](advanced-example.md)
