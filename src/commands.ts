@@ -11,6 +11,7 @@ import {
   FlagValueRecord,
   MetaOptions,
   Subcommand,
+  Subparser,
 } from './types';
 
 export class CommandBuilder<
@@ -90,12 +91,12 @@ export class CommandBuilder<
 
   subparser<O extends FlagValueRecord, G extends AnyGlobal>(
     command: string,
-    parser: Parser<O, G>,
+    opts: Subparser<O, G>,
   ) {
     this.#tryRegisterCommandToken(command);
     this.#config.parsers.set(
       command,
-      parser as Parser<FlagValueRecord, AnyGlobal>,
+      opts as Subparser<FlagValueRecord, AnyGlobal>,
     );
     return this;
   }

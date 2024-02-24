@@ -11,7 +11,7 @@ import { Parser } from '@eegli/tinyparse';
 
 const parser = new Parser()
   .setMeta({
-    appName: 'my-cli',
+    command: 'my-cli',
     summary: 'A brief description of my-cli',
     help: {
       command: 'help',
@@ -40,6 +40,10 @@ const parser = new Parser()
     handler: () => {},
     description: 'Baz command',
   })
+  .subparser('fuzz', {
+    parser: new Parser().defaultHandler(),
+    description: 'Fuzz command',
+  })
   .defaultHandler()
   .parse(['help'])
   .call();
@@ -53,22 +57,17 @@ A brief description of my-cli
 Usage: my-cli [command] <...flags>
 
 Commands
-    baz <arg>
-    - Baz command
-    help
-    - Print this help message
+    baz <arg>   Baz command
+    fuzz        Fuzz command
+    help        Print this help message
 
 Required flags
-    -f, --foo [string]
-    Foo option
+    -f, --foo [string]   Foo option
 
 Optional flags
-    --bar [date]
-    Bar option
-    -h, --help
-    Print this help message
-    -V, --version
-    Print the version
+    --bar [date]         Bar option
+    -h, --help           Print this help message
+    -V, --version        Print the version
 ```
 
 When you set your help and metadata configuration, Tinyparse will validate the arguments to make sure there are no conflicts with existing flags or subcommands. Note that subsequent calls to `.setMeta()` will overwrite the previous configuration.

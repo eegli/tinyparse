@@ -80,7 +80,7 @@ const parser = new Parser()
   });
 ```
 
-To allow the user to get help, we register metadata such as the app name, a summary as well as version and help commands. All of this is optional but recommended. If you do not specify a help command, Tinyparse will not assume one for you.
+To allow the user to get help, we register metadata such as the command that invokes the CLI, a summary as well as version and help commands. All of this is optional but recommended. If you do not specify a help command, Tinyparse will not assume one for you.
 
 ```ts
 const parser = new Parser()
@@ -106,7 +106,7 @@ const parser = new Parser()
     },
   })
   .setMeta({
-    appName: 'my-cli',
+    command: 'my-cli',
     summary: 'A brief description of my-cli',
     help: {
       command: 'help',
@@ -146,7 +146,7 @@ const parser = new Parser()
     },
   })
   .setMeta({
-    appName: 'my-cli',
+    command: 'my-cli',
     summary: 'A brief description of my-cli',
     help: {
       command: 'help',

@@ -41,7 +41,14 @@ const parser = new Parser({
       },
     ],
   ]),
-  parsers: new Map([['subparser', subparser]]),
+  parsers: new Map([
+    [
+      'subparser',
+      {
+        parser: subparser,
+      },
+    ],
+  ]),
   globalSetter: () => ({ database: 'db' }),
   defaultHandler,
   errorHandler,

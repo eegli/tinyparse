@@ -1,4 +1,3 @@
-import { Parser } from './parser';
 import {
   AnyGlobal,
   CommandOptionsMap,
@@ -7,14 +6,22 @@ import {
   FlagOptionsMap,
   FlagValueRecord,
   MetaOptions,
+  SubparserOptionsMap,
 } from './types';
 
 export interface CommonConfig<O extends FlagValueRecord, G extends AnyGlobal> {
   meta: MetaOptions;
   options: FlagOptionsMap;
   commands: CommandOptionsMap<O, G>;
-  parsers: Map<string, Parser<FlagValueRecord, AnyGlobal>>;
+  parsers: SubparserOptionsMap<FlagValueRecord, AnyGlobal>;
   globalSetter: (options: O) => G;
   defaultHandler: DefaultHandler<O, G>;
   errorHandler?: ErrorHandler;
 }
+
+export type HelpPrinterConfig = Partial<
+  Pick<
+    CommonConfig<FlagValueRecord, AnyGlobal>,
+    'meta' | 'options' | 'commands' | 'parsers'
+  >
+>;

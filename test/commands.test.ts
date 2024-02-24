@@ -65,7 +65,9 @@ describe('command builder', () => {
       handler: () => {},
     });
     expect(() => {
-      builder.subparser('foo', new CommandBuilder().defaultHandler());
+      builder.subparser('foo', {
+        parser: new CommandBuilder().defaultHandler(),
+      });
     }).toThrow('Command "foo" has been declared twice');
   });
   test('throws for taken tokens (meta last)', () => {

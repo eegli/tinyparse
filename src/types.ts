@@ -1,5 +1,6 @@
 import { CommandBuilder } from './commands';
 import { ValidationError } from './error';
+import type { Parser } from './parser';
 
 export type CustomValidator = {
   isValid: (value: unknown) => value is FlagOptionValue;
@@ -58,6 +59,16 @@ export type Subcommand<Options, Globals, Args> = {
     : GenericHandler<Options, Globals, string[]>;
 };
 
+export type Subparser<O extends FlagValueRecord, G extends AnyGlobal> = {
+  description?: string;
+  parser: Parser<O, G>;
+};
+
+export type SubparserOptionsMap<
+  O extends FlagValueRecord = FlagValueRecord,
+  G extends AnyGlobal = AnyGlobal,
+> = Map<string, Subparser<O, G>>;
+
 export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
   ? (options: O) => AnyGlobal
   : never;
@@ -75,7 +86,7 @@ export type VersionOptions = {
   shortFlag?: ShortFlag;
 };
 export interface MetaOptions {
-  appName?: string;
+  command?: string;
   summary?: string;
   help?: HelpOptions;
   version?: VersionOptions;

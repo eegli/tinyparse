@@ -16,11 +16,7 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
 
   constructor(config: CommonConfig<O, G>) {
     this.#config = config;
-    this.#helpPrinter = new HelpPrinter(
-      config.meta,
-      [...config.options.values()],
-      config.commands,
-    );
+    this.#helpPrinter = new HelpPrinter(config);
   }
 
   #validateSubcommandArgs(
@@ -50,7 +46,7 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     const subparser = this.#config.parsers.get(subcommand);
 
     if (subparser) {
-      return subparser.parse(argv.slice(1));
+      return subparser.parser.parse(argv.slice(1));
     }
 
     const call = () => {
