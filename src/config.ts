@@ -19,9 +19,9 @@ export interface CommonConfig<O extends FlagValueRecord, G extends AnyGlobal> {
   errorHandler?: ErrorHandler;
 }
 
-export type HelpPrinterConfig = Partial<
-  Pick<
-    CommonConfig<FlagValueRecord, AnyGlobal>,
-    'meta' | 'options' | 'commands' | 'parsers'
-  >
+export type HelpPrinterConfig<
+  O extends FlagValueRecord,
+  G extends AnyGlobal,
+> = Partial<
+  Pick<CommonConfig<O, G>, 'meta' | 'options' | 'commands' | 'parsers'>
 >;

@@ -1,8 +1,10 @@
 import { HelpPrinterConfig } from './config';
 import {
+  AnyGlobal,
   CommandOptionsMap,
   FlagOptions,
   FlagOptionsMap,
+  FlagValueRecord,
   MetaOptions,
   SubparserOptionsMap,
 } from './types';
@@ -14,7 +16,7 @@ type CommandOptions = {
   description?: string;
 };
 
-export class HelpPrinter {
+export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
   #requiredOptions: FlagOptions[];
   #optionalOptions: FlagOptions[];
   #commands: CommandOptions[];
@@ -27,7 +29,7 @@ export class HelpPrinter {
     commands = new Map(),
     options = new Map(),
     parsers = new Map(),
-  }: HelpPrinterConfig = {}) {
+  }: HelpPrinterConfig<O, G> = {}) {
     this.#meta = meta;
     const [requiredOptions, optionalOptions] = this.#transformOptions(options);
     this.#requiredOptions = requiredOptions;
@@ -37,7 +39,7 @@ export class HelpPrinter {
   }
 
   #transformCommands(
-    subcommands: CommandOptionsMap,
+    subcommands: CommandOptionsMap<O, G>,
     parsers: SubparserOptionsMap,
   ) {
     const commands = [...subcommands.entries()].reduce(
