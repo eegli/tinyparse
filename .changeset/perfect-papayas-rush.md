@@ -1,5 +1,5 @@
 ---
-"@eegli/tinyparse": minor
+'@eegli/tinyparse': minor
 ---
 
-Tinyparse now has an asynchronous API!
+Tinyparse is now asynchronous by default, allowing you to use async handlers and setters!
