@@ -166,21 +166,41 @@ const parser = new Parser()
 Now, we are ready to give it an array of strings, which is usually the command line arguments obtained from `process.argv.slice(2)`:
 
 ```ts
-parser.parse(['fetch-user', 'John', '-v']).call();
+await parser.parse(['fetch-user', 'John', '-v']).call();
 ```
 
 This will print `Hello, John Smith!` to the console.
 
-When we give it no arguments, the default handler is called, which will print the usage information:
+> **Note**: `.call()` is an async function that returns a `Promise`. Since it is generally assumed to be the last top-level function call, you do not need to `await` it. However, in some scenarios - like end-to-end testing, you might need to. See the docs about [async operations](/reference/async-operations.md) for more information.
+
+When we give the parser no arguments, the default handler is called, which will print the usage information:
 
 ```ts
-parser.parse([]).call(); // No command specified...
+await parser.parse([]).call(); // No command specified...
 ```
 
 To see all available commands, we can also do:
 
 ```ts
-parser.parse(['--help']).call();
+await parser.parse(['--help']).call();
+```
+
+Giving us:
+
+```sh
+A brief description of my-cli
+
+Usage: my-cli [command] <...flags>
+
+Commands
+    fetch-user <user-name>
+    help                     Print this help message
+    version                  Print the version
+
+Optional flags
+    -v, --verbose [boolean]
+    --help                    Print this help message
+    --version                 Print the version
 ```
 
 There are many more things you can do with Tinyparse. Checkout the reference!

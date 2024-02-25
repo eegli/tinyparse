@@ -66,96 +66,109 @@ const expectCalledWithDefaults = (mock: jest.Mock, args: string[]) => {
 };
 
 describe('parser', () => {
-  test('returns callable', () => {
+  test('returns callable', async () => {
     const { call } = parser.parse([]);
-    expect(call()).toBeUndefined();
+    await expect(call()).resolves.toBeUndefined();
   });
-  test('calls default handler', () => {
-    parser.parse([]).call();
+  test('calls default handler', async () => {
+    await parser.parse([]).call();
     expect(defaultHandler).toHaveBeenCalledTimes(1);
     expectCalledWithDefaults(defaultHandler, []);
   });
-  test('calls subparser', () => {
-    parser.parse(['subparser']).call();
+  test('calls subparser', async () => {
+    await parser.parse(['subparser']).call();
     expect(defaultHandlerSubparser).toHaveBeenCalledTimes(1);
   });
-  test('calls default handler when no subcommand matches', () => {
-    parser.parse(['a']).call();
+  test('calls default handler when no subcommand matches', async () => {
+    await parser.parse(['a']).call();
     expect(defaultHandler).toHaveBeenCalledTimes(1);
     expectCalledWithDefaults(defaultHandler, ['a']);
     expect(commandHandler).not.toHaveBeenCalled();
   });
-  test('calls subcommand with fixed args', () => {
-    parser.parse(['expect1', 'b']).call();
+  test('calls subcommand with fixed args', async () => {
+    await parser.parse(['expect1', 'b']).call();
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
     expectCalledWithDefaults(commandHandler, ['b']);
   });
-  test('calls subcommand with all args', () => {
-    parser.parse(['expectAll', 'b', 'c', 'd']).call();
+  test('calls subcommand with all args', async () => {
+    await parser.parse(['expectAll', 'b', 'c', 'd']).call();
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
     expectCalledWithDefaults(commandHandler, ['b', 'c', 'd']);
   });
-  test('calls subcommand with no args', () => {
-    parser.parse(['expectNone']).call();
+  test('calls subcommand with no args', async () => {
+    await parser.parse(['expectNone']).call();
     expect(defaultHandler).not.toHaveBeenCalled();
     expect(commandHandler).toHaveBeenCalledTimes(1);
     expectCalledWithDefaults(commandHandler, []);
   });
-  test('error handler catches invalid subcommand args', () => {
-    expect(() => {
-      parser.parse(['expect1']).call();
-    }).not.toThrow();
+  test('error handler catches invalid subcommand args', async () => {
+    await expect(parser.parse(['expect1']).call()).resolves.not.toThrow();
     expect(errorHandler).toHaveBeenCalledTimes(1);
     expect(errorHandler).toHaveBeenCalledWith(
       new ValidationError('expect1 expects 1 argument, got 0'),
       expect.any(String),
     );
   });
-  test('error handler catches handlers throwing ValidationError', () => {
+  test('error handler catches handlers throwing ValidationError', async () => {
     defaultHandler.mockImplementationOnce(() => {
       throw new ValidationError('error');
     });
-    expect(() => {
-      parser.parse([]).call();
-    }).not.toThrow();
+    await expect(parser.parse([]).call()).resolves.not.toThrow();
     expect(errorHandler).toHaveBeenCalledWith(
       new ValidationError('error'),
       expect.any(String),
     );
   });
-  test('throws if subcommand is called with too few args', () => {
+  test('throws if subcommand is called with too few args', async () => {
     errorHandler.mockImplementationOnce((err) => {
       throw err;
     });
-    expect(() => {
-      parser.parse(['expect1']).call();
-    }).toThrow(new ValidationError('expect1 expects 1 argument, got 0'));
+    await expect(parser.parse(['expect1']).call()).rejects.toThrow(
+      new ValidationError('expect1 expects 1 argument, got 0'),
+    );
   });
-  test('throws if subcommand is called with too many args', () => {
+  test('throws if subcommand is called with too many args', async () => {
     errorHandler.mockImplementationOnce((err) => {
       throw err;
     });
-    expect(() => {
-      parser.parse(['expectNone', 'b']).call();
-    }).toThrow(new ValidationError('expectNone expects 0 arguments, got 1'));
+    await expect(parser.parse(['expectNone', 'b']).call()).rejects.toThrow(
+      new ValidationError('expectNone expects 0 arguments, got 1'),
+    );
   });
-  test('never throws if subcommand expects all args', () => {
+  test('never throws if subcommand expects all args', async () => {
     for (const args of [
       [],
       ['arg1'],
       ['arg1', 'arg2'],
       Array(10).fill('arg'),
     ]) {
-      expect(() => {
-        parser.parse(['expectAll', ...args]);
-      }).not.toThrow();
+      await expect(
+        parser.parse(['expectAll', ...args]).call(),
+      ).resolves.not.toThrow();
     }
   });
-  test('binds call', () => {
+  test('awaits async', async () => {
+    const parser = new Parser({
+      meta: {},
+      commands: new Map(),
+      options: new Map(),
+      parsers: new Map(),
+      /* eslint-disable-next-line require-await */
+      globalSetter: async () => ({ database: 'db' }),
+      defaultHandler,
+    });
+    await parser.parse([]).call();
+    expect(defaultHandler).toHaveBeenCalledTimes(1);
+    expect(defaultHandler).toHaveBeenCalledWith(
+      expect.objectContaining({ globals: { database: 'db' } }),
+    );
+  });
+
+  test('binds call', async () => {
     const { call } = parser.parse(['a', 'b']);
-    call();
+    await call();
     expect(defaultHandler).toHaveBeenCalledTimes(1);
   });
 });

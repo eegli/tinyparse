@@ -1,5 +1,13 @@
 # @eegli/tinyparse
 
+## 0.17.1
+
+### Patch Changes
+
+- bd1d97e: Make usage text available in handlers
+- bd1d97e: Refine usage text formatting
+- bd1d97e: Rename `appName` to `command` in meta options
+
 ## 0.17.0
 
 ### Minor Changes

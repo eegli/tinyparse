@@ -15,7 +15,7 @@ The **order of operations when parsing** is as follows:
 4. **A bound handler is created** with the globals, the options, and the positional arguments
 5. An object with a `.call()` method is returned, which, when called, will invoke the default or subcommand handler
 
-Setting a default handler is optional. If a parser is created without a default handler, it simply does nothing when no subcommand matches. Hence, the minimal (noop) parser looks like this:
+Setting a default handler is optional. If a parser is created without a default handler, it simply does nothing when no subcommand matches. Hence, the minimal (noop) parser invocation looks like this:
 
 ```ts
 new Parser().defaultHandler().parse([]).call();
@@ -25,7 +25,7 @@ Because you might want to do things _before_ invoking a handler, `.parse([...arg
 
 ## Declaring Handlers
 
-A default handler can be declared either inline or externally, just like a subcommand handler. The difference between a subcommand and default handler is that the default handler has no constraint on the number of arguments it accepts. It simply receives all positional arguments. Other than that, it also has access to the globals, options and usage text.
+A default handler can be declared either inline or externally, just like a subcommand handler. The difference between a subcommand and default handler is that the default handler has no constraint on the number of arguments it accepts. It simply receives all positional arguments. Other than that, it also has access to the globals, options and usage text. All handlers can be _asynchronous_.
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
@@ -48,7 +48,7 @@ const executeHandler = new Parser()
 
 // Time goes by...
 
-executeHandler();
+await executeHandler();
 
 expect(consoleLog).toHaveBeenCalledWith({
   args: ['hello', 'world'],

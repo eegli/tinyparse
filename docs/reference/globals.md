@@ -22,7 +22,7 @@ new Parser()
   .parse([])
   .call();
 
-expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
+// 'Hello, John!'
 ```
 
 ## External Declaration

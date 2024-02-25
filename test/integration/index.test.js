@@ -32,14 +32,14 @@ describe('advanced example', () => {
     assert.match(mock.mock.calls[0].arguments[0], expected);
   };
 
-  test('command copy', () => {
-    cli.run(['cp', 'a', 'b', '-v']);
+  test('command copy', async () => {
+    await cli.run(['cp', 'a', 'b', '-v']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(logSpy, 'Copying files from a to b');
   });
 
-  test('command remove', () => {
-    cli.run(['rm', 'a', 'b', 'c', '--ext=js,ts']);
+  test('command remove', async () => {
+    await cli.run(['rm', 'a', 'b', 'c', '--ext=js,ts']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(
       logSpy,
@@ -47,48 +47,48 @@ describe('advanced example', () => {
     );
   });
 
-  test('command status', () => {
-    cli.run(['status']);
+  test('command status', async () => {
+    await cli.run(['status']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(logSpy, 'Showing status for user: me');
   });
 
-  test('command list 1', () => {
-    cli.run(['ls']);
+  test('command list 1', async () => {
+    await cli.run(['ls']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(logSpy, 'Listing files in the current directory');
   });
 
-  test('command list 2', () => {
-    cli.run(['ls', 'my-folder/images']);
+  test('command list 2', async () => {
+    await cli.run(['ls', 'my-folder/images']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(logSpy, 'Listing files in my-folder/images');
   });
 
-  test('error handler', () => {
-    cli.run(['cp']);
+  test('error handler', async () => {
+    await cli.run(['cp']);
     expectCalledTimes(errorSpy, 1);
     expectCalledWith(errorSpy, 'Error: cp expects 2 arguments, got 0');
   });
 
-  test('default handler', () => {
-    cli.run(['cut']);
+  test('default handler', async () => {
+    await cli.run(['cut']);
     expectCalledTimes(errorSpy, 1);
     expectCalledWith(errorSpy, 'Unknown command: cut');
     expectCalledTimes(logSpy, 1); // Usage
   });
 
-  test('version', () => {
+  test('version', async () => {
     for (const v of ['version', '-V', '--version']) {
-      cli.run([v]);
+      await cli.run([v]);
       expectCalledTimes(logSpy, 1);
       expectCalledWith(logSpy, '1.0.0');
       logSpy.mock.resetCalls();
     }
   });
-  test('help', () => {
+  test('help', async () => {
     for (const v of ['help', '-h', '--help']) {
-      cli.run([v]);
+      await cli.run([v]);
       expectCalledTimes(logSpy, 1);
       expectCalledWithMatch(logSpy, /Work with files and folders/);
       logSpy.mock.resetCalls();
