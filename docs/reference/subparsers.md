@@ -30,7 +30,10 @@ const subparser = new Parser()
   .defaultHandler();
 
 const parser = new Parser()
-  .subparser('v2', subparser)
+  .subparser('v2', {
+    parser: subparser,
+    description: 'Version 2 of this CLI',
+  })
   .setMeta({
     version: {
       version: '1.0.0',

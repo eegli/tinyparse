@@ -1,39 +1,52 @@
+import { CommandBuilder } from '../src/commands';
 import { HelpPrinter as Help } from '../src/help';
 import {
   CommandOptionsMap,
-  FlagOptions,
+  FlagOptionsMap,
   HelpOptions,
   VersionOptions,
 } from '../src/types';
 
 describe('Helper text', () => {
-  const requiredflags: FlagOptions[] = [
-    {
-      longFlag: '--flag-a',
-      defaultValue: '',
-      required: true,
-      description: 'The first flag',
-    },
-
-    {
-      longFlag: '--flag-b',
-      defaultValue: new Date(),
-      required: true,
-    },
-  ];
-  const optionalFlags: FlagOptions[] = [
-    {
-      longFlag: '--flag-d',
-      shortFlag: '-d',
-      defaultValue: 3000,
-      description: 'The fourth flag',
-    },
-    {
-      longFlag: '--flag-c',
-      shortFlag: '-c',
-      defaultValue: false,
-    },
-  ];
+  const requiredflags: FlagOptionsMap = new Map([
+    [
+      'flagA',
+      {
+        longFlag: '--flag-a',
+        defaultValue: '',
+        required: true,
+        description: 'The first flag',
+      },
+    ],
+    [
+      'flabB',
+      {
+        longFlag: '--flag-b',
+        defaultValue: new Date(),
+        required: true,
+      },
+    ],
+  ]);
+  const optionalFlags: FlagOptionsMap = new Map([
+    [
+      'flagD',
+      {
+        longFlag: '--flag-d',
+        shortFlag: '-d',
+        defaultValue: 3000,
+        description: 'The fourth flag',
+      },
+    ],
+    [
+      'flabC',
+      {
+        longFlag: '--flag-c',
+        shortFlag: '-c',
+        defaultValue: false,
+      },
+    ],
+  ]);
+  const allFlags = new Map([...requiredflags, ...optionalFlags]);
   const commands: CommandOptionsMap = new Map([
     [
       'serve',
@@ -80,20 +93,21 @@ describe('Helper text', () => {
     longFlag: '--version',
     shortFlag: '-v',
   };
-  const appName = 'my-app';
+  const command = 'my-app';
   const summary = 'This is just a text that can be shown to describe the app';
 
   test('header formatting', () => {
-    expect(new Help({ summary, appName }).formatHeader())
+    expect(new Help({ meta: { summary, command } }).formatHeader())
       .toMatchInlineSnapshot(`
       "This is just a text that can be shown to describe the app
 
       Usage: my-app [command] <...flags>"
     `);
-    expect(new Help({ appName }).formatHeader()).toMatchInlineSnapshot(
-      `"Usage: my-app [command] <...flags>"`,
-    );
-    expect(new Help({ summary }).formatHeader()).toMatchInlineSnapshot(`
+    expect(
+      new Help({ meta: { command } }).formatHeader(),
+    ).toMatchInlineSnapshot(`"Usage: my-app [command] <...flags>"`);
+    expect(new Help({ meta: { summary } }).formatHeader())
+      .toMatchInlineSnapshot(`
       "This is just a text that can be shown to describe the app
 
       Usage:"
@@ -101,112 +115,111 @@ describe('Helper text', () => {
     expect(new Help().formatHeader()).toMatchInlineSnapshot(`"Usage:"`);
   });
   test('commands formatting', () => {
-    expect(new Help({}, [], commands).formatCommands()).toMatchInlineSnapshot(`
+    expect(new Help({ commands }).formatCommands()).toMatchInlineSnapshot(`
       "Commands
-         serve <path>
-         - Serve a directory
-         info 
-         rm <...files>
-         - Remove files
-         ls
-         - List a directory"
+         info            
+         ls              List a directory
+         rm <...files>   Remove files
+         serve <path>    Serve a directory"
     `);
   });
   test('required flags formatting', () => {
-    const p = new Help({}, requiredflags, new Map());
-    expect(p.formatFlags()).toMatchInlineSnapshot(`
+    const p = new Help({ options: requiredflags });
+    expect(p.formatOptions()).toMatchInlineSnapshot(`
       "Required flags
-         --flag-a [string]
-         The first flag
-         --flag-b [date]"
+         --flag-a [string]   The first flag
+         --flag-b [date]     "
     `);
   });
   test('optional flags formatting', () => {
     expect(
-      new Help(
-        {
+      new Help({
+        meta: {
           help: {
             longFlag: '--help',
           },
         },
-        optionalFlags,
-        new Map(),
-      ).formatFlags(),
+        options: optionalFlags,
+      }).formatOptions(),
     ).toMatchInlineSnapshot(`
       "Optional flags
-         -c, --flag-c [boolean]
-         -d, --flag-d [number]
-         The fourth flag
-         --help
-         Print this help message"
+         -c, --flag-c [boolean]   
+         -d, --flag-d [number]    The fourth flag
+         --help                   Print this help message"
     `);
   });
   test('required and optional flags formatting', () => {
     expect(
-      new Help(
-        {},
-        [...requiredflags, ...optionalFlags],
-        new Map(),
-      ).formatFlags(),
+      new Help({
+        options: allFlags,
+      }).formatOptions(),
     ).toMatchInlineSnapshot(`
       "Required flags
-         --flag-a [string]
-         The first flag
-         --flag-b [date]
+         --flag-a [string]        The first flag
+         --flag-b [date]          
 
       Optional flags
-         -c, --flag-c [boolean]
-         -d, --flag-d [number]
-         The fourth flag"
+         -c, --flag-c [boolean]   
+         -d, --flag-d [number]    The fourth flag"
     `);
   });
 
   test('no configuration', () => {
-    expect(new Help().print()).toMatchInlineSnapshot(`"Usage:"`);
+    expect(new Help().printUsage()).toMatchInlineSnapshot(`"Usage:"`);
   });
   test('full configuration', () => {
     expect(
-      new Help(
-        {
-          appName,
+      new Help({
+        meta: {
+          command,
           summary,
           help,
           version,
         },
-        [...requiredflags, ...optionalFlags],
+        options: allFlags,
+        parsers: new Map([
+          [
+            'a-subparser',
+            {
+              parser: new CommandBuilder().defaultHandler(),
+              description: 'Subparser description',
+            },
+          ],
+
+          [
+            'x-subparser',
+            {
+              parser: new CommandBuilder().defaultHandler(),
+            },
+          ],
+        ]),
+
         commands,
-      ).print(),
+      }).printUsage(),
     ).toMatchInlineSnapshot(`
       "This is just a text that can be shown to describe the app
 
       Usage: my-app [command] <...flags>
 
       Commands
-         serve <path>
-         - Serve a directory
-         info 
-         rm <...files>
-         - Remove files
-         ls
-         - List a directory
-         help
-         - Print this help message
-         version
-         - Print the version
+         a-subparser     Subparser description
+         info            
+         ls              List a directory
+         rm <...files>   Remove files
+         serve <path>    Serve a directory
+         x-subparser     
+         help            Print this help message
+         version         Print the version
 
       Required flags
-         --flag-a [string]
-         The first flag
-         --flag-b [date]
+         --flag-a [string]        The first flag
+         --flag-b [date]          
 
       Optional flags
-         -c, --flag-c [boolean]
-         -d, --flag-d [number]
-         The fourth flag
-         -h, --help
-         Print this help message
-         -v, --version
-         Print the version"
+         -c, --flag-c [boolean]   
+         -d, --flag-d [number]    The fourth flag
+         -h, --help               Print this help message
+         -v, --version            Print the version"
     `);
   });
 });

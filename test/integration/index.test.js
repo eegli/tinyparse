@@ -38,7 +38,7 @@ describe('advanced example', () => {
     expectCalledWith(logSpy, 'Copying files from a to b');
   });
 
-  test('remove list', () => {
+  test('command remove', () => {
     cli.run(['rm', 'a', 'b', 'c', '--ext=js,ts']);
     expectCalledTimes(logSpy, 1);
     expectCalledWith(
@@ -53,19 +53,28 @@ describe('advanced example', () => {
     expectCalledWith(logSpy, 'Showing status for user: me');
   });
 
+  test('command list 1', () => {
+    cli.run(['ls']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(logSpy, 'Listing files in the current directory');
+  });
+
+  test('command list 2', () => {
+    cli.run(['ls', 'my-folder/images']);
+    expectCalledTimes(logSpy, 1);
+    expectCalledWith(logSpy, 'Listing files in my-folder/images');
+  });
+
   test('error handler', () => {
     cli.run(['cp']);
     expectCalledTimes(errorSpy, 1);
-    expectCalledWith(
-      errorSpy,
-      'Error parsing arguments. cp expects 2 arguments, got 0',
-    );
+    expectCalledWith(errorSpy, 'Error: cp expects 2 arguments, got 0');
   });
 
   test('default handler', () => {
-    cli.run(['unknown']);
+    cli.run(['cut']);
     expectCalledTimes(errorSpy, 1);
-    expectCalledWith(errorSpy, 'Error parsing arguments. No command specified');
+    expectCalledWith(errorSpy, 'Unknown command: cut');
     expectCalledTimes(logSpy, 1); // Usage
   });
 

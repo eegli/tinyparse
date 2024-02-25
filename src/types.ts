@@ -1,10 +1,6 @@
 import { CommandBuilder } from './commands';
 import { ValidationError } from './error';
-
-export type CustomValidator = {
-  isValid: (value: unknown) => value is FlagOptionValue;
-  errorMessage: (value: unknown, flag: string) => string;
-};
+import type { Parser } from './parser';
 
 export type LongFlag = `--${string}`;
 export type ShortFlag = `-${string}`;
@@ -12,12 +8,12 @@ export type ShortFlag = `-${string}`;
 /**
  * The possible default values of a flag option.
  */
-export type FlagOptionValue = string | number | boolean | Date;
+export type FlagValue = string | number | boolean | Date;
 
 /**
  * The user settings for a flag option.
  */
-export type FlagOptions<V extends FlagOptionValue = FlagOptionValue> = {
+export type FlagOptions<V extends FlagValue = FlagValue> = {
   longFlag: LongFlag;
   shortFlag?: ShortFlag;
   defaultValue: Downcast<V>;
@@ -28,17 +24,26 @@ export type FlagOptions<V extends FlagOptionValue = FlagOptionValue> = {
 /**
  * A record of flags and their default values.
  */
-export type FlagValueRecord = Record<string, FlagOptionValue>;
+export type FlagValueRecord = Record<string, FlagValue>;
 
 /**
  * A map of flags and the settings specified by the user.
  */
 export type FlagOptionsMap = Map<string, FlagOptions>;
 
+/**
+ * Any global settings specified by the user.
+ */
 export type AnyGlobal = Record<string, unknown>;
 
+/**
+ * A pattern that describes the expected arguments of a command.
+ */
 export type CommandArgPattern = string[] | string | undefined;
 
+/**
+ * A map of subcommands and their settings.
+ */
 export type CommandOptionsMap<
   Options extends FlagValueRecord = FlagValueRecord,
   Globals extends AnyGlobal = AnyGlobal,
@@ -48,8 +53,12 @@ type GenericHandler<Options, Globals, Args> = (params: {
   options: Options;
   globals: Globals;
   args: Args;
-}) => void;
+  usage: string;
+}) => void | Promise<void>;
 
+/**
+ * The settings for a subcommand.
+ */
 export type Subcommand<Options, Globals, Args> = {
   args: Args;
   description?: string;
@@ -58,9 +67,21 @@ export type Subcommand<Options, Globals, Args> = {
     : GenericHandler<Options, Globals, string[]>;
 };
 
-export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
-  ? (options: O) => AnyGlobal
-  : never;
+/**
+ * The settings for a subparser.
+ */
+export type Subparser<O extends FlagValueRecord, G extends AnyGlobal> = {
+  description?: string;
+  parser: Parser<O, G>;
+};
+
+/**
+ * A map of subparsers and their settings.
+ */
+export type SubparserOptionsMap<
+  O extends FlagValueRecord = FlagValueRecord,
+  G extends AnyGlobal = AnyGlobal,
+> = Map<string, Subparser<O, G>>;
 
 export type HelpOptions = {
   command?: string;
@@ -75,7 +96,7 @@ export type VersionOptions = {
   shortFlag?: ShortFlag;
 };
 export interface MetaOptions {
-  appName?: string;
+  command?: string;
   summary?: string;
   help?: HelpOptions;
   version?: VersionOptions;
@@ -88,13 +109,17 @@ export type CommandHandler<
   ? GenericHandler<O, G, A>
   : never;
 
-export type ErrorHandler = (error: ValidationError, helpText: string) => void;
-
 export type DefaultHandler<Options, Globals> = GenericHandler<
   Options,
   Globals,
   string[]
 >;
+
+export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
+  ? (options: O) => AnyGlobal
+  : never;
+
+export type ErrorHandler = (error: ValidationError, usage: string) => void;
 
 export type Downcast<T> = T extends unknown[]
   ? {

@@ -2,7 +2,7 @@
 
 > This document describes how **subcommands** can be used to configure the parser.
 
-Here, we define four subcommands and the positional arguments they expect. Every subcommand is **called with an object containing the positional arguments it expects, the options and the globals**:
+Here, we define four subcommands and the positional arguments they expect. Every subcommand is **called with an object containing the positional arguments it expects, the options, the globals and a usage text**:
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
@@ -67,9 +67,9 @@ You can declare your subcommands outside of the building phase by stopping early
 import { Parser } from '@eegli/tinyparse';
 import type { CommandHandler } from '@eegli/tinyparse';
 
-const subcommandHandler: CommandHandler<typeof options, [string]> = (
-  params,
-) => {
+type Options = typeof options;
+
+const subcommandHandler: CommandHandler<Options, [string]> = (params) => {
   const { args, options, globals } = params;
   const [toUser] = args;
   let greeting = `Greetings from ${globals.fromUser} to ${toUser}!`;
