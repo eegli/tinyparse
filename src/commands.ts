@@ -6,8 +6,8 @@ import {
   DefaultHandler,
   Downcast,
   ErrorHandler,
-  FlagOptionValue,
   FlagOptions,
+  FlagValue,
   FlagValueRecord,
   MetaOptions,
   Subcommand,
@@ -23,7 +23,6 @@ export class CommandBuilder<
     options: new Map(),
     commands: new Map(),
     parsers: new Map(),
-    globalSetter: () => ({}) as Globals,
     defaultHandler: () => {},
   };
 
@@ -62,10 +61,7 @@ export class CommandBuilder<
     }
   };
 
-  option<K extends string, V extends FlagOptionValue>(
-    key: K,
-    opts: FlagOptions<V>,
-  ) {
+  option<K extends string, V extends FlagValue>(key: K, opts: FlagOptions<V>) {
     const { longFlag, shortFlag } = opts;
     this.#validateOption(key);
     this.#config.options.set(key, opts);

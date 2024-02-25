@@ -60,6 +60,7 @@ const expectCalledWithDefaults = (mock: jest.Mock, args: string[]) => {
       options: { flag1: 0 },
       globals: { database: 'db' },
       args,
+      usage: expect.any(String),
     }),
   );
 };

@@ -27,18 +27,20 @@ expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
 
 ## External Declaration
 
-You can also declare the global setter function outside of the building phase by taking a break after declaring your options and using the `GlobalSetter` helper type:
+You can also declare the global setter function outside of the building phase by taking a break after declaring your options and using the `GlobalSetter` helper type. Using this type will get you autocompletion and type checking for the `options` parameter:
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
 import type { GlobalSetter } from '@eegli/tinyparse';
+
+type Options = typeof options;
 
 const options = new Parser().option('verbose', {
   longFlag: '--verbose',
   defaultValue: false,
 });
 
-const globalSetter: GlobalSetter<typeof options> = (options) => ({
+const globalSetter: GlobalSetter<Options> = (options) => ({
   log: (message: string) => {
     if (options.verbose) {
       console.log(message);

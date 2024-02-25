@@ -21,6 +21,7 @@ const parser = new Parser()
     version: {
       version: '1.0.0',
       longFlag: '--version',
+      shortFlag: '-V',
     },
   })
   .option('foo', {
@@ -33,7 +34,7 @@ const parser = new Parser()
   .option('bar', {
     longFlag: '--bar',
     defaultValue: new Date(),
-    description: 'Foo option',
+    description: 'Bar option',
   })
   .subcommand('baz', {
     args: ['arg'] as const,

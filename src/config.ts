@@ -9,19 +9,21 @@ import {
   SubparserOptionsMap,
 } from './types';
 
-export interface CommonConfig<O extends FlagValueRecord, G extends AnyGlobal> {
+interface CoreConfig<O extends FlagValueRecord, G extends AnyGlobal> {
   meta: MetaOptions;
   options: FlagOptionsMap;
   commands: CommandOptionsMap<O, G>;
   parsers: SubparserOptionsMap<FlagValueRecord, AnyGlobal>;
-  globalSetter: (options: O) => G;
+}
+
+export interface CommonConfig<O extends FlagValueRecord, G extends AnyGlobal>
+  extends CoreConfig<O, G> {
   defaultHandler: DefaultHandler<O, G>;
+  globalSetter?: (options: O) => G;
   errorHandler?: ErrorHandler;
 }
 
-export type HelpPrinterConfig<
+export interface HelpPrinterConfig<
   O extends FlagValueRecord,
   G extends AnyGlobal,
-> = Partial<
-  Pick<CommonConfig<O, G>, 'meta' | 'options' | 'commands' | 'parsers'>
->;
+> extends Partial<CoreConfig<O, G>> {}

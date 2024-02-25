@@ -171,11 +171,11 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
 
     const maxOptionLen = this.#maxStrLen(required.concat(optional), 0);
 
-    const requiredWithDescription = required.map(([k, d]) =>
-      this.#addDescription(k, d, maxOptionLen),
+    const requiredWithDescription = required.map(([key, desc]) =>
+      this.#addDescription(key, desc, maxOptionLen),
     );
-    const optionalWithDescription = optional.map(([k, d]) =>
-      this.#addDescription(k, d, maxOptionLen),
+    const optionalWithDescription = optional.map(([key, desc]) =>
+      this.#addDescription(key, desc, maxOptionLen),
     );
 
     let options =
@@ -220,7 +220,7 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
   #maxStrLen = (arr: string[][], idx: number) =>
     Math.max(...arr.map((s) => s[idx].length), 0);
 
-  print() {
+  printUsage() {
     return [this.formatHeader(), this.formatCommands(), this.formatOptions()]
       .filter(Boolean)
       .join('\n\n');

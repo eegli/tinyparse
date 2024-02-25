@@ -45,7 +45,7 @@ describe('docs', () => {
           defaultValue: false,
         })
         .setGlobals((options) => ({
-          callDatabase: (name: string) => `Hello, ${name}!`,
+          getUserFromDB: (name: string) => `${name} Smith`,
           log: (message: string) => {
             if (options.verbose) {
               console.log(message);
@@ -55,9 +55,9 @@ describe('docs', () => {
         .subcommand('fetch-user', {
           args: ['user-name'] as const,
           handler: ({ args, globals }) => {
-            const [userName] = args;
-            const result = globals.callDatabase(userName);
-            globals.log(result);
+            const [firstName] = args;
+            const userName = globals.getUserFromDB(firstName);
+            globals.log(`Hello, ${userName}!`);
           },
         })
         .setMeta({
@@ -73,16 +73,22 @@ describe('docs', () => {
             longFlag: '--version',
           },
         })
-        .defaultHandler(({ globals }) => {
-          globals.log('No command specified');
+        .defaultHandler(({ usage }) => {
+          console.log('No command specified', '\n', usage);
         });
 
       parser.parse(['fetch-user', 'John', '-v']).call();
-      expect(consoleLog).toHaveBeenLastCalledWith('Hello, John!');
+      expect(consoleLog).toHaveBeenLastCalledWith('Hello, John Smith!');
 
       parser.parse(['--help']).call();
       expect(consoleLog).toHaveBeenLastCalledWith(
         expect.stringMatching(/^A brief description of my-cli/),
+      );
+      parser.parse([]).call();
+      expect(consoleLog).toHaveBeenLastCalledWith(
+        expect.stringMatching(/^No command specified/),
+        '\n',
+        expect.any(String),
       );
     });
   });
@@ -153,12 +159,14 @@ describe('docs', () => {
       expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
     });
     test('external declaration', () => {
+      type Options = typeof options;
+
       const options = new Parser().option('verbose', {
         longFlag: '--verbose',
         defaultValue: false,
       });
 
-      const globalSetter: GlobalSetter<typeof options> = (options) => ({
+      const globalSetter: GlobalSetter<Options> = (options) => ({
         log: (message: string) => {
           if (options.verbose) {
             console.log(message);
@@ -210,9 +218,9 @@ describe('docs', () => {
     });
 
     test('external declaration', () => {
-      const subcommandHandler: CommandHandler<typeof options, [string]> = (
-        params,
-      ) => {
+      type Options = typeof options;
+
+      const subcommandHandler: CommandHandler<Options, [string]> = (params) => {
         const { args, options, globals } = params;
         const [toUser] = args;
         let greeting = `Greetings from ${globals.fromUser} to ${toUser}!`;
@@ -261,8 +269,9 @@ describe('docs', () => {
         args,
         globals,
         options,
+        usage,
       }) => {
-        console.log({ args, globals, options });
+        console.log({ args, globals, options, usage });
       };
 
       const executeHandler = new Parser()
@@ -277,6 +286,7 @@ describe('docs', () => {
         args: ['hello', 'world'],
         globals: {},
         options: {},
+        usage: expect.any(String),
       });
     });
   });
@@ -417,10 +427,11 @@ describe('docs', () => {
 
   describe('error handling', () => {
     test('catches error', () => {
-      const errorHandler: ErrorHandler = (error, help) => {
+      const errorHandler: ErrorHandler = (error, usage) => {
         console.log(error.message);
         // Missing required option --foo
-        console.log(help);
+        console.log(usage);
+        // Usage: ...
       };
 
       new Parser()

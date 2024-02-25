@@ -165,7 +165,7 @@ describe('Helper text', () => {
   });
 
   test('no configuration', () => {
-    expect(new Help().print()).toMatchInlineSnapshot(`"Usage:"`);
+    expect(new Help().printUsage()).toMatchInlineSnapshot(`"Usage:"`);
   });
   test('full configuration', () => {
     expect(
@@ -195,7 +195,7 @@ describe('Helper text', () => {
         ]),
 
         commands,
-      }).print(),
+      }).printUsage(),
     ).toMatchInlineSnapshot(`
       "This is just a text that can be shown to describe the app
 
