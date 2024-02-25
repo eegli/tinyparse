@@ -1,6 +1,6 @@
 {
   "name": "@eegli/tinyparse",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "A tiny utility for parsing & validating Node CLI args and object literals",
   "keywords": [
     "cli",
@@ -44,7 +44,7 @@
     "test:integration": "yarn build && cd test/integration && npm install --omit=dev --ignore-scripts && tsc && npm test",
     "test:types": "tstyche",
     "test:unit": "jest --selectProjects unit",
-    "test:watch": "jest  --verbose --watch"
+    "test:watch": "jest --watch"
   },
   "lint-staged": {
     "*.ts": [

@@ -7,7 +7,6 @@ import {
   ErrorHandler,
   GlobalSetter,
   Parser,
-  ValidationError,
 } from '@eegli/tinyparse';
 
 type Options = typeof options;
@@ -42,14 +41,32 @@ const status: CommandHandler<Options> = ({ globals }) => {
   console.log(`Showing status for user: ${userName}`);
 };
 
+const list: CommandHandler<Options> = ({ args }) => {
+  // We may or may not have a directory
+  const directory = args[0];
+  if (directory) {
+    console.log(`Listing files in ${directory}`);
+  } else {
+    console.log('Listing files in the current directory');
+  }
+};
+
 // Define handlers and setters
 const handleError: ErrorHandler = (error, usage) => {
-  console.error(`Error parsing arguments. ${error.message}`);
+  console.error('Error: ' + error.message);
   console.log(usage);
 };
 
-const handleDefault: CommandHandler<Options> = ({ args, globals, options }) => {
-  throw new ValidationError('No command specified'); // Redirect to error handler
+const handleDefault: CommandHandler<Options> = ({
+  args,
+  globals,
+  options,
+  usage,
+}) => {
+  const cmd = args[0];
+  const errorMessage = cmd ? `Unknown command: ${cmd}` : 'No command specified';
+  console.error(errorMessage);
+  console.log(usage);
 };
 
 const setGlobals: GlobalSetter<Options> = (options) => {
@@ -62,7 +79,7 @@ const setGlobals: GlobalSetter<Options> = (options) => {
 // Bring it all together
 const parser = options
   .setMeta({
-    appName: 'my-cli',
+    command: 'my-cli',
     summary: 'Work with files and folders',
     help: {
       command: 'help',
@@ -82,14 +99,19 @@ const parser = options
     args: ['from', 'to'] as const,
     description: 'Copy files from one folder to another',
   })
-  .subcommand('rm', {
-    handler: remove,
-    args: 'files',
-  })
   .subcommand('status', {
     handler: status,
     args: [] as const,
     description: 'Show the status of the repository',
+  })
+  .subcommand('rm', {
+    handler: remove,
+    args: 'files',
+  })
+  .subcommand('ls', {
+    handler: list,
+    args: undefined,
+    description: 'List files in a directory',
   })
   .onError(handleError)
   .defaultHandler(handleDefault);

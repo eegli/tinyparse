@@ -44,7 +44,7 @@ const parser = new Parser()
     defaultValue: false,
   })
   .setGlobals((options) => ({
-    callDatabase: (name: string) => `Hello, ${name}!`,
+    getUserFromDB: (name: string) => `${name} Smith`,
     log: (message: string) => {
       if (options.verbose) {
         console.log(message);
@@ -63,7 +63,7 @@ const parser = new Parser()
     defaultValue: false,
   })
   .setGlobals((options) => ({
-    callDatabase: (name: string) => `Hello, ${name}!`,
+    getUserFromDB: (name: string) => `${name} Smith`,
     log: (message: string) => {
       if (options.verbose) {
         console.log(message);
@@ -73,14 +73,14 @@ const parser = new Parser()
   .subcommand('fetch-user', {
     args: ['user-name'] as const,
     handler: ({ args, globals }) => {
-      const [userName] = args;
-      const result = globals.callDatabase(userName);
-      globals.log(result);
+      const [firstName] = args;
+      const userName = globals.getUserFromDB(firstName);
+      globals.log(`Hello, ${userName}!`);
     },
   });
 ```
 
-To allow the user to get help, we register metadata such as the app name, a summary as well as version and help commands. All of this is optional but recommended. If you do not specify a help command, Tinyparse will not assume one for you.
+To allow the user to get help, we register metadata such as the command that invokes the CLI, a summary as well as version and help commands. All of this is optional but recommended. If you do not specify a help command, Tinyparse will not assume one for you.
 
 ```ts
 const parser = new Parser()
@@ -90,7 +90,7 @@ const parser = new Parser()
     defaultValue: false,
   })
   .setGlobals((options) => ({
-    callDatabase: (name: string) => `Hello, ${name}!`,
+    getUserFromDB: (name: string) => `${name} Smith`,
     log: (message: string) => {
       if (options.verbose) {
         console.log(message);
@@ -100,13 +100,13 @@ const parser = new Parser()
   .subcommand('fetch-user', {
     args: ['user-name'] as const,
     handler: ({ args, globals }) => {
-      const [userName] = args;
-      const result = globals.callDatabase(userName);
-      globals.log(result);
+      const [firstName] = args;
+      const userName = globals.getUserFromDB(firstName);
+      globals.log(`Hello, ${userName}!`);
     },
   })
   .setMeta({
-    appName: 'my-cli',
+    command: 'my-cli',
     summary: 'A brief description of my-cli',
     help: {
       command: 'help',
@@ -130,7 +130,7 @@ const parser = new Parser()
     defaultValue: false,
   })
   .setGlobals((options) => ({
-    callDatabase: (name: string) => `Hello, ${name}!`,
+    getUserFromDB: (name: string) => `${name} Smith`,
     log: (message: string) => {
       if (options.verbose) {
         console.log(message);
@@ -140,13 +140,13 @@ const parser = new Parser()
   .subcommand('fetch-user', {
     args: ['user-name'] as const,
     handler: ({ args, globals }) => {
-      const [userName] = args;
-      const result = globals.callDatabase(userName);
-      globals.log(result);
+      const [firstName] = args;
+      const userName = globals.getUserFromDB(firstName);
+      globals.log(`Hello, ${userName}!`);
     },
   })
   .setMeta({
-    appName: 'my-cli',
+    command: 'my-cli',
     summary: 'A brief description of my-cli',
     help: {
       command: 'help',
@@ -158,8 +158,8 @@ const parser = new Parser()
       longFlag: '--version',
     },
   })
-  .defaultHandler(({ globals }) => {
-    globals.log('No command specified');
+  .defaultHandler(({ usage }) => {
+    console.log('No command specified', '\n', usage);
   });
 ```
 
@@ -169,7 +169,13 @@ Now, we are ready to give it an array of strings, which is usually the command l
 parser.parse(['fetch-user', 'John', '-v']).call();
 ```
 
-This will print `Hello, John!` to the console.
+This will print `Hello, John Smith!` to the console.
+
+When we give it no arguments, the default handler is called, which will print the usage information:
+
+```ts
+parser.parse([]).call(); // No command specified...
+```
 
 To see all available commands, we can also do:
 

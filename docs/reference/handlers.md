@@ -2,13 +2,13 @@
 
 > This document specifies how **handlers** work and how they can be used. A handler is either a subcommand handler or the default handler.
 
-Because of the way the builder pattern works with TypeScript, you should always declare any options and globals _before_ you set any subcommand handlers. Handlers "see" what has previously been chained to the parser but now what will come. Hence, TypeScript will complain, although the parsing result will be correct.
+Because of the way the builder pattern works with TypeScript, you should always declare any options and globals _before_ you set any subcommand handlers. Handlers "see" what has previously been chained to the parser but not what will come. Hence, TypeScript will complain, although the parsing result will be correct.
 
 ## How Parsing Works
 
 The **order of operations when parsing** is as follows:
 
-1. The _first_ positional argument is matched against a token that identifies a **subparser**. If a subparser is found, the remaining positional arguments are passed to the subparser. This could go on recursively if the subparser has its own subparsers. If no subparser is found, the token is matched against a possible **metacommand** (like `help` or `version`). If no metacommand is registered, we check for a **subcommand**. If no subcommand is found, the default handler is chosen to be invoked later.
+1. The _first_ positional argument is matched against a token that identifies a **subparser**. If a subparser is found, the remaining arguments are passed to the subparser. This could go on recursively if the subparser has its own subparsers. If no subparser is found, the token is matched against a possible **metacommand** (like `help` or `version`). If no metacommand is registered, we check for a **subcommand**. If no subcommand is found, the default handler is chosen to be invoked later.
 
 2. **Options/flags are collected** and validated
 3. **Globals are set** using the global setter function and the options as arguments
@@ -25,7 +25,7 @@ Because you might want to do things _before_ invoking a handler, `.parse([...arg
 
 ## Declaring Handlers
 
-A default handler can be declared either inline or externally, just like a subcommand handler. The difference between a subcommand and default handler is that the default handler has no constraint on the number of arguments it accepts. It simply receives all positional arguments. Other than that, it also has access to the globals and options.
+A default handler can be declared either inline or externally, just like a subcommand handler. The difference between a subcommand and default handler is that the default handler has no constraint on the number of arguments it accepts. It simply receives all positional arguments. Other than that, it also has access to the globals, options and usage text.
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
@@ -37,8 +37,9 @@ const defaultHandler: CommandHandler<typeof options> = ({
   args,
   globals,
   options,
+  usage,
 }) => {
-  console.log({ args, globals, options });
+  console.log({ args, globals, options, usage });
 };
 
 const executeHandler = new Parser()
@@ -53,7 +54,8 @@ expect(consoleLog).toHaveBeenCalledWith({
   args: ['hello', 'world'],
   globals: {},
   options: {},
+  usage: expect.any(String),
 });
 ```
 
-Default handlers can be a good place to handle things that Tinyparse is not opinionated about. For example, you can print an error to the console and tell the user that they should select one of the available subcommands. If you need to display the full help text, you can throw a `ValidationError` here and capture it in the error handler, which has access to the help text. See the advanced example for more information.
+Default handlers can be a good place to handle things that Tinyparse is not opinionated about. For example, you can print an error to the console and tell the user that they should select one of the available subcommands. You can also log the usage text to the console so that the user knows what to do next. The usage text is the same as if the app were invoked with a help command or flag (if defined).

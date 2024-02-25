@@ -17,10 +17,3 @@ All arguments until the first flag are considered **subcommands** (and their arg
 | `log -n 5`         | `[subcommand] [short flag] [flag arg]`                 | ✅      |
 
 The table above depicts a few common ways of how arguments can be passed to a CLI using git as an example. Tinyparse supports all of them as well as arbitrary combinations. **Everything from subcommands to flags is completely optional**. You can build a CLI that only takes positional arguments, only flags, or a mix of both.
-
-## Limitations
-
-- Tinyparse supports only subcommands in the first level
-- All options are global, meaning you cannot (yet) define options that are only valid for a specific subcommand.
-
-I am planning to support arbitrary nesting of subcommands and options in the future, maybe via allowing a dedicated subparser for each subcommand.

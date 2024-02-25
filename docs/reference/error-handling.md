@@ -18,10 +18,11 @@ If any of these errors - they are _parsing errors_ - occur, a `ValidationError` 
 import { Parser } from '@eegli/tinyparse';
 import type { ErrorHandler } from '@eegli/tinyparse';
 
-const errorHandler: ErrorHandler = (error, help) => {
+const errorHandler: ErrorHandler = (error, usage) => {
   console.log(error.message);
   // Missing required option --foo
-  console.log(help);
+  console.log(usage);
+  // Usage: ...
 };
 
 new Parser()
@@ -36,4 +37,4 @@ new Parser()
   .call();
 ```
 
-The error hander will get the `ValidationError` as its first argument and the help string as the second. From there, you can extract the message and customize what you want to display to the user.
+The error hander will get the `ValidationError` as its first argument and the usage/help string as the second. From there, you can extract the message and customize what you want to display to the user.

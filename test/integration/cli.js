@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // filename: cli.ts
-import { Parser, ValidationError, } from '@eegli/tinyparse';
+import { Parser, } from '@eegli/tinyparse';
 // Define the flag options
 const options = new Parser()
     .option('verbose', {
@@ -27,13 +27,25 @@ const status = ({ globals }) => {
     const { userName } = globals;
     console.log(`Showing status for user: ${userName}`);
 };
+const list = ({ args }) => {
+    const directory = args[0];
+    if (directory) {
+        console.log(`Listing files in ${directory}`);
+    }
+    else {
+        console.log('Listing files in the current directory');
+    }
+};
 // Define handlers and setters
 const handleError = (error, usage) => {
-    console.error(`Error parsing arguments. ${error.message}`);
+    console.error('Error: ' + error.message);
     console.log(usage);
 };
-const handleDefault = ({ args, globals, options }) => {
-    throw new ValidationError('No command specified'); // Redirect to error handler
+const handleDefault = ({ args, globals, options, usage, }) => {
+    const cmd = args[0];
+    const errorMessage = cmd ? `Unknown command: ${cmd}` : 'No command specified';
+    console.error(errorMessage);
+    console.log(usage);
 };
 const setGlobals = (options) => {
     return {
@@ -44,7 +56,7 @@ const setGlobals = (options) => {
 // Bring it all together
 const parser = options
     .setMeta({
-    appName: 'my-cli',
+    command: 'my-cli',
     summary: 'Work with files and folders',
     help: {
         command: 'help',
@@ -64,14 +76,19 @@ const parser = options
     args: ['from', 'to'],
     description: 'Copy files from one folder to another',
 })
-    .subcommand('rm', {
-    handler: remove,
-    args: 'files',
-})
     .subcommand('status', {
     handler: status,
     args: [],
     description: 'Show the status of the repository',
+})
+    .subcommand('rm', {
+    handler: remove,
+    args: 'files',
+})
+    .subcommand('ls', {
+    handler: list,
+    args: undefined,
+    description: 'List files in a directory',
 })
     .onError(handleError)
     .defaultHandler(handleDefault);

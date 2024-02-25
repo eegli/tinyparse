@@ -6,11 +6,12 @@ import {
   DefaultHandler,
   Downcast,
   ErrorHandler,
-  FlagOptionValue,
   FlagOptions,
+  FlagValue,
   FlagValueRecord,
   MetaOptions,
   Subcommand,
+  Subparser,
 } from './types';
 
 export class CommandBuilder<
@@ -22,7 +23,6 @@ export class CommandBuilder<
     options: new Map(),
     commands: new Map(),
     parsers: new Map(),
-    globalSetter: () => ({}) as Globals,
     defaultHandler: () => {},
   };
 
@@ -61,10 +61,7 @@ export class CommandBuilder<
     }
   };
 
-  option<K extends string, V extends FlagOptionValue>(
-    key: K,
-    opts: FlagOptions<V>,
-  ) {
+  option<K extends string, V extends FlagValue>(key: K, opts: FlagOptions<V>) {
     const { longFlag, shortFlag } = opts;
     this.#validateOption(key);
     this.#config.options.set(key, opts);
@@ -90,12 +87,12 @@ export class CommandBuilder<
 
   subparser<O extends FlagValueRecord, G extends AnyGlobal>(
     command: string,
-    parser: Parser<O, G>,
+    opts: Subparser<O, G>,
   ) {
     this.#tryRegisterCommandToken(command);
     this.#config.parsers.set(
       command,
-      parser as Parser<FlagValueRecord, AnyGlobal>,
+      opts as Subparser<FlagValueRecord, AnyGlobal>,
     );
     return this;
   }
