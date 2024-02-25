@@ -30,17 +30,14 @@ If and only if the _expected value_ (i.e., `defaultValue`) for a flag is a numbe
 Parsing will fail if either a required option is not present or the expected type does not match the input value (here, a string that can be parsed to a number):
 
 ```ts
-expect(() => {
-  parser.parse([]).call();
-}).toThrow('Missing required option --foo');
+// Throws: 'Missing required option --foo'
+parser.parse([]).call();
 
-expect(() => {
-  parser.parse(['--foo', 'zero']).call();
-}).toThrow("Invalid type for --foo. 'zero' is not a valid number");
+// Throws: "Invalid type for --foo. 'zero' is not a valid number"
+parser.parse(['--foo', 'zero']).call();
 
-expect(() => {
-  parser.parse(['--foo', '12']).call();
-}).not.toThrow();
+// Ok - "12" can be parsed as a number
+parser.parse(['--foo', '12']).call();
 ```
 
 Furthermore, _building_ a parser will fail if you declare the same option or a flag twice. This also holds for any unique identifier (such as a subcommand or subparser).
@@ -72,10 +69,9 @@ const inputs: string[][] = [
   ['--foo=false'],
   ['--foo', 'false'],
 ];
+
 for (const input of inputs) {
-  expect(() => {
-    parser.parse(input).call();
-  }).not.toThrow();
+  await expect(parser.parse(input).call()).resolves.not.toThrow();
 }
 ```
 

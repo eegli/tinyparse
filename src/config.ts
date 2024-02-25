@@ -19,7 +19,7 @@ interface CoreConfig<O extends FlagValueRecord, G extends AnyGlobal> {
 export interface CommonConfig<O extends FlagValueRecord, G extends AnyGlobal>
   extends CoreConfig<O, G> {
   defaultHandler: DefaultHandler<O, G>;
-  globalSetter?: (options: O) => G;
+  globalSetter?: (options: O) => G | Promise<G>;
   errorHandler?: ErrorHandler;
 }
 

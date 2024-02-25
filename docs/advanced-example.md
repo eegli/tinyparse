@@ -132,8 +132,8 @@ const parser = options
   .onError(handleError)
   .defaultHandler(handleDefault);
 
-export const run = (args: string[]) => {
-  parser.parse(args).call();
+const run = async (args: string[]) => {
+  await parser.parse(args).call();
 };
 
 run(process.argv.slice(2));
