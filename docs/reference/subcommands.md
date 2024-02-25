@@ -51,12 +51,11 @@ Apart from that, they have the **same effect while parsing**. Since both configu
 If the number of provided arguments does not match the pattern (i.e., any of `[]`, `[arg1]`, etc.), an error will be thrown. Here are cases when parsing for the above configuration fails:
 
 ```ts
-expect(() => {
-  parser.parse(['cmd-one-strict']).call();
-}).toThrow('cmd-one-strict expects 1 argument, got 0');
-expect(() => {
-  parser.parse(['cmd-none-strict', 'hello']).call();
-}).toThrow('cmd-none-strict expects 0 arguments, got 1');
+// Throws: 'cmd-one-strict expects 1 argument, got 0'
+parser.parse(['cmd-one-strict']).call();
+
+// Throws: 'cmd-none-strict expects 0 arguments, got 1'
+parser.parse(['cmd-none-strict', 'hello']).call();
 ```
 
 ## External Declaration
@@ -97,10 +96,11 @@ const parser = options
   })
   .defaultHandler();
 
+// Greetings from John to Mary!
 parser.parse(['send-greeting', 'Mary']).call();
-expect(consoleLog).toHaveBeenCalledWith('Greetings from John to Mary!');
+
+// GREETINGS FROM JOHN TO MARY!
 parser.parse(['send-greeting', 'Mary', '-u']).call();
-expect(consoleLog).toHaveBeenCalledWith('GREETINGS FROM JOHN TO MARY!');
 ```
 
 ## Good to Know

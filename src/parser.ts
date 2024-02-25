@@ -1,4 +1,3 @@
-import { isAsyncFunction } from 'node:util/types';
 import { FlagInputMap, transformArgv } from './argv';
 import { CommonConfig } from './config';
 import { ValidationError } from './error';
@@ -73,8 +72,7 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
   }
 
   parse(argv: string[]): {
-    call: () => void;
-    callAsync: () => Promise<void>;
+    call: () => Promise<void>;
   } {
     const [flagMap, positionals] = transformArgv(argv);
     const [subcommand, ...subcommandArgs] = positionals;
@@ -86,7 +84,7 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
 
     const usage = this.#helpPrinter.printUsage();
 
-    const callAsync = async () => {
+    const call = async () => {
       if (this.#maybeInvokeMetaCommand(flagMap, subcommand, usage)) {
         return;
       }
@@ -120,51 +118,6 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
       }
     };
 
-    const call = () => {
-      if (this.#maybeInvokeMetaCommand(flagMap, subcommand, usage)) {
-        return;
-      }
-      try {
-        const options = collectFlags(flagMap, this.#config.options) as O;
-        const setGlobals = this.#config.globalSetter || (() => ({}) as G);
-        if (isAsyncFunction(setGlobals)) {
-          throw new Error('callAsync must be used with an async global setter');
-        }
-        const globals = setGlobals(options) as G;
-        const subcommandOpts = this.#config.commands.get(subcommand);
-        if (subcommandOpts) {
-          this.#validateSubcommandArgs(
-            subcommand,
-            subcommandArgs,
-            subcommandOpts,
-          );
-          if (isAsyncFunction(subcommandOpts.handler)) {
-            throw new Error(
-              'callAsync must be used with an async command handler',
-            );
-          }
-          return subcommandOpts.handler({
-            options,
-            globals,
-            args: subcommandArgs,
-            usage,
-          });
-        }
-        if (isAsyncFunction(this.#config.defaultHandler)) {
-          throw new Error(
-            'callAsync must be used with an async default handler',
-          );
-        }
-        return this.#config.defaultHandler({
-          options,
-          globals,
-          args: positionals,
-          usage,
-        });
-      } catch (error) {
-        this.#handleError(error, usage);
-      }
-    };
-    return { call, callAsync };
+    return { call };
   }
 }

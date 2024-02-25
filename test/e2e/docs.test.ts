@@ -11,8 +11,8 @@ afterEach(() => {
 
 describe('docs', () => {
   describe('readme', () => {
-    test('default example', () => {
-      new Parser()
+    test('default example', async () => {
+      await new Parser()
         .option('occasion', {
           longFlag: '--occasion',
           shortFlag: '-o',
@@ -37,7 +37,7 @@ describe('docs', () => {
   });
 
   describe('quickstart', () => {
-    test('default example', () => {
+    test('default example', async () => {
       const parser = new Parser()
         .option('verbose', {
           longFlag: '--verbose',
@@ -77,24 +77,39 @@ describe('docs', () => {
           console.log('No command specified', '\n', usage);
         });
 
-      parser.parse(['fetch-user', 'John', '-v']).call();
+      await parser.parse(['fetch-user', 'John', '-v']).call();
       expect(consoleLog).toHaveBeenLastCalledWith('Hello, John Smith!');
 
-      parser.parse(['--help']).call();
-      expect(consoleLog).toHaveBeenLastCalledWith(
-        expect.stringMatching(/^A brief description of my-cli/),
-      );
-      parser.parse([]).call();
+      await parser.parse([]).call();
       expect(consoleLog).toHaveBeenLastCalledWith(
         expect.stringMatching(/^No command specified/),
         '\n',
         expect.any(String),
       );
+
+      await parser.parse(['--help']).call();
+      expect(consoleLog.mock.lastCall).toMatchInlineSnapshot(`
+        [
+          "A brief description of my-cli
+
+        Usage: my-cli [command] <...flags>
+
+        Commands
+           fetch-user <user-name>   
+           help                     Print this help message
+           version                  Print the version
+
+        Optional flags
+           -v, --verbose [boolean]   
+           --help                    Print this help message
+           --version                 Print the version",
+        ]
+      `);
     });
   });
 
   describe('options', () => {
-    test('throws for incorrect types or missing', () => {
+    test('throws for incorrect types or missing', async () => {
       const parser = new Parser()
         .option('foo', {
           longFlag: '--foo',
@@ -105,19 +120,16 @@ describe('docs', () => {
         })
         .defaultHandler();
 
-      expect(() => {
-        parser.parse([]).call();
-      }).toThrow('Missing required option');
-
-      expect(() => {
-        parser.parse(['--foo', 'zero']).call();
-      }).toThrow("Invalid type for --foo. 'zero' is not a valid number");
-
-      expect(() => {
-        parser.parse(['--foo', '12']).call();
-      }).not.toThrow();
+      await expect(parser.parse([]).call()).rejects.toThrow(
+        'Missing required option --foo',
+      );
+      await expect(parser.parse(['--foo', 'zero']).call()).rejects.toThrow(
+        "Invalid type for --foo. 'zero' is not a valid number",
+      );
+      // "12" can be parsed as a number
+      await expect(parser.parse(['--foo', '12']).call()).resolves.not.toThrow();
     });
-    test('boolean options', () => {
+    test('boolean options', async () => {
       const parser = new Parser()
         .option('foo', {
           longFlag: '--foo',
@@ -133,21 +145,20 @@ describe('docs', () => {
         ['--foo=false'],
         ['--foo', 'false'],
       ];
+
       for (const input of inputs) {
-        expect(() => {
-          parser.parse(input).call();
-        }).not.toThrow();
+        await expect(parser.parse(input).call()).resolves.not.toThrow();
       }
     });
   });
 
   describe('globals', () => {
-    test('default', () => {
+    test('default', async () => {
       const globals = {
         database: (name: string) => name,
       };
 
-      new Parser()
+      await new Parser()
         .setGlobals(() => globals)
         .defaultHandler(({ globals }) => {
           const user = globals.database('John');
@@ -158,7 +169,7 @@ describe('docs', () => {
 
       expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
     });
-    test('external declaration', () => {
+    test('external declaration', async () => {
       type Options = typeof options;
 
       const options = new Parser().option('verbose', {
@@ -174,12 +185,14 @@ describe('docs', () => {
         },
       });
       const parser = options.setGlobals(globalSetter).defaultHandler();
-      expect(parser.parse(['do-a-thing', '--verbose']).call()).toBeUndefined();
+      await expect(
+        parser.parse(['do-a-thing', '--verbose']).call(),
+      ).resolves.toBeUndefined();
     });
   });
 
   describe('subcommands', () => {
-    test('default', () => {
+    test('default', async () => {
       const parser = new Parser()
         .subcommand('cmd-one-strict', {
           args: ['arg1'] as const, // expects exactly one argument (strict)
@@ -209,15 +222,18 @@ describe('docs', () => {
         })
         .defaultHandler();
 
-      expect(() => {
-        parser.parse(['cmd-one-strict']).call();
-      }).toThrow('cmd-one-strict expects 1 argument, got 0');
-      expect(() => {
-        parser.parse(['cmd-none-strict', 'hello']).call();
-      }).toThrow('cmd-none-strict expects 0 arguments, got 1');
+      let args = ['cmd-one-strict'];
+      await expect(parser.parse(args).call()).rejects.toThrow(
+        'cmd-one-strict expects 1 argument, got 0',
+      );
+
+      args = ['cmd-none-strict', 'hello'];
+      await expect(parser.parse(args).call()).rejects.toThrow(
+        'cmd-none-strict expects 0 arguments, got 1',
+      );
     });
 
-    test('external declaration', () => {
+    test('external declaration', async () => {
       type Options = typeof options;
 
       const subcommandHandler: CommandHandler<Options, [string]> = (params) => {
@@ -248,21 +264,22 @@ describe('docs', () => {
         })
         .defaultHandler();
 
-      parser.parse(['send-greeting', 'Mary']).call();
+      await parser.parse(['send-greeting', 'Mary']).call();
       expect(consoleLog).toHaveBeenCalledWith('Greetings from John to Mary!');
-      parser.parse(['send-greeting', 'Mary', '-u']).call();
+
+      await parser.parse(['send-greeting', 'Mary', '-u']).call();
       expect(consoleLog).toHaveBeenCalledWith('GREETINGS FROM JOHN TO MARY!');
     });
   });
 
   describe('handlers', () => {
-    test('default', () => {
-      expect(() => {
-        new Parser().defaultHandler().parse([]).call();
-      }).not.toThrow();
+    test('default', async () => {
+      await expect(
+        new Parser().defaultHandler().parse([]).call(),
+      ).resolves.not.toThrow();
     });
 
-    test('default handler', () => {
+    test('default handler', async () => {
       const options = new Parser();
 
       const defaultHandler: CommandHandler<typeof options> = ({
@@ -280,7 +297,7 @@ describe('docs', () => {
 
       // Time goes by...
 
-      executeHandler();
+      await executeHandler();
 
       expect(consoleLog).toHaveBeenCalledWith({
         args: ['hello', 'world'],
@@ -292,7 +309,7 @@ describe('docs', () => {
   });
 
   describe('subparsers', () => {
-    test('default', () => {
+    test('default', async () => {
       const subparser = new Parser()
         .setMeta({
           version: {
@@ -315,15 +332,16 @@ describe('docs', () => {
         })
         .defaultHandler();
 
-      parser.parse(['--version']).call();
+      await parser.parse(['--version']).call();
       expect(consoleLog).toHaveBeenLastCalledWith('1.0.0');
-      parser.parse(['v2', '--version']).call();
+
+      await parser.parse(['v2', '--version']).call();
       expect(consoleLog).toHaveBeenLastCalledWith('2.0.0');
     });
   });
 
   describe('help and meta', () => {
-    test('calls help printer', () => {
+    test('calls help printer', async () => {
       const parser = new Parser()
         .setMeta({
           command: 'my-cli',
@@ -362,9 +380,9 @@ describe('docs', () => {
         })
         .defaultHandler();
 
-      parser.parse(['help']).call();
-      parser.parse(['--help']).call();
-      parser.parse(['-h']).call();
+      await parser.parse(['help']).call();
+      await parser.parse(['--help']).call();
+      await parser.parse(['-h']).call();
 
       expect(consoleLog).toHaveBeenCalledTimes(3);
 
@@ -394,7 +412,7 @@ describe('docs', () => {
            -V, --version        Print the version"
       `);
     });
-    test('displays version', () => {
+    test('displays version', async () => {
       const parser = new Parser()
         .setMeta({
           command: 'my-cli',
@@ -408,9 +426,9 @@ describe('docs', () => {
         })
         .defaultHandler();
 
-      parser.parse(['version']).call();
-      parser.parse(['--version']).call();
-      parser.parse(['-V']).call();
+      await parser.parse(['version']).call();
+      await parser.parse(['--version']).call();
+      await parser.parse(['-V']).call();
 
       expect(consoleLog).toHaveBeenCalledTimes(3);
 
@@ -424,48 +442,8 @@ describe('docs', () => {
       expect(firstVersionMessage).toBe('1.0.0');
     });
   });
-
-  describe('async', () => {
-    /* eslint-disable require-await */
-    test('async', async () => {
-      const parser = new Parser()
-        .option('token', {
-          longFlag: '--token',
-          required: true,
-          defaultValue: '',
-        })
-        .setGlobals(async ({ token }) => {
-          // Use the token to establish a connection
-          return { database: async (name: string) => name };
-        })
-        .defaultHandler(async ({ args, globals }) => {
-          const user = await globals.database(args[0]);
-          console.log(`Hello, ${user}!`);
-        })
-        .parse(['John', '--token', '123']);
-
-      await parser.callAsync(); // Async call API
-      expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
-    });
-    test('async validation', () => {
-      expect(() => {
-        new Parser()
-          .setGlobals(async () => {
-            return { database: async (name: string) => name };
-          })
-          .defaultHandler(async ({ globals }) => {
-            const user = await globals.database('John');
-            console.log(`Hello, ${user}!`);
-          })
-          .parse([])
-          .call(); // Whoops, wrong API
-      }).toThrow('callAsync must be used with an async global setter');
-    });
-    /* eslint-enable require-await */
-  });
-
   describe('error handling', () => {
-    test('catches error', () => {
+    test('catches error', async () => {
       const errorHandler: ErrorHandler = (error, usage) => {
         console.log(error.message);
         // Missing required option --foo
@@ -473,7 +451,7 @@ describe('docs', () => {
         // Usage: ...
       };
 
-      new Parser()
+      await new Parser()
         .option('foo', {
           longFlag: '--foo',
           required: true,
@@ -498,6 +476,34 @@ describe('docs', () => {
           ],
         ]
       `);
+    });
+  });
+  describe('async', () => {
+    /* eslint-disable require-await */
+    test('async', async () => {
+      const consoleLog = jest
+        .spyOn(console, 'log')
+        .mockImplementation(() => {});
+
+      const parser = new Parser()
+        .option('token', {
+          longFlag: '--token',
+          required: true,
+          defaultValue: '',
+        })
+        .setGlobals(async ({ token }) => {
+          // Use the token to establish a connection
+          return { database: async (name: string) => name };
+        })
+        .defaultHandler(async ({ args, globals }) => {
+          const user = await globals.database(args[0]);
+          console.log(`Hello, ${user}!`);
+        })
+        .parse(['John', '--token', '123']);
+
+      await parser.call();
+
+      expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
     });
   });
 });
