@@ -13,7 +13,7 @@ The **order of operations when parsing** is as follows:
 2. **Options/flags are collected** and validated
 3. **Globals are set** using the global setter function and the options as arguments
 4. **A bound handler is created** with the globals, the options, and the positional arguments
-5. An object with a `.call()` method is returned, which, when called, will invoke the default or subcommand handler
+5. An object with a `.call()` and `.callAsync()` (see the docs about [async](/reference/async-operations.md)) method is returned, which, when called, will invoke the default or subcommand handler
 
 Setting a default handler is optional. If a parser is created without a default handler, it simply does nothing when no subcommand matches. Hence, the minimal (noop) parser looks like this:
 

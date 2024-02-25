@@ -1,3 +1,4 @@
+import { isAsyncFunction } from 'node:util/types';
 import { FlagInputMap, transformArgv } from './argv';
 import { CommonConfig } from './config';
 import { ValidationError } from './error';
@@ -9,7 +10,6 @@ import {
   FlagValueRecord,
   Subcommand,
 } from './types';
-
 export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
   #config: CommonConfig<O, G>;
   #helpPrinter: HelpPrinter<O, G>;
@@ -65,47 +65,50 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     }
     return false;
   }
+  #handleError(error: unknown, usage: string) {
+    if (error instanceof ValidationError && this.#config.errorHandler) {
+      return this.#config.errorHandler(error, usage);
+    }
+    throw error;
+  }
 
   parse(argv: string[]): {
     call: () => void;
+    callAsync: () => Promise<void>;
   } {
     const [flagMap, positionals] = transformArgv(argv);
     const [subcommand, ...subcommandArgs] = positionals;
 
     const subparser = this.#config.parsers.get(subcommand);
-
     if (subparser) {
       return subparser.parser.parse(argv.slice(1));
     }
 
     const usage = this.#helpPrinter.printUsage();
 
-    const call = () => {
+    const callAsync = async () => {
       if (this.#maybeInvokeMetaCommand(flagMap, subcommand, usage)) {
         return;
       }
-
       try {
         const options = collectFlags(flagMap, this.#config.options) as O;
+        const setGlobals = this.#config.globalSetter || (() => ({}) as G);
+        const globals = await setGlobals(options);
         const subcommandOpts = this.#config.commands.get(subcommand);
-        const globals = this.#config.globalSetter
-          ? (this.#config.globalSetter(options) as G)
-          : ({} as G);
-
         if (subcommandOpts) {
           this.#validateSubcommandArgs(
             subcommand,
             subcommandArgs,
             subcommandOpts,
           );
-          return subcommandOpts.handler({
+          return await subcommandOpts.handler({
             options,
             globals,
             args: subcommandArgs,
             usage,
           });
         } else {
-          return this.#config.defaultHandler({
+          return await this.#config.defaultHandler({
             options,
             globals,
             args: positionals,
@@ -113,12 +116,55 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
           });
         }
       } catch (error) {
-        if (error instanceof ValidationError && this.#config.errorHandler) {
-          return this.#config.errorHandler(error, usage);
-        }
-        throw error;
+        this.#handleError(error, usage);
       }
     };
-    return { call };
+
+    const call = () => {
+      if (this.#maybeInvokeMetaCommand(flagMap, subcommand, usage)) {
+        return;
+      }
+      try {
+        const options = collectFlags(flagMap, this.#config.options) as O;
+        const setGlobals = this.#config.globalSetter || (() => ({}) as G);
+        if (isAsyncFunction(setGlobals)) {
+          throw new Error('callAsync must be used with an async global setter');
+        }
+        const globals = setGlobals(options) as G;
+        const subcommandOpts = this.#config.commands.get(subcommand);
+        if (subcommandOpts) {
+          this.#validateSubcommandArgs(
+            subcommand,
+            subcommandArgs,
+            subcommandOpts,
+          );
+          if (isAsyncFunction(subcommandOpts.handler)) {
+            throw new Error(
+              'callAsync must be used with an async command handler',
+            );
+          }
+          return subcommandOpts.handler({
+            options,
+            globals,
+            args: subcommandArgs,
+            usage,
+          });
+        }
+        if (isAsyncFunction(this.#config.defaultHandler)) {
+          throw new Error(
+            'callAsync must be used with an async default handler',
+          );
+        }
+        return this.#config.defaultHandler({
+          options,
+          globals,
+          args: positionals,
+          usage,
+        });
+      } catch (error) {
+        this.#handleError(error, usage);
+      }
+    };
+    return { call, callAsync };
   }
 }

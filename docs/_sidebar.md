@@ -7,5 +7,6 @@
   - [Subparsers](reference/subparsers.md)
   - [Help and Metadata](reference/help-and-meta.md)
   - [Error Handling](reference/error-handling.md)
+  - [Async Operations](reference/async-operations.md)
 - [Advanced Example](advanced-example.md)
 - [Contributing](contributing.md)

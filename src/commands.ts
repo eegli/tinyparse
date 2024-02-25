@@ -97,7 +97,9 @@ export class CommandBuilder<
     return this;
   }
 
-  setGlobals<G extends Globals>(setGlobals: (options: Options) => G) {
+  setGlobals<G extends Globals>(
+    setGlobals: (options: Options) => G | Promise<G>,
+  ) {
     this.#config.globalSetter = setGlobals;
     return this as unknown as CommandBuilder<Options, G>;
   }

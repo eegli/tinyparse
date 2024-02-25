@@ -153,6 +153,61 @@ describe('parser', () => {
       }).not.toThrow();
     }
   });
+  test('awaits async', async () => {
+    const parser = new Parser({
+      meta: {},
+      commands: new Map(),
+      options: new Map(),
+      parsers: new Map(),
+      /* eslint-disable-next-line require-await */
+      globalSetter: async () => ({ database: 'db' }),
+      defaultHandler,
+    });
+    await parser.parse([]).callAsync();
+    expect(defaultHandler).toHaveBeenCalledTimes(1);
+    expect(defaultHandler).toHaveBeenCalledWith(
+      expect.objectContaining({ globals: { database: 'db' } }),
+    );
+  });
+  test('throws if async is used with sync api', () => {
+    expect(() => {
+      new Parser({
+        meta: {},
+        commands: new Map(),
+        options: new Map(),
+        parsers: new Map(),
+        /* eslint-disable-next-line require-await */
+        globalSetter: async () => ({ database: 'db' }),
+        defaultHandler,
+      })
+        .parse([])
+        .call();
+    }).toThrow('callAsync must be used with an async global setter');
+    expect(() => {
+      new Parser({
+        meta: {},
+        commands: new Map(),
+        options: new Map(),
+        parsers: new Map(),
+        /* eslint-disable-next-line require-await */
+        defaultHandler: async () => {},
+      })
+        .parse([])
+        .call();
+    }).toThrow('callAsync must be used with an async default handler');
+    expect(() => {
+      new Parser({
+        meta: {},
+        /* eslint-disable-next-line require-await */
+        commands: new Map([['a', { args: [], handler: async () => {} }]]),
+        options: new Map(),
+        parsers: new Map(),
+        defaultHandler: defaultHandler,
+      })
+        .parse(['a'])
+        .call();
+    }).toThrow('callAsync must be used with an async command handler');
+  });
   test('binds call', () => {
     const { call } = parser.parse(['a', 'b']);
     call();

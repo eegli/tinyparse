@@ -41,6 +41,7 @@ I use this mostly for other pet projects of mine so it comes with some opinions 
 
 - TypeScript first - 100% type-safety
 - Supports subcommands and flag options
+- Sync and async API
 - Lightweight - Zero dependencies
 - Mega customizable
 

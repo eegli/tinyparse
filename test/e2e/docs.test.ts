@@ -425,6 +425,45 @@ describe('docs', () => {
     });
   });
 
+  describe('async', () => {
+    /* eslint-disable require-await */
+    test('async', async () => {
+      const parser = new Parser()
+        .option('token', {
+          longFlag: '--token',
+          required: true,
+          defaultValue: '',
+        })
+        .setGlobals(async ({ token }) => {
+          // Use the token to establish a connection
+          return { database: async (name: string) => name };
+        })
+        .defaultHandler(async ({ args, globals }) => {
+          const user = await globals.database(args[0]);
+          console.log(`Hello, ${user}!`);
+        })
+        .parse(['John', '--token', '123']);
+
+      await parser.callAsync(); // Async call API
+      expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
+    });
+    test('async validation', () => {
+      expect(() => {
+        new Parser()
+          .setGlobals(async () => {
+            return { database: async (name: string) => name };
+          })
+          .defaultHandler(async ({ globals }) => {
+            const user = await globals.database('John');
+            console.log(`Hello, ${user}!`);
+          })
+          .parse([])
+          .call(); // Whoops, wrong API
+      }).toThrow('callAsync must be used with an async global setter');
+    });
+    /* eslint-enable require-await */
+  });
+
   describe('error handling', () => {
     test('catches error', () => {
       const errorHandler: ErrorHandler = (error, usage) => {
