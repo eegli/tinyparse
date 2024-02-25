@@ -1,5 +1,11 @@
 # @eegli/tinyparse
 
+## 0.18.0
+
+### Minor Changes
+
+- cf32aeb: Tinyparse is now asynchronous by default, allowing you to use async handlers and setters!
+
 ## 0.17.1
 
 ### Patch Changes
