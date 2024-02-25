@@ -28,6 +28,7 @@ const status = ({ globals }) => {
     console.log(`Showing status for user: ${userName}`);
 };
 const list = ({ args }) => {
+    // We may or may not have a directory
     const directory = args[0];
     if (directory) {
         console.log(`Listing files in ${directory}`);
@@ -92,7 +93,7 @@ const parser = options
 })
     .onError(handleError)
     .defaultHandler(handleDefault);
-export const run = (args) => {
-    parser.parse(args).call();
+export const run = async (args) => {
+    await parser.parse(args).call();
 };
-run(process.argv.slice(2));
+// run(process.argv.slice(2));
