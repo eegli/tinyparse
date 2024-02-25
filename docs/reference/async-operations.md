@@ -1,6 +1,6 @@
 # Async Operations
 
-> This document describes how the parser can operate in **asynchronous** mode.
+> This document describes how asynchronous operations are handled.
 
 Tinyparse is asynchronous by default, allowing you to run asynchronous code in any of the three configuration areas:
 
