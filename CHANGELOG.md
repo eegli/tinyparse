@@ -1,5 +1,18 @@
 # @eegli/tinyparse
 
+## 0.18.1
+
+### Patch Changes
+
+- d8767c5: Parsers now expose default options
+- d8767c5: New utility types that allow for modular handler declaration!
+
+## 0.18.0
+
+### Minor Changes
+
+- cf32aeb: Tinyparse is now asynchronous by default, allowing you to use async handlers and setters!
+
 ## 0.17.1
 
 ### Patch Changes

@@ -42,20 +42,59 @@ const defaultHandler: CommandHandler<typeof options> = ({
   console.log({ args, globals, options, usage });
 };
 
-const executeHandler = new Parser()
-  .defaultHandler(defaultHandler)
-  .parse(['hello', 'world']).call;
-
-// Time goes by...
-
-await executeHandler();
-
-expect(consoleLog).toHaveBeenCalledWith({
-  args: ['hello', 'world'],
-  globals: {},
-  options: {},
-  usage: expect.any(String),
-});
+options.defaultHandler(defaultHandler).parse(['hello', 'world']).call();
 ```
 
 Default handlers can be a good place to handle things that Tinyparse is not opinionated about. For example, you can print an error to the console and tell the user that they should select one of the available subcommands. You can also log the usage text to the console so that the user knows what to do next. The usage text is the same as if the app were invoked with a help command or flag (if defined).
+
+## Modular Declaration
+
+In the above example, we use the `CommandHandler` type to declare the default handler. This will annotate the function as taking an object literal with all parameters. Hence, if you want to invoke it somewhere else - like in a test - you will need to pass values for `args`, `globals`, `options`, and `usage`. This is a bit cumbersome. You can declare default and subcommand handlers more modularly by specifiying _exactly_ what they need using the `Handler*` utility types:
+
+```ts
+import { Parser } from '@eegli/tinyparse';
+import type {
+  HandlerParams,
+  HandlerGlobals,
+  HandlerOptions,
+} from '@eegli/tinyparse';
+
+const options = new Parser();
+
+type Globals = HandlerGlobals<typeof options>;
+type Options = HandlerOptions<typeof options>;
+
+// Handler that only needs options and globals
+type DefaultHandler = HandlerParams<Options, never, Globals>;
+
+const defaultHandler: DefaultHandler = ({ globals, options }) => {
+  console.log({ globals, options });
+};
+
+// Other possible options...
+
+// No parameters
+type NoParamsHandler = HandlerParams;
+const noopHandler: NoParamsHandler = () => {};
+
+// Positional arguments and options only
+type HandlerWithArgs = HandlerParams<Options, [string]>;
+const handlerWithArgs: HandlerWithArgs = ({ options, args }) => {};
+
+// Usage only
+type HandlerWithUsage = HandlerParams<never, never, never, string>;
+const handlerWithUsage: HandlerWithUsage = ({ usage }) => {};
+```
+
+In the above example, we specify a handful of handlers, each of which only needs a subset of what Tinyparse feeds it. `HandlerParams` has the following signature:
+
+```ts
+type HandlerParams<
+  Options extends FlagValueRecord = never,
+  Args extends string[] = never,
+  Globals extends AnyGlobal = never,
+  Usage extends string = never,
+> = (...)
+```
+
+In summary, the `CommandHandler` can be a useful shortcut, but if you only need a subset of the parameters, it might make sense to declare the handler more modularly.

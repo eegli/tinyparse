@@ -61,6 +61,9 @@ export class CommandBuilder<
     }
   };
 
+  /**
+   * Add an option (flag)
+   */
   option<K extends string, V extends FlagValue>(key: K, opts: FlagOptions<V>) {
     const { longFlag, shortFlag } = opts;
     this.#validateOption(key);
@@ -76,6 +79,9 @@ export class CommandBuilder<
     >;
   }
 
+  /**
+   * Add a subcommand
+   */
   subcommand<A extends CommandArgPattern>(
     command: string,
     opts: Subcommand<Options, Globals, A>,
@@ -85,18 +91,18 @@ export class CommandBuilder<
     return this;
   }
 
-  subparser<O extends FlagValueRecord, G extends AnyGlobal>(
-    command: string,
-    opts: Subparser<O, G>,
-  ) {
+  /**
+   * Add a subparser
+   */
+  subparser(command: string, opts: Subparser<FlagValueRecord, AnyGlobal>) {
     this.#tryRegisterCommandToken(command);
-    this.#config.parsers.set(
-      command,
-      opts as Subparser<FlagValueRecord, AnyGlobal>,
-    );
+    this.#config.parsers.set(command, opts);
     return this;
   }
 
+  /**
+   * Set the globals
+   */
   setGlobals<G extends Globals>(
     setGlobals: (options: Options) => G | Promise<G>,
   ) {
@@ -104,6 +110,9 @@ export class CommandBuilder<
     return this as unknown as CommandBuilder<Options, G>;
   }
 
+  /**
+   * Set metadata
+   */
   setMeta(meta: MetaOptions) {
     this.#tryRegisterCommandToken(meta.help?.command);
     this.#tryRegisterCommandToken(meta.version?.command);
@@ -117,11 +126,17 @@ export class CommandBuilder<
     return this;
   }
 
+  /**
+   * Set the error handler
+   */
   onError(handler: ErrorHandler) {
     this.#config.errorHandler = handler;
     return this;
   }
 
+  /**
+   * Set the default handler
+   */
   defaultHandler(handler?: DefaultHandler<Options, Globals>) {
     return new Parser<Options, Globals>({
       ...this.#config,
