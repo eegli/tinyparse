@@ -78,10 +78,10 @@ export type Subparser<O extends FlagValueRecord, G extends AnyGlobal> = {
 /**
  * A map of subparsers and their settings.
  */
-export type SubparserOptionsMap<
-  O extends FlagValueRecord = FlagValueRecord,
-  G extends AnyGlobal = AnyGlobal,
-> = Map<string, Subparser<O, G>>;
+export type SubparserOptionsMap = Map<
+  string,
+  Subparser<FlagValueRecord, AnyGlobal>
+>;
 
 export type HelpOptions = {
   command?: string;

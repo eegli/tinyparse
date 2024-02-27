@@ -13,7 +13,7 @@ interface CoreConfig<O extends FlagValueRecord, G extends AnyGlobal> {
   meta: MetaOptions;
   options: FlagOptionsMap;
   commands: CommandOptionsMap<O, G>;
-  parsers: SubparserOptionsMap<FlagValueRecord, AnyGlobal>;
+  parsers: SubparserOptionsMap;
 }
 
 export interface CommonConfig<O extends FlagValueRecord, G extends AnyGlobal>

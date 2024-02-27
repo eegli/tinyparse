@@ -126,7 +126,6 @@ describe('docs', () => {
           description: 'Foo option',
         })
         .defaultHandler();
-
       await expect(parser.parse([]).call()).rejects.toThrow(
         'Missing required option --foo',
       );
@@ -135,6 +134,18 @@ describe('docs', () => {
       );
       // "12" can be parsed as a number
       await expect(parser.parse(['--foo', '12']).call()).resolves.not.toThrow();
+    });
+    test('option access', () => {
+      const parser = new Parser()
+        .option('foo', {
+          longFlag: '--foo',
+          shortFlag: '-f',
+          defaultValue: 0,
+          required: true,
+          description: 'Foo option',
+        })
+        .defaultHandler();
+      expect(parser.options).toEqual({ foo: 0 });
     });
     test('boolean options', async () => {
       const parser = new Parser()
@@ -312,7 +323,10 @@ describe('docs', () => {
     });
 
     test('modular declaration', () => {
-      const options = new Parser();
+      const options = new Parser().option('foo', {
+        longFlag: '--foo',
+        defaultValue: 'default',
+      });
 
       type Globals = HandlerGlobals<typeof options>;
       type Options = HandlerOptions<typeof options>;
