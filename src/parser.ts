@@ -9,19 +9,33 @@ import {
   FlagValueRecord,
   Subcommand,
 } from './types';
-export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
-  #config: CommonConfig<O, G>;
-  #helpPrinter: HelpPrinter<O, G>;
+export class Parser<
+  Options extends FlagValueRecord,
+  Globals extends AnyGlobal,
+> {
+  #config: CommonConfig<Options, Globals>;
+  #helpPrinter: HelpPrinter<Options, Globals>;
 
-  constructor(config: CommonConfig<O, G>) {
+  constructor(config: CommonConfig<Options, Globals>) {
     this.#config = config;
     this.#helpPrinter = new HelpPrinter(config);
+  }
+
+  /**
+   * Get the default options with their default values
+   */
+  get options(): Options {
+    const entries = [...this.#config.options.entries()].map(([k, v]) => [
+      k,
+      v.defaultValue,
+    ]);
+    return Object.fromEntries(entries);
   }
 
   #validateSubcommandArgs(
     command: string,
     args: string[],
-    commandOpts: Subcommand<O, G, CommandArgPattern>,
+    commandOpts: Subcommand<Options, Globals, CommandArgPattern>,
   ) {
     if (Array.isArray(commandOpts.args)) {
       const expectedNumArgs = commandOpts.args.length;
@@ -71,6 +85,9 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
     throw error;
   }
 
+  /**
+   * Parse the given argv and return a function to call the appropriate handler
+   */
   parse(argv: string[]): {
     call: () => Promise<void>;
   } {
@@ -89,8 +106,8 @@ export class Parser<O extends FlagValueRecord, G extends AnyGlobal> {
         return;
       }
       try {
-        const options = collectFlags(flagMap, this.#config.options) as O;
-        const setGlobals = this.#config.globalSetter || (() => ({}) as G);
+        const options = collectFlags(flagMap, this.#config.options) as Options;
+        const setGlobals = this.#config.globalSetter || (() => ({}) as Globals);
         const globals = await setGlobals(options);
         const subcommandOpts = this.#config.commands.get(subcommand);
         if (subcommandOpts) {

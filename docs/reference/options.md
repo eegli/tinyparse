@@ -18,12 +18,18 @@ const parser = new Parser()
   .defaultHandler();
 ```
 
-- `shortFlag` is the short flag _alias_ that will match the option
+- `shortFlag` is the short flag _alias_ that will match the option. It must start with `-`
 - `defaultValue` is used to _infer_ the type of the option. To make this possible, it can only be of **four easily checkable types**: `string`, `number`, `boolean` or `Date`
 - `required` indicates whether the option is required or not
 - `description` is used to generate the help text
 
-If and only if the _expected value_ (i.e., `defaultValue`) for a flag is a number or valid Javascript date string, Tinyparse will try to convert it accordingly.
+If and only if the _expected value_ (i.e., `defaultValue`) for a flag is a _number_ or valid Javascript _date string_, Tinyparse will try to convert it accordingly.
+
+Default option values can be accessed via the `options` getter:
+
+```ts
+parser.options; // { foo: 0 }
+```
 
 ## Validation
 

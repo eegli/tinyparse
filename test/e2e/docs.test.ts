@@ -1,4 +1,11 @@
-import type { CommandHandler, ErrorHandler, GlobalSetter } from '../../src';
+import type {
+  CommandHandler,
+  ErrorHandler,
+  GlobalSetter,
+  HandlerGlobals,
+  HandlerOptions,
+  HandlerParams,
+} from '../../src';
 import { Parser } from '../../src';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -92,7 +99,7 @@ describe('docs', () => {
         [
           "A brief description of my-cli
 
-        Usage: my-cli [command] <...flags>
+        Usage: my-cli [command?] <...flags>
 
         Commands
            fetch-user <user-name>   
@@ -119,7 +126,6 @@ describe('docs', () => {
           description: 'Foo option',
         })
         .defaultHandler();
-
       await expect(parser.parse([]).call()).rejects.toThrow(
         'Missing required option --foo',
       );
@@ -128,6 +134,18 @@ describe('docs', () => {
       );
       // "12" can be parsed as a number
       await expect(parser.parse(['--foo', '12']).call()).resolves.not.toThrow();
+    });
+    test('option access', () => {
+      const parser = new Parser()
+        .option('foo', {
+          longFlag: '--foo',
+          shortFlag: '-f',
+          defaultValue: 0,
+          required: true,
+          description: 'Foo option',
+        })
+        .defaultHandler();
+      expect(parser.options).toEqual({ foo: 0 });
     });
     test('boolean options', async () => {
       const parser = new Parser()
@@ -279,7 +297,7 @@ describe('docs', () => {
       ).resolves.not.toThrow();
     });
 
-    test('default handler', async () => {
+    test('external declaration', async () => {
       const options = new Parser();
 
       const defaultHandler: CommandHandler<typeof options> = ({
@@ -291,13 +309,10 @@ describe('docs', () => {
         console.log({ args, globals, options, usage });
       };
 
-      const executeHandler = new Parser()
+      await options
         .defaultHandler(defaultHandler)
-        .parse(['hello', 'world']).call;
-
-      // Time goes by...
-
-      await executeHandler();
+        .parse(['hello', 'world'])
+        .call();
 
       expect(consoleLog).toHaveBeenCalledWith({
         args: ['hello', 'world'],
@@ -305,6 +320,43 @@ describe('docs', () => {
         options: {},
         usage: expect.any(String),
       });
+    });
+
+    test('modular declaration', () => {
+      const options = new Parser().option('foo', {
+        longFlag: '--foo',
+        defaultValue: 'default',
+      });
+
+      type Globals = HandlerGlobals<typeof options>;
+      type Options = HandlerOptions<typeof options>;
+
+      // Handler that only needs options and globals
+      type DefaultHandler = HandlerParams<Options, never, Globals>;
+
+      const defaultHandler: DefaultHandler = ({ globals, options }) => {
+        console.log({ globals, options });
+      };
+
+      // Other possible options...
+
+      // No parameters
+      type NoParamsHandler = HandlerParams;
+      const noopHandler: NoParamsHandler = () => {};
+
+      // Positional arguments and options only
+      type HandlerWithArgs = HandlerParams<Options, [string]>;
+      const handlerWithArgs: HandlerWithArgs = ({ options, args }) => {};
+
+      // Usage only
+      type HandlerWithUsage = HandlerParams<never, never, never, string>;
+      const handlerWithUsage: HandlerWithUsage = ({ usage }) => {};
+
+      // No actual tests, just make sure this one compiles
+      expect(defaultHandler).toBeDefined();
+      expect(noopHandler).toBeDefined();
+      expect(handlerWithArgs).toBeDefined();
+      expect(handlerWithUsage).toBeDefined();
     });
   });
 
@@ -396,7 +448,7 @@ describe('docs', () => {
       expect(firstHelpMessage).toMatchInlineSnapshot(`
         "A brief description of my-cli
 
-        Usage: my-cli [command] <...flags>
+        Usage: my-cli [command?] <...flags>
 
         Commands
            baz <arg>   Baz command

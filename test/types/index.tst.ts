@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'tstyche';
 import { Parser } from '../../src';
-import { CommandArgPattern, Subcommand } from '../../src/types';
+import {
+  CommandArgPattern,
+  HandlerGlobals,
+  HandlerOptions,
+  HandlerParams,
+  Subcommand,
+} from '../../src/types';
 
 describe('subcommand option and global arguments', () => {
   const subcommand = new Parser()
@@ -64,5 +70,58 @@ describe('subcommand positional args', () => {
   });
   test('any length (literal)', () => {
     expect<HandlerArgParams<'a'>>().type.toEqual<string[]>();
+  });
+});
+
+describe('subcommand modular external definition', () => {
+  type Options = typeof options;
+  const options = new Parser()
+    .option('foo', {
+      defaultValue: 'default',
+      longFlag: '--foo',
+    })
+    .option('bar', {
+      defaultValue: 0,
+      longFlag: '--bar',
+    })
+    .setGlobals(() => ({
+      database: 'db',
+    }));
+
+  test('zero args', () => {
+    type Subcommand = HandlerParams;
+    type SubcommandParams = Parameters<Subcommand>[0];
+
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    expect<SubcommandParams>().type.toEqual<{}>();
+  });
+  test('with options', () => {
+    type Subcommand = HandlerParams<HandlerOptions<Options>>;
+    type SubcommandParams = Parameters<Subcommand>[0];
+
+    expect<SubcommandParams>().type.toEqual<{
+      options: HandlerOptions<Options>;
+    }>();
+  });
+  test('with globals and options', () => {
+    type Subcommand = HandlerParams<
+      HandlerOptions<Options>,
+      never,
+      HandlerGlobals<Options>
+    >;
+    type SubcommandParams = Parameters<Subcommand>[0];
+
+    expect<SubcommandParams>().type.toEqual<{
+      options: HandlerOptions<Options>;
+      globals: HandlerGlobals<Options>;
+    }>();
+  });
+  test('with help', () => {
+    type Subcommand = HandlerParams<never, never, never, string>;
+    type SubcommandParams = Parameters<Subcommand>[0];
+
+    expect<SubcommandParams>().type.toEqual<{
+      usage: string;
+    }>();
   });
 });

@@ -101,11 +101,11 @@ describe('Helper text', () => {
       .toMatchInlineSnapshot(`
       "This is just a text that can be shown to describe the app
 
-      Usage: my-app [command] <...flags>"
+      Usage: my-app [command?] <...flags>"
     `);
     expect(
       new Help({ meta: { command } }).formatHeader(),
-    ).toMatchInlineSnapshot(`"Usage: my-app [command] <...flags>"`);
+    ).toMatchInlineSnapshot(`"Usage: my-app [command?] <...flags>"`);
     expect(new Help({ meta: { summary } }).formatHeader())
       .toMatchInlineSnapshot(`
       "This is just a text that can be shown to describe the app
@@ -199,7 +199,7 @@ describe('Helper text', () => {
     ).toMatchInlineSnapshot(`
       "This is just a text that can be shown to describe the app
 
-      Usage: my-app [command] <...flags>
+      Usage: my-app [command?] <...flags>
 
       Commands
          a-subparser     Subparser description

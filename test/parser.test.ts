@@ -165,10 +165,26 @@ describe('parser', () => {
       expect.objectContaining({ globals: { database: 'db' } }),
     );
   });
-
   test('binds call', async () => {
     const { call } = parser.parse(['a', 'b']);
     await call();
     expect(defaultHandler).toHaveBeenCalledTimes(1);
+  });
+  test('gets default options', () => {
+    const parser = new Parser({
+      options: new Map([
+        ['foo', { defaultValue: 'default', longFlag: '--foo' }],
+        ['bar', { defaultValue: 0, longFlag: '--bar' }],
+      ]),
+      commands: new Map(),
+      parsers: new Map(),
+      meta: {},
+      defaultHandler,
+    });
+
+    expect(parser.options).toEqual({
+      foo: 'default',
+      bar: 0,
+    });
   });
 });

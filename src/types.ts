@@ -78,10 +78,10 @@ export type Subparser<O extends FlagValueRecord, G extends AnyGlobal> = {
 /**
  * A map of subparsers and their settings.
  */
-export type SubparserOptionsMap<
-  O extends FlagValueRecord = FlagValueRecord,
-  G extends AnyGlobal = AnyGlobal,
-> = Map<string, Subparser<O, G>>;
+export type SubparserOptionsMap = Map<
+  string,
+  Subparser<FlagValueRecord, AnyGlobal>
+>;
 
 export type HelpOptions = {
   command?: string;
@@ -120,6 +120,34 @@ export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
   : never;
 
 export type ErrorHandler = (error: ValidationError, usage: string) => void;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type HandlerOptions<T> = T extends CommandBuilder<infer O, any>
+  ? O
+  : never;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type HandlerGlobals<T> = T extends CommandBuilder<any, infer G>
+  ? G
+  : never;
+
+export type HandlerParams<
+  Options extends FlagValueRecord = never,
+  Args extends string[] = never,
+  Globals extends AnyGlobal = never,
+  Usage extends string = never,
+> = (
+  params: RemoveNever<{
+    options: Options;
+    args: Args;
+    globals: Globals;
+    usage: Usage;
+  }>,
+) => void | Promise<void>;
+
+type RemoveNever<T> = {
+  [K in keyof T as T[K] extends never ? never : K]: T[K];
+};
 
 export type Downcast<T> = T extends unknown[]
   ? {
