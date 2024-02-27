@@ -137,7 +137,7 @@ export class HelpPrinter<O extends FlagValueRecord, G extends AnyGlobal> {
     const command = this.#meta?.command;
 
     let str = summary ? `${summary}\n\nUsage:` : 'Usage:';
-    if (command) str += ` ${command} [command] <...flags>`;
+    if (command) str += ` ${command} [command?] <...flags>`;
     return str;
   }
 
