@@ -28,6 +28,7 @@ describe('subcommand option and global arguments', () => {
     })
     .setGlobals(() => ({
       database: 'db',
+      fetch: () => {},
     })).subcommand;
 
   type HandlerParams = Parameters<
@@ -37,6 +38,12 @@ describe('subcommand option and global arguments', () => {
   type HandlerGlobalParams = HandlerParams['globals'];
 
   test('flags are inferred', () => {
+    expect<HandlerFlagParams>().type.toBeAssignable<{
+      foo: string;
+      bar: number;
+      baz: boolean;
+      qux: Date;
+    }>();
     expect<HandlerFlagParams>().type.toMatch<{
       foo: string;
       bar: number;
@@ -45,8 +52,13 @@ describe('subcommand option and global arguments', () => {
     }>();
   });
   test('globals are inferred', () => {
+    expect<HandlerGlobalParams>().type.toBeAssignable<{
+      database: string;
+      fetch: () => void;
+    }>();
     expect<HandlerGlobalParams>().type.toMatch<{
       database: string;
+      fetch: () => void;
     }>();
   });
 });

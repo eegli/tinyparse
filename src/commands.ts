@@ -4,7 +4,7 @@ import {
   AnyGlobal,
   CommandArgPattern,
   DefaultHandler,
-  Downcast,
+  DowncastFlag,
   ErrorHandler,
   FlagOptions,
   FlagValue,
@@ -74,7 +74,7 @@ export class CommandBuilder<
 
     // TODO: Figure out how to make this typecheck properly
     return this as unknown as CommandBuilder<
-      Options & Record<K, Downcast<V>>,
+      Options & Record<K, DowncastFlag<V>>,
       Globals
     >;
   }
