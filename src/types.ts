@@ -16,7 +16,7 @@ export type FlagValue = string | number | boolean | Date;
 export type FlagOptions<V extends FlagValue = FlagValue> = {
   longFlag: LongFlag;
   shortFlag?: ShortFlag;
-  defaultValue: Downcast<V>;
+  defaultValue: DowncastFlag<V>;
   required?: boolean;
   description?: string;
 };
@@ -63,8 +63,10 @@ export type Subcommand<Options, Globals, Args> = {
   args: Args;
   description?: string;
   handler: Args extends string[]
-    ? GenericHandler<Options, Globals, Downcast<Args>>
-    : GenericHandler<Options, Globals, string[]>;
+    ? // Strict type annotation
+      GenericHandler<Options, Globals, DowncastArgs<Args>>
+    : // Loose type annotation
+      GenericHandler<Options, Globals, string[]>;
 };
 
 /**
@@ -149,20 +151,14 @@ type RemoveNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];
 };
 
-export type Downcast<T> = T extends unknown[]
-  ? {
-      [P in keyof T]: T[P] extends number
-        ? number
-        : T[P] extends string
-          ? string
-          : T[P] extends boolean
-            ? boolean
-            : T[P];
-    }
+export type DowncastArgs<T extends string[]> = {
+  [P in keyof T]: string;
+};
+
+export type DowncastFlag<T extends FlagValue> = T extends string
+  ? string
   : T extends number
     ? number
-    : T extends string
-      ? string
-      : T extends boolean
-        ? boolean
-        : T;
+    : T extends boolean
+      ? boolean
+      : T;
