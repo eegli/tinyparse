@@ -1,5 +1,11 @@
 # @eegli/tinyparse
 
+## 0.18.2
+
+### Patch Changes
+
+- a9bfe77: Fix downcast utility type to default to `string[]`
+
 ## 0.18.1
 
 ### Patch Changes
