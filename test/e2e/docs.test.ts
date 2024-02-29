@@ -42,7 +42,6 @@ describe('docs', () => {
       expect(consoleLog).toHaveBeenCalledWith('Happy birthday, John!');
     });
   });
-
   describe('quickstart', () => {
     test('default example', async () => {
       const parser = new Parser()
@@ -114,7 +113,6 @@ describe('docs', () => {
       `);
     });
   });
-
   describe('options', () => {
     test('throws for incorrect types or missing', async () => {
       const parser = new Parser()
@@ -157,11 +155,11 @@ describe('docs', () => {
         .defaultHandler();
 
       const inputs: string[][] = [
-        ['--foo'],
-        ['--foo=true'],
-        ['--foo', 'true'],
-        ['--foo=false'],
-        ['--foo', 'false'],
+        ['--foo'], // true
+        ['--foo=true'], // true
+        ['--foo', 'true'], // true
+        ['--foo=false'], // false
+        ['--foo', 'false'], // false
       ];
 
       for (const input of inputs) {
@@ -169,7 +167,6 @@ describe('docs', () => {
       }
     });
   });
-
   describe('globals', () => {
     test('default', async () => {
       const globals = {
@@ -208,7 +205,6 @@ describe('docs', () => {
       ).resolves.toBeUndefined();
     });
   });
-
   describe('subcommands', () => {
     test('default', async () => {
       const parser = new Parser()
@@ -289,7 +285,6 @@ describe('docs', () => {
       expect(consoleLog).toHaveBeenCalledWith('GREETINGS FROM JOHN TO MARY!');
     });
   });
-
   describe('handlers', () => {
     test('default', async () => {
       await expect(
@@ -359,7 +354,6 @@ describe('docs', () => {
       expect(handlerWithUsage).toBeDefined();
     });
   });
-
   describe('subparsers', () => {
     test('default', async () => {
       const subparser = new Parser()
@@ -391,7 +385,6 @@ describe('docs', () => {
       expect(consoleLog).toHaveBeenLastCalledWith('2.0.0');
     });
   });
-
   describe('help and meta', () => {
     test('calls help printer', async () => {
       const parser = new Parser()
