@@ -327,10 +327,12 @@ describe('docs', () => {
       type Options = HandlerOptions<typeof options>;
 
       // Handler that only needs options and globals
-      type DefaultHandler = HandlerParams<Options, never, Globals>;
+      type Params = HandlerParams<Options, never, Globals>;
 
-      const defaultHandler: DefaultHandler = ({ globals, options }) => {
+      const defaultHandler = ({ globals, options }: Params) => {
         console.log({ globals, options });
+        // In a test, assert that true is returned
+        return true;
       };
 
       // Other possible options...
@@ -340,12 +342,12 @@ describe('docs', () => {
       const noopHandler: NoParamsHandler = () => {};
 
       // Positional arguments and options only
-      type HandlerWithArgs = HandlerParams<Options, [string]>;
-      const handlerWithArgs: HandlerWithArgs = ({ options, args }) => {};
+      type ParamsWithArgs = HandlerParams<Options, [string]>;
+      const handlerWithArgs = ({ options, args }: ParamsWithArgs) => {};
 
       // Usage only
-      type HandlerWithUsage = HandlerParams<never, never, never, string>;
-      const handlerWithUsage: HandlerWithUsage = ({ usage }) => {};
+      type ParamsWithUsage = HandlerParams<never, never, never, string>;
+      const handlerWithUsage = ({ usage }: ParamsWithUsage) => {};
 
       // No actual tests, just make sure this one compiles
       expect(defaultHandler).toBeDefined();

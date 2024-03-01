@@ -49,12 +49,15 @@ export type CommandOptionsMap<
   Globals extends AnyGlobal = AnyGlobal,
 > = Map<string, Subcommand<Options, Globals, CommandArgPattern>>;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyHandlerReturn = any | Promise<any>;
+
 type GenericHandler<Options, Globals, Args> = (params: {
   options: Options;
   globals: Globals;
   args: Args;
   usage: string;
-}) => void | Promise<void>;
+}) => AnyHandlerReturn;
 
 /**
  * The settings for a subcommand.
@@ -138,14 +141,12 @@ export type HandlerParams<
   Args extends string[] = never,
   Globals extends AnyGlobal = never,
   Usage extends string = never,
-> = (
-  params: RemoveNever<{
-    options: Options;
-    args: Args;
-    globals: Globals;
-    usage: Usage;
-  }>,
-) => void | Promise<void>;
+> = RemoveNever<{
+  options: Options;
+  args: Args;
+  globals: Globals;
+  usage: Usage;
+}>;
 
 type RemoveNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];

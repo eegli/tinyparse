@@ -101,27 +101,24 @@ describe('subcommand modular external definition', () => {
     }));
 
   test('zero args', () => {
-    type Subcommand = HandlerParams;
-    type SubcommandParams = Parameters<Subcommand>[0];
+    type SubcommandParams = HandlerParams;
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     expect<SubcommandParams>().type.toEqual<{}>();
   });
   test('with options', () => {
-    type Subcommand = HandlerParams<HandlerOptions<Options>>;
-    type SubcommandParams = Parameters<Subcommand>[0];
+    type SubcommandParams = HandlerParams<HandlerOptions<Options>>;
 
     expect<SubcommandParams>().type.toEqual<{
       options: HandlerOptions<Options>;
     }>();
   });
   test('with globals and options', () => {
-    type Subcommand = HandlerParams<
+    type SubcommandParams = HandlerParams<
       HandlerOptions<Options>,
       never,
       HandlerGlobals<Options>
     >;
-    type SubcommandParams = Parameters<Subcommand>[0];
 
     expect<SubcommandParams>().type.toEqual<{
       options: HandlerOptions<Options>;
@@ -129,8 +126,7 @@ describe('subcommand modular external definition', () => {
     }>();
   });
   test('with help', () => {
-    type Subcommand = HandlerParams<never, never, never, string>;
-    type SubcommandParams = Parameters<Subcommand>[0];
+    type SubcommandParams = HandlerParams<never, never, never, string>;
 
     expect<SubcommandParams>().type.toEqual<{
       usage: string;
