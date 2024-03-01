@@ -25,7 +25,10 @@ Because you might want to do things _before_ invoking a handler, `.parse([...arg
 
 ## Declaring Handlers
 
-A default handler can be declared either inline or externally, just like a subcommand handler. The difference between a subcommand and default handler is that the default handler has no constraint on the number of arguments it accepts. It simply receives all positional arguments. Other than that, it also has access to the globals, options and usage text. All handlers can be _asynchronous_.
+A default handler can be declared either inline or externally, just like a subcommand handler. The difference between a subcommand and default handler is that the default handler has no constraint on the number of arguments it accepts. It simply receives all positional arguments. Other than that, it also has access to the globals, options and usage text.
+
+- All handlers can be _asynchronous_ - they are always awaited
+- Handlers can return _any value_ - it is ignored
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
@@ -49,7 +52,11 @@ Default handlers can be a good place to handle things that Tinyparse is not opin
 
 ## Modular Declaration
 
-In the above example, we use the `CommandHandler` type to declare the default handler. This will annotate the function as taking an object literal with all parameters. Hence, if you want to invoke it somewhere else - like in a test - you will need to pass values for `args`, `globals`, `options`, and `usage`. This is a bit cumbersome. You can declare default and subcommand handlers more modularly by specifiying _exactly_ what they need using the `Handler*` utility types:
+In the above example, we use the `CommandHandler` utility type to declare the default handler. This will annotate the handler as a function taking an object literal with all parameters and returning anything.
+
+However, your handler might return something that you'd like to assert in a testing scenario, and it might not need all parameters. With the `CommandHandler` type, you would need to pass values for `args`, `globals`, `options`, and `usage`. This is a bit cumbersome.
+
+To solve this, you can **declare default and subcommand handlers more modularly** by specifiying _exactly_ what parameters they need using the `Handler*` utility types. This will also preserve the return type:
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
@@ -59,16 +66,21 @@ import type {
   HandlerOptions,
 } from '@eegli/tinyparse';
 
-const options = new Parser();
+const options = new Parser().option('foo', {
+  longFlag: '--foo',
+  defaultValue: 'default',
+});
 
 type Globals = HandlerGlobals<typeof options>;
 type Options = HandlerOptions<typeof options>;
 
 // Handler that only needs options and globals
-type DefaultHandler = HandlerParams<Options, never, Globals>;
+type Params = HandlerParams<Options, never, Globals>;
 
-const defaultHandler: DefaultHandler = ({ globals, options }) => {
+const defaultHandler = ({ globals, options }: Params) => {
   console.log({ globals, options });
+  // In a test, assert that true is returned
+  return true;
 };
 
 // Other possible options...
@@ -78,12 +90,12 @@ type NoParamsHandler = HandlerParams;
 const noopHandler: NoParamsHandler = () => {};
 
 // Positional arguments and options only
-type HandlerWithArgs = HandlerParams<Options, [string]>;
-const handlerWithArgs: HandlerWithArgs = ({ options, args }) => {};
+type ParamsWithArgs = HandlerParams<Options, [string]>;
+const handlerWithArgs = ({ options, args }: ParamsWithArgs) => {};
 
 // Usage only
-type HandlerWithUsage = HandlerParams<never, never, never, string>;
-const handlerWithUsage: HandlerWithUsage = ({ usage }) => {};
+type ParamsWithUsage = HandlerParams<never, never, never, string>;
+const handlerWithUsage = ({ usage }: ParamsWithUsage) => {};
 ```
 
 In the above example, we specify a handful of handlers, each of which only needs a subset of what Tinyparse feeds it. `HandlerParams` has the following signature:
@@ -97,4 +109,4 @@ type HandlerParams<
 > = (...)
 ```
 
-In summary, the `CommandHandler` can be a useful shortcut, but if you only need a subset of the parameters, it might make sense to declare the handler more modularly.
+In summary, the `CommandHandler` can be a useful shortcut, but if you only need a subset of the parameters and/or would like to preserve the return type, it might make sense to declare the handler more modularly.

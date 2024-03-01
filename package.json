@@ -39,11 +39,12 @@
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
     "release": "yarn build:release && changeset publish",
-    "test": "jest --verbose",
-    "test:coverage": "jest --coverage",
-    "test:integration": "yarn build && cd test/integration && npm install --omit=dev --ignore-scripts && tsc && npm test",
-    "test:types": "tstyche",
+    "test": "jest --coverage && yarn test:types",
     "test:unit": "jest --selectProjects unit",
+    "test:e2e": "jest --selectProjects e2e",
+    "test:types": "tstyche",
+    "test:integration": "yarn build && cd test/integration && npm install --omit=dev --ignore-scripts && tsc && npm test",
+    "test:coverage": "jest --coverage",
     "test:watch": "jest --watch"
   },
   "lint-staged": {
