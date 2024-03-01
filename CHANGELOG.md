@@ -1,5 +1,18 @@
 # @eegli/tinyparse
 
+## 0.18.3
+
+### Patch Changes
+
+- d47c225: Upgrade dependencies
+- 7889049: Fix Handler utility types to preserve handler return type
+
+## 0.18.2
+
+### Patch Changes
+
+- a9bfe77: Fix downcast utility type to default to `string[]`
+
 ## 0.18.1
 
 ### Patch Changes
