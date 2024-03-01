@@ -42,7 +42,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
         run: yarn install --immutable
-      - name: Run unit and type test
+      - name: Run unit, e2e and type test
         run: yarn test
       - name: Run integration tests
         if: matrix.node == '20'
