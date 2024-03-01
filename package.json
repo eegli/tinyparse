@@ -39,7 +39,7 @@
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
     "release": "yarn build:release && changeset publish",
-    "test": "yarn test:unit && yarn test:types",
+    "test": "yarn test:unit --coverage && yarn test:types",
     "test:unit": "jest --selectProjects unit",
     "test:types": "tstyche",
     "test:integration": "yarn build && cd test/integration && npm install --omit=dev --ignore-scripts && tsc && npm test",
