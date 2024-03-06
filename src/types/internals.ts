@@ -1,6 +1,5 @@
-import { CommandBuilder } from './commands';
-import { ValidationError } from './error';
-import type { Parser } from './parser';
+import { ValidationError } from '../error';
+import type { Parser } from '../parser';
 
 export type LongFlag = `--${string}`;
 export type ShortFlag = `-${string}`;
@@ -44,20 +43,31 @@ export type CommandArgPattern = string[] | string | undefined;
 /**
  * A map of subcommands and their settings.
  */
-export type CommandOptionsMap<
-  Options extends FlagValueRecord = FlagValueRecord,
-  Globals extends AnyGlobal = AnyGlobal,
-> = Map<string, Subcommand<Options, Globals, CommandArgPattern>>;
+export type CommandOptionsMap = Map<
+  string,
+  Subcommand<FlagValueRecord, AnyGlobal, CommandArgPattern>
+>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyHandlerReturn = any | Promise<any>;
 
-type GenericHandler<Options, Globals, Args> = (params: {
+export type GenericHandler<Options, Globals, Args> = (params: {
   options: Options;
   globals: Globals;
   args: Args;
   usage: string;
 }) => AnyHandlerReturn;
+
+export type DefaultHandler<
+  Options = FlagValueRecord,
+  Globals = AnyGlobal,
+> = GenericHandler<Options, Globals, string[]>;
+
+export type GlobalSetter<Options = FlagValueRecord, Return = AnyGlobal> = (
+  options: Options,
+) => Return | Promise<Return>;
+
+export type ErrorHandler = (error: ValidationError, usage: string) => void;
 
 /**
  * The settings for a subcommand.
@@ -107,48 +117,7 @@ export interface MetaOptions {
   version?: VersionOptions;
 }
 
-export type CommandHandler<
-  T,
-  A extends string[] = string[],
-> = T extends CommandBuilder<infer O, infer G>
-  ? GenericHandler<O, G, A>
-  : never;
-
-export type DefaultHandler<Options, Globals> = GenericHandler<
-  Options,
-  Globals,
-  string[]
->;
-
-export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
-  ? (options: O) => AnyGlobal
-  : never;
-
-export type ErrorHandler = (error: ValidationError, usage: string) => void;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type HandlerOptions<T> = T extends CommandBuilder<infer O, any>
-  ? O
-  : never;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type HandlerGlobals<T> = T extends CommandBuilder<any, infer G>
-  ? G
-  : never;
-
-export type HandlerParams<
-  Options extends FlagValueRecord = never,
-  Args extends string[] = never,
-  Globals extends AnyGlobal = never,
-  Usage extends string = never,
-> = RemoveNever<{
-  options: Options;
-  args: Args;
-  globals: Globals;
-  usage: Usage;
-}>;
-
-type RemoveNever<T> = {
+export type RemoveNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];
 };
 

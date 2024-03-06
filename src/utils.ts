@@ -1,4 +1,4 @@
-import { FlagValue } from './types';
+import { FlagValue } from './type-helpers';
 
 export enum Type {
   String = 'string',

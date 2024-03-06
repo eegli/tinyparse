@@ -12,13 +12,10 @@ import {
   MetaOptions,
   Subcommand,
   Subparser,
-} from './types';
+} from './types/internals';
 
-export class CommandBuilder<
-  Options extends FlagValueRecord,
-  Globals extends AnyGlobal,
-> {
-  #config: CommonConfig<Options, Globals> = {
+export class CommandBuilder<Options, Globals> {
+  #config: CommonConfig = {
     meta: {},
     options: new Map(),
     commands: new Map(),
@@ -72,8 +69,7 @@ export class CommandBuilder<
     this.#tryRegisterFlagToken(longFlag);
     this.#tryRegisterFlagToken(shortFlag);
 
-    // TODO: Figure out how to make this typecheck properly
-    return this as unknown as CommandBuilder<
+    return this as CommandBuilder<
       Options & Record<K, DowncastFlag<V>>,
       Globals
     >;
@@ -87,7 +83,10 @@ export class CommandBuilder<
     opts: Subcommand<Options, Globals, A>,
   ) {
     this.#tryRegisterCommandToken(command);
-    this.#config.commands.set(command, opts);
+    this.#config.commands.set(
+      command,
+      opts as Subcommand<FlagValueRecord, AnyGlobal, A>,
+    );
     return this;
   }
 
@@ -106,8 +105,10 @@ export class CommandBuilder<
   setGlobals<G extends Globals>(
     setGlobals: (options: Options) => G | Promise<G>,
   ) {
-    this.#config.globalSetter = setGlobals;
-    return this as unknown as CommandBuilder<Options, G>;
+    this.#config.globalSetter = setGlobals as (
+      options: FlagValueRecord,
+    ) => AnyGlobal | Promise<AnyGlobal>;
+    return this as CommandBuilder<Options, Globals & G>;
   }
 
   /**
@@ -138,9 +139,10 @@ export class CommandBuilder<
    * Set the default handler
    */
   defaultHandler(handler?: DefaultHandler<Options, Globals>) {
-    return new Parser<Options, Globals>({
+    return new Parser({
       ...this.#config,
-      defaultHandler: handler || this.#config.defaultHandler,
+      defaultHandler:
+        (handler as DefaultHandler) || this.#config.defaultHandler,
     });
   }
 }

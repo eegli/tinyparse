@@ -1,12 +1,11 @@
 import { describe, expect, test } from 'tstyche';
 import { Parser } from '../../src';
 import {
-  CommandArgPattern,
   HandlerGlobals,
   HandlerOptions,
   HandlerParams,
-  Subcommand,
-} from '../../src/types';
+} from '../../src/types/helpers';
+import { Subcommand } from '../../src/types/internals';
 
 describe('subcommand option and global arguments', () => {
   const subcommand = new Parser()
@@ -50,13 +49,11 @@ describe('subcommand option and global arguments', () => {
       baz: boolean;
       qux: Date;
     }>();
+    expect<HandlerFlagParams>().type.not.toBeAssignable<{ unknown: string }>();
+    expect<{ unknown: string }>().type.not.toMatch<HandlerFlagParams>();
   });
   test('globals are inferred', () => {
-    expect<HandlerGlobalParams>().type.toBeAssignable<{
-      database: string;
-      fetch: () => void;
-    }>();
-    expect<HandlerGlobalParams>().type.toMatch<{
+    expect<HandlerGlobalParams>().type.toEqual<{
       database: string;
       fetch: () => void;
     }>();
@@ -65,7 +62,7 @@ describe('subcommand option and global arguments', () => {
 
 describe('subcommand positional args', () => {
   type Empty = Record<never, never>;
-  type HandlerArgParams<T extends CommandArgPattern> = Parameters<
+  type HandlerArgParams<T> = Parameters<
     Subcommand<Empty, Empty, T>['handler']
   >[0]['args'];
 

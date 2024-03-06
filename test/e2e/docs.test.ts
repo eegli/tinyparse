@@ -359,32 +359,34 @@ describe('docs', () => {
   describe('subparsers', () => {
     test('default', async () => {
       const subparser = new Parser()
-        .setMeta({
-          version: {
-            version: '2.0.0',
-            longFlag: '--version',
-          },
+        .option('greeting', {
+          longFlag: '--greeting',
+          shortFlag: '-g',
+          defaultValue: '',
         })
-        .defaultHandler();
+        .defaultHandler(({ options }) => {
+          console.log(options.greeting);
+        });
 
       const parser = new Parser()
+        .option('greeting', {
+          longFlag: '--greeting',
+          shortFlag: '-g',
+          defaultValue: '',
+        })
         .subparser('v2', {
           parser: subparser,
           description: 'Version 2 of this CLI',
         })
-        .setMeta({
-          version: {
-            version: '1.0.0',
-            longFlag: '--version',
-          },
-        })
-        .defaultHandler();
+        .defaultHandler(({ options }) => {
+          console.log(options.greeting);
+        });
 
-      await parser.parse(['--version']).call();
-      expect(consoleLog).toHaveBeenLastCalledWith('1.0.0');
+      await parser.parse(['-g', 'hello from the main parser']).call();
+      expect(consoleLog).toHaveBeenLastCalledWith('hello from the main parser');
 
-      await parser.parse(['v2', '--version']).call();
-      expect(consoleLog).toHaveBeenLastCalledWith('2.0.0');
+      await parser.parse(['v2', '-g', 'hello from the subparser']).call();
+      expect(consoleLog).toHaveBeenLastCalledWith('hello from the subparser');
     });
   });
   describe('help and meta', () => {

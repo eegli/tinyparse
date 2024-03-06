@@ -8,15 +8,15 @@ import {
   CommandArgPattern,
   FlagValueRecord,
   Subcommand,
-} from './types';
+} from './types/internals';
 export class Parser<
   Options extends FlagValueRecord,
   Globals extends AnyGlobal,
 > {
-  #config: CommonConfig<Options, Globals>;
-  #helpPrinter: HelpPrinter<Options, Globals>;
+  #config: CommonConfig;
+  #helpPrinter: HelpPrinter;
 
-  constructor(config: CommonConfig<Options, Globals>) {
+  constructor(config: CommonConfig) {
     this.#config = config;
     this.#helpPrinter = new HelpPrinter(config);
   }
