@@ -1,5 +1,5 @@
 import { ValidationError } from './error';
-import { FlagOptions, FlagValue } from './type-helpers';
+import { FlagOptions, FlagValue } from './types/internals';
 import Utils, { Type } from './utils';
 
 export const collectFlags = (
