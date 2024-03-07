@@ -1,6 +1,6 @@
 import { ValidationError } from '../src';
 import { collectFlags } from '../src/flags';
-import { FlagDefaultValue, FlagOptions, FlagOptionsMap } from '../src/types';
+import { FlagOptions, FlagOptionsMap } from '../src/types/internals';
 
 describe('flags', () => {
   test('replaces defaults and ignores unknown', () => {
@@ -56,7 +56,7 @@ describe('flags', () => {
     );
   });
   test('rejects for invalid types', () => {
-    const inputs: [[string, string | null], FlagOptions<FlagDefaultValue>][] = [
+    const inputs: [[string, string | null], FlagOptions][] = [
       [['--foo', null], { longFlag: '--foo', defaultValue: 'string' }],
       [['--foo', 'bar'], { longFlag: '--foo', defaultValue: true }],
       [['--foo', 'bar'], { longFlag: '--foo', defaultValue: 1 }],
