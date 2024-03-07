@@ -1,6 +1,5 @@
-import { CommandBuilder } from './commands';
-import { ValidationError } from './error';
-import type { Parser } from './parser';
+import type { Parser } from '../parser';
+import { ErrorParams } from './helpers';
 
 export type LongFlag = `--${string}`;
 export type ShortFlag = `-${string}`;
@@ -44,20 +43,26 @@ export type CommandArgPattern = string[] | string | undefined;
 /**
  * A map of subcommands and their settings.
  */
-export type CommandOptionsMap<
-  Options extends FlagValueRecord = FlagValueRecord,
-  Globals extends AnyGlobal = AnyGlobal,
-> = Map<string, Subcommand<Options, Globals, CommandArgPattern>>;
+export type CommandOptionsMap = Map<
+  string,
+  Subcommand<FlagValueRecord, AnyGlobal, CommandArgPattern>
+>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyHandlerReturn = any | Promise<any>;
 
-type GenericHandler<Options, Globals, Args> = (params: {
+type AnyHandler<Options, Globals, Args> = (params: {
   options: Options;
   globals: Globals;
   args: Args;
-  usage: string;
 }) => AnyHandlerReturn;
+
+export type DefaultHandler<
+  Options = FlagValueRecord,
+  Globals = AnyGlobal,
+> = AnyHandler<Options, Globals, string[]>;
+
+export type ErrorHandler = ({ error, usage }: ErrorParams) => void;
 
 /**
  * The settings for a subcommand.
@@ -67,26 +72,23 @@ export type Subcommand<Options, Globals, Args> = {
   description?: string;
   handler: Args extends string[]
     ? // Strict type annotation
-      GenericHandler<Options, Globals, DowncastArgs<Args>>
+      AnyHandler<Options, Globals, DowncastArgs<Args>>
     : // Loose type annotation
-      GenericHandler<Options, Globals, string[]>;
+      AnyHandler<Options, Globals, string[]>;
 };
 
 /**
  * The settings for a subparser.
  */
-export type Subparser<O extends FlagValueRecord, G extends AnyGlobal> = {
+export type Subparser = {
   description?: string;
-  parser: Parser<O, G>;
+  parser: Parser<unknown>;
 };
 
 /**
  * A map of subparsers and their settings.
  */
-export type SubparserOptionsMap = Map<
-  string,
-  Subparser<FlagValueRecord, AnyGlobal>
->;
+export type SubparserOptionsMap = Map<string, Subparser>;
 
 export type HelpOptions = {
   command?: string;
@@ -106,51 +108,6 @@ export interface MetaOptions {
   help?: HelpOptions;
   version?: VersionOptions;
 }
-
-export type CommandHandler<
-  T,
-  A extends string[] = string[],
-> = T extends CommandBuilder<infer O, infer G>
-  ? GenericHandler<O, G, A>
-  : never;
-
-export type DefaultHandler<Options, Globals> = GenericHandler<
-  Options,
-  Globals,
-  string[]
->;
-
-export type GlobalSetter<T> = T extends CommandBuilder<infer O, AnyGlobal>
-  ? (options: O) => AnyGlobal
-  : never;
-
-export type ErrorHandler = (error: ValidationError, usage: string) => void;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type HandlerOptions<T> = T extends CommandBuilder<infer O, any>
-  ? O
-  : never;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type HandlerGlobals<T> = T extends CommandBuilder<any, infer G>
-  ? G
-  : never;
-
-export type HandlerParams<
-  Options extends FlagValueRecord = never,
-  Args extends string[] = never,
-  Globals extends AnyGlobal = never,
-  Usage extends string = never,
-> = RemoveNever<{
-  options: Options;
-  args: Args;
-  globals: Globals;
-  usage: Usage;
-}>;
-
-type RemoveNever<T> = {
-  [K in keyof T as T[K] extends never ? never : K]: T[K];
-};
 
 export type DowncastArgs<T extends string[]> = {
   [P in keyof T]: string;

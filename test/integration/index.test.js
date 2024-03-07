@@ -41,10 +41,7 @@ describe('advanced example', () => {
   test('command remove', async () => {
     await cli.run(['rm', 'a', 'b', 'c', '--ext=js,ts']);
     expectCalledTimes(logSpy, 1);
-    expectCalledWith(
-      logSpy,
-      'Removing files a,b,c if they have extension js,ts',
-    );
+    expectCalledWith(logSpy, 'Removing files a,b,c with extension js,ts');
   });
 
   test('command status', async () => {
@@ -71,11 +68,16 @@ describe('advanced example', () => {
     expectCalledWith(errorSpy, 'Error: cp expects 2 arguments, got 0');
   });
 
-  test('default handler', async () => {
+  test('default handler 1', async () => {
     await cli.run(['cut']);
     expectCalledTimes(errorSpy, 1);
     expectCalledWith(errorSpy, 'Unknown command: cut');
-    expectCalledTimes(logSpy, 1); // Usage
+  });
+
+  test('default handler 2', async () => {
+    await cli.run(['']);
+    expectCalledTimes(errorSpy, 1);
+    expectCalledWith(errorSpy, 'No command specified');
   });
 
   test('version', async () => {

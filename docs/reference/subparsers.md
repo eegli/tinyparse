@@ -21,33 +21,37 @@ In the following example, we have a main and a subparser. The only difference be
 
 ```ts
 const subparser = new Parser()
-  .setMeta({
-    version: {
-      version: '2.0.0',
-      longFlag: '--version',
-    },
+  .option('greeting', {
+    longFlag: '--greeting',
+    shortFlag: '-g',
+    defaultValue: '',
   })
-  .defaultHandler();
+  .defaultHandler(({ options }) => {
+    console.log(options.greeting);
+  });
 
 const parser = new Parser()
+  .option('greeting', {
+    longFlag: '--greeting',
+    shortFlag: '-g',
+    defaultValue: '',
+  })
   .subparser('v2', {
     parser: subparser,
     description: 'Version 2 of this CLI',
   })
-  .setMeta({
-    version: {
-      version: '1.0.0',
-      longFlag: '--version',
-    },
-  })
-  .defaultHandler();
+  .defaultHandler(({ options }) => {
+    console.log(options.greeting);
+  });
 ```
 
 If we append `v2` to the arguments, the subparser will be called. If the first positional argument (here, `v2`) identifies a subparser, then only the subparser will be in charge of validating and parsing all further arguments. The main parser simply delegates the call to the subparser:
 
 ```ts
-parser.parse(['--version']).call(); // 1.0.0
-parser.parse(['v2', '--version']).call(); // 2.0.0
+// hello from the main parser
+parser.parse(['-g', 'hello from the main parser']).call();
+// hello from the subparser
+parser.parse(['v2', '-g', 'hello from the subparser']).call();
 ```
 
 ## Caveats

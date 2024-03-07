@@ -158,8 +158,8 @@ const parser = new Parser()
       longFlag: '--version',
     },
   })
-  .defaultHandler(({ usage }) => {
-    console.log('No command specified', '\n', usage);
+  .defaultHandler(() => {
+    console.log('No command specified');
   });
 ```
 
@@ -173,7 +173,7 @@ This will print `Hello, John Smith!` to the console.
 
 > **Note**: `.call()` is an async function that returns a `Promise`. Since it is generally assumed to be the last top-level function call, you do not need to `await` it. However, in some scenarios - like end-to-end testing, you might need to. See the docs about [async operations](/reference/async-operations.md) for more information.
 
-When we give the parser no arguments, the default handler is called, which will print the usage information:
+When we give the parser no arguments, the default handler is called, telling us that no command was specified:
 
 ```ts
 await parser.parse([]).call(); // No command specified...

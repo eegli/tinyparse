@@ -27,25 +27,26 @@ new Parser()
 
 ## External Declaration
 
-You can also declare the global setter function outside of the building phase by taking a break after declaring your options and using the `GlobalSetter` helper type. Using this type will get you autocompletion and type checking for the `options` parameter:
+You can also declare the global setter function outside of the building phase by taking a break after setting the options/flags and using the `InferOptions` helper type to annotate the `options` parameter. Using this type will get you autocompletion and type checking for the `options` parameter:
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
-import type { GlobalSetter } from '@eegli/tinyparse';
+import type { InferOptions } from '@eegli/tinyparse';
 
-type Options = typeof options;
-
-const options = new Parser().option('verbose', {
+const parserOptions = new Parser().option('verbose', {
   longFlag: '--verbose',
   defaultValue: false,
 });
 
-const globalSetter: GlobalSetter<Options> = (options) => ({
+type Options = InferOptions<typeof parserOptions>;
+
+const globalSetter = (options: Options) => ({
   log: (message: string) => {
+    // Strong typing!
     if (options.verbose) {
       console.log(message);
     }
   },
 });
-const parser = options.setGlobals(globalSetter).defaultHandler();
+const parser = parserOptions.setGlobals(globalSetter).defaultHandler();
 ```

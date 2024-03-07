@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'tstyche';
-import { DowncastArgs, DowncastFlag } from '../../src/types';
+import { DowncastArgs, DowncastFlag } from '../../src/types/internals';
 
 describe('type utils', () => {
   test('downcast args', () => {
