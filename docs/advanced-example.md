@@ -52,28 +52,30 @@ const baseParser = parserOptions.setGlobals(setGlobals);
 type BaseParser = typeof baseParser;
 
 // Define all subcommands
-const copy = ({ args }: WithArgs<[string, string]>) => {
+type CopyArgs = WithArgs<[string, string]>;
+const copy = ({ args }: CopyArgs) => {
   const [from, to] = args;
 
   console.log(`Copying files from ${from} to ${to}`);
 };
 
-const remove = ({
-  args: files,
-  globals,
-  options,
-}: WithArgs<string[]> & WithOptions<BaseParser> & WithGlobals<BaseParser>) => {
+type RemoveArgs = WithArgs<string[]> &
+  WithOptions<BaseParser> &
+  WithGlobals<BaseParser>;
+const remove = ({ args: files, globals, options }: RemoveArgs) => {
   const { extensions } = globals;
   console.log(`Removing files ${files} with extension ${extensions}`);
   if (options.verbose) console.log('Files to remove: ', files);
 };
 
-const status = ({ globals }: WithGlobals<BaseParser>) => {
+type StatusArgs = WithGlobals<BaseParser>;
+const status = ({ globals }: StatusArgs) => {
   const { userName } = globals;
   console.log(`Showing status for user: ${userName}`);
 };
 
-const list = ({ args }: WithArgs<string[]>) => {
+type ListArgs = WithArgs<string[]>;
+const list = ({ args }: ListArgs) => {
   // We may or may not have a directory
   const directory = args[0];
   if (directory) {
@@ -89,11 +91,10 @@ const handleError = ({ error, usage }: ErrorParams) => {
   console.log(usage);
 };
 
-const handleDefault = ({
-  args,
-  globals,
-  options,
-}: WithArgs<string[]> & WithGlobals<BaseParser> & WithOptions<BaseParser>) => {
+type HandleDefaultArgs = WithArgs<string[]> &
+  WithGlobals<BaseParser> &
+  WithOptions<BaseParser>;
+const handleDefault = ({ args, globals, options }: HandleDefaultArgs) => {
   const cmd = args[0];
   const errorMessage = cmd ? `Unknown command: ${cmd}` : 'No command specified';
   console.error(errorMessage);
@@ -138,7 +139,7 @@ const parser = baseParser
   .onError(handleError)
   .defaultHandler(handleDefault);
 
-export const run = async (args: string[]) => {
+const run = async (args: string[]) => {
   await parser.parse(args).call();
 };
 
