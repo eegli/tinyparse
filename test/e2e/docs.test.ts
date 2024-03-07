@@ -248,21 +248,6 @@ describe('docs', () => {
     test('external declaration', async () => {
       type BaseParser = typeof baseParser;
 
-      type HandlerParams = WithArgs<[string, string]> &
-        WithOptions<BaseParser> &
-        WithGlobals<BaseParser>;
-
-      const subcommandHandler = (params: HandlerParams) => {
-        const { args, options, globals } = params;
-        const [fromUser, toUser] = args;
-        let greeting = `${globals.flower} from ${fromUser} to ${toUser}!`;
-
-        if (options.uppercase) {
-          greeting = greeting.toUpperCase();
-        }
-        console.log(greeting);
-      };
-
       const baseParser = new Parser()
         .option('uppercase', {
           longFlag: '--uppercase',
@@ -272,6 +257,21 @@ describe('docs', () => {
         .setGlobals(() => ({
           flower: '🌸',
         }));
+
+      type Params = WithArgs<[string, string]> &
+        WithOptions<BaseParser> &
+        WithGlobals<BaseParser>;
+
+      const subcommandHandler = (params: Params) => {
+        const { args, options, globals } = params;
+        const [fromUser, toUser] = args;
+        let greeting = `${globals.flower} from ${fromUser} to ${toUser}!`;
+
+        if (options.uppercase) {
+          greeting = greeting.toUpperCase();
+        }
+        console.log(greeting);
+      };
 
       const parser = baseParser
         .subcommand('flowers', {

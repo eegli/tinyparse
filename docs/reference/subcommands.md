@@ -74,21 +74,6 @@ import type { WithArgs, WithGlobals, WithOptions } from '@eegli/tinyparse';
 
 type BaseParser = typeof baseParser;
 
-type HandlerParams = WithArgs<[string, string]> &
-  WithOptions<BaseParser> &
-  WithGlobals<BaseParser>;
-
-const subcommandHandler = (params: HandlerParams) => {
-  const { args, options, globals } = params;
-  const [fromUser, toUser] = args;
-  let greeting = `${globals.flower} from ${fromUser} to ${toUser}!`;
-
-  if (options.uppercase) {
-    greeting = greeting.toUpperCase();
-  }
-  console.log(greeting);
-};
-
 const baseParser = new Parser()
   .option('uppercase', {
     longFlag: '--uppercase',
@@ -99,13 +84,27 @@ const baseParser = new Parser()
     flower: '🌸',
   }));
 
+type Params = WithArgs<[string, string]> &
+  WithOptions<BaseParser> &
+  WithGlobals<BaseParser>;
+
+const subcommandHandler = (params: Params) => {
+  const { args, options, globals } = params;
+  const [fromUser, toUser] = args;
+  let greeting = `${globals.flower} from ${fromUser} to ${toUser}!`;
+
+  if (options.uppercase) {
+    greeting = greeting.toUpperCase();
+  }
+  console.log(greeting);
+};
+
 const parser = baseParser
   .subcommand('flowers', {
     args: ['from', 'to'] as const,
     handler: subcommandHandler,
   })
   .defaultHandler();
-
 // 🌸 from John to Mary!
 parser.parse(['flowers', 'John', 'Mary']).call();
 
