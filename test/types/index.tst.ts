@@ -5,7 +5,6 @@ import {
   WithArgs,
   WithGlobals,
   WithOptions,
-  WithUsage,
 } from '../../src/types/helpers';
 import { Subcommand } from '../../src/types/internals';
 
@@ -97,12 +96,6 @@ describe('subcommand params, external declaration', () => {
     }>();
     expect<WithArgs<[string, string]>>().type.toEqual<{
       args: [string, string];
-    }>();
-  });
-
-  test('usage is inferred', () => {
-    expect<WithUsage>().type.toEqual<{
-      usage: string;
     }>();
   });
 
