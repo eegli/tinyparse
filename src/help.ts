@@ -3,6 +3,7 @@ import {
   CommandOptionsMap,
   FlagOptions,
   FlagOptionsMap,
+  FlagValue,
   MetaOptions,
   SubparserOptionsMap,
 } from './types/internals';
@@ -15,8 +16,8 @@ type CommandOptions = {
 };
 
 export class HelpPrinter {
-  #requiredOptions: FlagOptions[];
-  #optionalOptions: FlagOptions[];
+  #requiredOptions: FlagOptions<FlagValue>[];
+  #optionalOptions: FlagOptions<FlagValue>[];
   #commands: CommandOptions[];
   #meta?: MetaOptions;
   #indent = ' '.repeat(3);
@@ -126,7 +127,7 @@ export class HelpPrinter {
         }
         return acc;
       },
-      [[], []] as [FlagOptions[], FlagOptions[]],
+      [[], []] as [FlagOptions<FlagValue>[], FlagOptions<FlagValue>[]],
     );
   }
 
@@ -190,7 +191,7 @@ export class HelpPrinter {
     return options;
   }
 
-  #formatOptionWithArgs(options: FlagOptions[]): [string, string][] {
+  #formatOptionWithArgs(options: FlagOptions<FlagValue>[]): [string, string][] {
     return options.reduce(
       (acc, options) => {
         const { shortFlag, longFlag, defaultValue } = options;

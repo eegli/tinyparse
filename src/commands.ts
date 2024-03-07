@@ -7,6 +7,7 @@ import {
   DowncastFlag,
   ErrorHandler,
   FlagOptions,
+  FlagOptionsWithOneOf,
   FlagValue,
   FlagValueRecord,
   MetaOptions,
@@ -61,7 +62,18 @@ export class CommandBuilder<Options, Globals> {
   /**
    * Add an option (flag)
    */
-  option<K extends string, V extends FlagValue>(key: K, opts: FlagOptions<V>) {
+  option<K extends string, V extends FlagValue, O>(
+    key: K,
+    opts: FlagOptionsWithOneOf<V, O>,
+  ): CommandBuilder<Options & Record<K, V | O>, Globals>;
+  option<K extends string, V extends FlagValue>(
+    key: K,
+    opts: FlagOptions<V>,
+  ): CommandBuilder<Options & Record<K, DowncastFlag<V>>, Globals>;
+  option<K extends string, V extends FlagValue>(
+    key: K,
+    opts: FlagOptions<V>,
+  ): CommandBuilder<Options & Record<K, DowncastFlag<V>>, Globals> {
     const { longFlag, shortFlag } = opts;
     this.#validateOption(key);
     this.#config.options.set(key, opts);

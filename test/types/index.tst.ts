@@ -14,8 +14,18 @@ describe('subcommand params, internal declaration', () => {
       defaultValue: 'default',
       longFlag: '--foo',
     })
+    .option('foo-choice', {
+      defaultValue: 'default',
+      oneOf: ['other'],
+      longFlag: '--foo-long',
+    })
     .option('bar', {
       defaultValue: 0,
+      longFlag: '--bar',
+    })
+    .option('bar-choice', {
+      defaultValue: 0,
+      oneOf: [],
       longFlag: '--bar',
     })
     .option('baz', {
@@ -36,26 +46,21 @@ describe('subcommand params, internal declaration', () => {
   type GlobalParams = Params['globals'];
 
   test('flags are inferred', () => {
-    expect<FlagParams>().type.toBeAssignable<{
-      foo: string;
-      bar: number;
-      baz: boolean;
-      qux: Date;
-    }>();
-    expect<FlagParams>().type.toMatch<{
-      foo: string;
-      bar: number;
-      baz: boolean;
-      qux: Date;
-    }>();
-    expect<FlagParams>().type.not.toBeAssignable<{ unknown: string }>();
-    expect<{ unknown: string }>().type.not.toMatch<FlagParams>();
+    type ExpectedFlagParams = Record<'foo', string> &
+      Record<'foo-choice', 'default' | 'other'> &
+      Record<'bar', number> &
+      Record<'bar-choice', 0> &
+      Record<'baz', boolean> &
+      Record<'qux', Date>;
+
+    expect<FlagParams>().type.toEqual<ExpectedFlagParams>();
   });
   test('globals are inferred', () => {
-    expect<GlobalParams>().type.toEqual<{
+    type ExpectedGlobalParams = {
       database: string;
       fetch: () => void;
-    }>();
+    };
+    expect<GlobalParams>().type.toEqual<ExpectedGlobalParams>();
   });
 });
 

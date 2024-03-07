@@ -5,7 +5,7 @@ import {
   FlagOptionsMap,
   HelpOptions,
   VersionOptions,
-} from '../src/types';
+} from '../src/types/internals';
 
 describe('Helper text', () => {
   const requiredflags: FlagOptionsMap = new Map([

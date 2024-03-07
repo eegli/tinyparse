@@ -4,7 +4,7 @@ import Utils, { Type } from './utils';
 
 export const collectFlags = (
   inputFlags: Map<string, string | null>,
-  flagOptions: Map<string, FlagOptions>,
+  flagOptions: Map<string, FlagOptions<FlagValue>>,
 ) => {
   const output = new Map<string, FlagValue>();
   for (const [key, opts] of flagOptions) {
