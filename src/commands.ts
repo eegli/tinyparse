@@ -93,7 +93,7 @@ export class CommandBuilder<Options, Globals> {
   /**
    * Add a subparser
    */
-  subparser(command: string, opts: Subparser<FlagValueRecord, AnyGlobal>) {
+  subparser(command: string, opts: Subparser) {
     this.#tryRegisterCommandToken(command);
     this.#config.parsers.set(command, opts);
     return this;
@@ -102,7 +102,7 @@ export class CommandBuilder<Options, Globals> {
   /**
    * Set the globals
    */
-  setGlobals<G extends Globals>(
+  setGlobals<G extends AnyGlobal>(
     setGlobals: (options: Options) => G | Promise<G>,
   ) {
     this.#config.globalSetter = setGlobals as (
@@ -139,7 +139,7 @@ export class CommandBuilder<Options, Globals> {
    * Set the default handler
    */
   defaultHandler(handler?: DefaultHandler<Options, Globals>) {
-    return new Parser({
+    return new Parser<Options>({
       ...this.#config,
       defaultHandler:
         (handler as DefaultHandler) || this.#config.defaultHandler,

@@ -19,16 +19,16 @@ node cli.js
 // filename: cli.ts
 
 import {
-  CommandHandler,
-  ErrorHandler,
-  GlobalSetter,
+  ErrorParams,
+  InferOptions,
   Parser,
+  WithArgs,
+  WithGlobals,
+  WithOptions,
 } from '@eegli/tinyparse';
 
-type Options = typeof options;
-
 // Define the flag options
-const options = new Parser()
+const parserOptions = new Parser()
   .option('verbose', {
     longFlag: '--verbose',
     shortFlag: '-v',
@@ -41,23 +41,39 @@ const options = new Parser()
     description: 'Comma-separated list of file extensions to include',
   });
 
+const setGlobals = (opts: InferOptions<typeof parserOptions>) => {
+  return {
+    userName: 'me',
+    extensions: opts.extensions.split(','),
+  };
+};
+
+const baseParser = parserOptions.setGlobals(setGlobals);
+type BaseParser = typeof baseParser;
+
 // Define all subcommands
-const copy: CommandHandler<Options, [string, string]> = ({ args }) => {
+const copy = ({ args }: WithArgs<[string, string]>) => {
   const [from, to] = args;
+
   console.log(`Copying files from ${from} to ${to}`);
 };
 
-const remove: CommandHandler<Options> = ({ args: files, globals }) => {
+const remove = ({
+  args: files,
+  globals,
+  options,
+}: WithArgs<string[]> & WithOptions<BaseParser> & WithGlobals<BaseParser>) => {
   const { extensions } = globals;
-  console.log(`Removing files ${files} if they have extension ${extensions}`);
+  console.log(`Removing files ${files} with extension ${extensions}`);
+  if (options.verbose) console.log('Files to remove: ', files);
 };
 
-const status: CommandHandler<Options> = ({ globals }) => {
+const status = ({ globals }: WithGlobals<BaseParser>) => {
   const { userName } = globals;
   console.log(`Showing status for user: ${userName}`);
 };
 
-const list: CommandHandler<Options> = ({ args }) => {
+const list = ({ args }: WithArgs<string[]>) => {
   // We may or may not have a directory
   const directory = args[0];
   if (directory) {
@@ -68,32 +84,23 @@ const list: CommandHandler<Options> = ({ args }) => {
 };
 
 // Define handlers and setters
-const handleError: ErrorHandler = (error, usage) => {
+const handleError = ({ error, usage }: ErrorParams) => {
   console.error('Error: ' + error.message);
   console.log(usage);
 };
 
-const handleDefault: CommandHandler<Options> = ({
+const handleDefault = ({
   args,
   globals,
   options,
-  usage,
-}) => {
+}: WithArgs<string[]> & WithGlobals<BaseParser> & WithOptions<BaseParser>) => {
   const cmd = args[0];
   const errorMessage = cmd ? `Unknown command: ${cmd}` : 'No command specified';
   console.error(errorMessage);
-  console.log(usage);
-};
-
-const setGlobals: GlobalSetter<Options> = (options) => {
-  return {
-    userName: 'me',
-    extensions: options.extensions.split(','),
-  };
 };
 
 // Bring it all together
-const parser = options
+const parser = baseParser
   .setMeta({
     command: 'my-cli',
     summary: 'Work with files and folders',
@@ -109,7 +116,6 @@ const parser = options
       shortFlag: '-V',
     },
   })
-  .setGlobals(setGlobals)
   .subcommand('cp', {
     handler: copy,
     args: ['from', 'to'] as const,
@@ -132,7 +138,7 @@ const parser = options
   .onError(handleError)
   .defaultHandler(handleDefault);
 
-const run = async (args: string[]) => {
+export const run = async (args: string[]) => {
   await parser.parse(args).call();
 };
 

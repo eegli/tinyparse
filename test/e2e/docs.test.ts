@@ -1,10 +1,9 @@
 import type {
-  CommandHandler,
-  ErrorHandler,
-  GlobalSetter,
-  HandlerGlobals,
-  HandlerOptions,
-  HandlerParams,
+  ErrorParams,
+  InferOptions,
+  WithArgs,
+  WithGlobals,
+  WithOptions,
 } from '../../src';
 import { Parser } from '../../src';
 
@@ -79,18 +78,16 @@ describe('docs', () => {
             longFlag: '--version',
           },
         })
-        .defaultHandler(({ usage }) => {
-          console.log('No command specified', '\n', usage);
+        .defaultHandler(() => {
+          console.log('No command specified');
         });
 
       await parser.parse(['fetch-user', 'John', '-v']).call();
       expect(consoleLog).toHaveBeenLastCalledWith('Hello, John Smith!');
 
       await parser.parse([]).call();
-      expect(consoleLog).toHaveBeenLastCalledWith(
+      expect(consoleLog).toHaveBeenCalledWith(
         expect.stringMatching(/^No command specified/),
-        '\n',
-        expect.any(String),
       );
 
       await parser.parse(['--help']).call();
@@ -185,21 +182,22 @@ describe('docs', () => {
       expect(consoleLog).toHaveBeenCalledWith('Hello, John!');
     });
     test('external declaration', async () => {
-      type Options = typeof options;
-
-      const options = new Parser().option('verbose', {
+      const parserOptions = new Parser().option('verbose', {
         longFlag: '--verbose',
         defaultValue: false,
       });
 
-      const globalSetter: GlobalSetter<Options> = (options) => ({
+      type Options = InferOptions<typeof parserOptions>;
+
+      const globalSetter = (options: Options) => ({
         log: (message: string) => {
+          // Strong typing!
           if (options.verbose) {
             console.log(message);
           }
         },
       });
-      const parser = options.setGlobals(globalSetter).defaultHandler();
+      const parser = parserOptions.setGlobals(globalSetter).defaultHandler();
       await expect(
         parser.parse(['do-a-thing', '--verbose']).call(),
       ).resolves.toBeUndefined();
@@ -248,12 +246,16 @@ describe('docs', () => {
     });
 
     test('external declaration', async () => {
-      type Options = typeof options;
+      type BaseParser = typeof baseParser;
 
-      const subcommandHandler: CommandHandler<Options, [string]> = (params) => {
+      type HandlerParams = WithArgs<[string, string]> &
+        WithOptions<BaseParser> &
+        WithGlobals<BaseParser>;
+
+      const subcommandHandler = (params: HandlerParams) => {
         const { args, options, globals } = params;
-        const [toUser] = args;
-        let greeting = `Greetings from ${globals.fromUser} to ${toUser}!`;
+        const [fromUser, toUser] = args;
+        let greeting = `${globals.flower} from ${fromUser} to ${toUser}!`;
 
         if (options.uppercase) {
           greeting = greeting.toUpperCase();
@@ -261,28 +263,28 @@ describe('docs', () => {
         console.log(greeting);
       };
 
-      const options = new Parser()
+      const baseParser = new Parser()
         .option('uppercase', {
           longFlag: '--uppercase',
           shortFlag: '-u',
           defaultValue: false,
         })
         .setGlobals(() => ({
-          fromUser: 'John',
+          flower: '🌸',
         }));
 
-      const parser = options
-        .subcommand('send-greeting', {
-          args: ['to'] as const,
+      const parser = baseParser
+        .subcommand('flowers', {
+          args: ['from', 'to'] as const,
           handler: subcommandHandler,
         })
         .defaultHandler();
 
-      await parser.parse(['send-greeting', 'Mary']).call();
-      expect(consoleLog).toHaveBeenCalledWith('Greetings from John to Mary!');
+      await parser.parse(['flowers', 'John', 'Mary']).call();
+      expect(consoleLog).toHaveBeenCalledWith('🌸 from John to Mary!');
 
-      await parser.parse(['send-greeting', 'Mary', '-u']).call();
-      expect(consoleLog).toHaveBeenCalledWith('GREETINGS FROM JOHN TO MARY!');
+      await parser.parse(['flowers', 'John', 'Mary', '-u']).call();
+      expect(consoleLog).toHaveBeenCalledWith('🌸 FROM JOHN TO MARY!');
     });
   });
   describe('handlers', () => {
@@ -293,67 +295,64 @@ describe('docs', () => {
     });
 
     test('external declaration', async () => {
-      const options = new Parser();
+      // Type alias for the future
+      type BaseParser = typeof baseParser;
 
-      const defaultHandler: CommandHandler<typeof options> = ({
-        args,
-        globals,
-        options,
-        usage,
-      }) => {
-        console.log({ args, globals, options, usage });
+      // Set up the base parser with globals and options
+      const baseParser = new Parser()
+        .option('foo', {
+          longFlag: '--foo',
+          defaultValue: 'default',
+        })
+        .setGlobals(() => ({
+          bar: 'baz',
+        }));
+
+      // I only need an array of strings
+      type FirstHandler = WithArgs<string[]>;
+
+      const firstHandler = ({ args }: FirstHandler) => {};
+
+      // I need a tuple of two strings, the options, and the globals
+      type SecondHandler = WithArgs<[string, string]> &
+        WithOptions<BaseParser> &
+        WithGlobals<BaseParser>;
+
+      const secondHandler = ({ args, options, globals }: SecondHandler) => {};
+
+      // I have no strict requirements but I need access to the options and globals
+      type DefaultHandler = WithArgs<string[]> &
+        WithGlobals<BaseParser> &
+        WithOptions<BaseParser>;
+
+      const defaultHandler = ({ args, globals, options }: DefaultHandler) => {
+        console.log({ args, globals, options });
       };
 
-      await options
-        .defaultHandler(defaultHandler)
-        .parse(['hello', 'world'])
-        .call();
+      const parser = baseParser
+        .subcommand('first', {
+          // An array of strings is fine
+          args: 'args',
+          handler: firstHandler,
+        })
+        .subcommand('second', {
+          // Match the type signature
+          args: ['arg1', 'arg2'] as const,
+          handler: secondHandler,
+        })
+        .defaultHandler(defaultHandler);
+
+      await parser.parse(['hello', 'world']).call();
 
       expect(consoleLog).toHaveBeenCalledWith({
         args: ['hello', 'world'],
-        globals: {},
-        options: {},
-        usage: expect.any(String),
+        globals: {
+          bar: 'baz',
+        },
+        options: {
+          foo: 'default',
+        },
       });
-    });
-
-    test('modular declaration', () => {
-      const options = new Parser().option('foo', {
-        longFlag: '--foo',
-        defaultValue: 'default',
-      });
-
-      type Globals = HandlerGlobals<typeof options>;
-      type Options = HandlerOptions<typeof options>;
-
-      // Handler that only needs options and globals
-      type Params = HandlerParams<Options, never, Globals>;
-
-      const defaultHandler = ({ globals, options }: Params) => {
-        console.log({ globals, options });
-        // In a test, assert that true is returned
-        return true;
-      };
-
-      // Other possible options...
-
-      // No parameters
-      type NoParamsHandler = HandlerParams;
-      const noopHandler: NoParamsHandler = () => {};
-
-      // Positional arguments and options only
-      type ParamsWithArgs = HandlerParams<Options, [string]>;
-      const handlerWithArgs = ({ options, args }: ParamsWithArgs) => {};
-
-      // Usage only
-      type ParamsWithUsage = HandlerParams<never, never, never, string>;
-      const handlerWithUsage = ({ usage }: ParamsWithUsage) => {};
-
-      // No actual tests, just make sure this one compiles
-      expect(defaultHandler).toBeDefined();
-      expect(noopHandler).toBeDefined();
-      expect(handlerWithArgs).toBeDefined();
-      expect(handlerWithUsage).toBeDefined();
     });
   });
   describe('subparsers', () => {
@@ -493,7 +492,7 @@ describe('docs', () => {
   });
   describe('error handling', () => {
     test('catches error', async () => {
-      const errorHandler: ErrorHandler = (error, usage) => {
+      const errorHandler = ({ error, usage }: ErrorParams) => {
         console.log(error.message);
         // Missing required option --foo
         console.log(usage);

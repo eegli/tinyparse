@@ -1,30 +1,28 @@
 import { CommandBuilder } from '../commands';
-import { AnyGlobal, GenericHandler, RemoveNever } from '../types/internals';
+import { ValidationError } from '../error';
 
-export type CommandHandler<T, A extends string[] = string[]> =
-  T extends CommandBuilder<infer O, infer G> ? GenericHandler<O, G, A> : never;
-
-export type { ErrorHandler } from './internals';
-
-export type GlobalSetter<T> =
+export type WithOptions<T> =
   T extends CommandBuilder<infer O, unknown>
-    ? (options: O) => AnyGlobal
+    ? {
+        options: O;
+      }
     : never;
 
-export type HandlerGlobals<T> =
-  T extends CommandBuilder<unknown, infer G> ? G : never;
+export type WithGlobals<T> =
+  T extends CommandBuilder<unknown, infer G>
+    ? {
+        globals: G;
+      }
+    : never;
 
-export type HandlerOptions<T> =
+export type WithArgs<T extends string[]> = {
+  args: T;
+};
+
+export type ErrorParams = {
+  error: ValidationError;
+  usage: string;
+};
+
+export type InferOptions<T> =
   T extends CommandBuilder<infer O, unknown> ? O : never;
-
-export type HandlerParams<
-  Options = never,
-  Args = never,
-  Globals = never,
-  Usage = never,
-> = RemoveNever<{
-  options: Options;
-  args: Args;
-  globals: Globals;
-  usage: Usage;
-}>;

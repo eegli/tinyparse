@@ -14,14 +14,23 @@ const options = new Parser()
     defaultValue: '',
     description: 'Comma-separated list of file extensions to include',
 });
+const setGlobals = (opts) => {
+    return {
+        userName: 'me',
+        extensions: opts.extensions.split(','),
+    };
+};
+const baseParser = options.setGlobals(setGlobals);
 // Define all subcommands
 const copy = ({ args }) => {
     const [from, to] = args;
     console.log(`Copying files from ${from} to ${to}`);
 };
-const remove = ({ args: files, globals }) => {
+const remove = ({ args: files, globals, options, }) => {
     const { extensions } = globals;
-    console.log(`Removing files ${files} if they have extension ${extensions}`);
+    console.log(`Removing files ${files} with extension ${extensions}`);
+    if (options.verbose)
+        console.log('Files to remove: ', files);
 };
 const status = ({ globals }) => {
     const { userName } = globals;
@@ -38,24 +47,17 @@ const list = ({ args }) => {
     }
 };
 // Define handlers and setters
-const handleError = (error, usage) => {
+const handleError = ({ error, usage }) => {
     console.error('Error: ' + error.message);
     console.log(usage);
 };
-const handleDefault = ({ args, globals, options, usage, }) => {
+const handleDefault = ({ args, globals, options, }) => {
     const cmd = args[0];
     const errorMessage = cmd ? `Unknown command: ${cmd}` : 'No command specified';
     console.error(errorMessage);
-    console.log(usage);
-};
-const setGlobals = (options) => {
-    return {
-        userName: 'me',
-        extensions: options.extensions.split(','),
-    };
 };
 // Bring it all together
-const parser = options
+const parser = baseParser
     .setMeta({
     command: 'my-cli',
     summary: 'Work with files and folders',
@@ -71,7 +73,6 @@ const parser = options
         shortFlag: '-V',
     },
 })
-    .setGlobals(setGlobals)
     .subcommand('cp', {
     handler: copy,
     args: ['from', 'to'],

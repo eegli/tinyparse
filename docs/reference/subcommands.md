@@ -60,18 +60,28 @@ parser.parse(['cmd-none-strict', 'hello']).call();
 
 ## External Declaration
 
-You can declare your subcommands outside of the building phase by stopping early and then using the `CommandHandler` helper type, similar as for globals. Again, due to TypeScript and the builder pattern, you need to declare your options and globals _before_ you can declare your subcommand so that the subcommand arguments, options and globals can be inferred correctly.
+You can declare your subcommand handlers outside of the building phase by stopping early and then using the `With*` utility types to specify the parameters they take. Declaring handlers externally has a few benefits:
+
+- You can do unit testing on them
+- They keep their return type
+- You can modularly define what parameters they take (e.g., only `args` and `options` but not `globals`)
+
+As you might have noticed, some of the `With*` utility types are generic - they infer the options and globals from the base parser, giving you complete type safety.
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
-import type { CommandHandler } from '@eegli/tinyparse';
+import type { WithArgs, WithGlobals, WithOptions } from '@eegli/tinyparse';
 
-type Options = typeof options;
+type BaseParser = typeof baseParser;
 
-const subcommandHandler: CommandHandler<Options, [string]> = (params) => {
+type HandlerParams = WithArgs<[string, string]> &
+  WithOptions<BaseParser> &
+  WithGlobals<BaseParser>;
+
+const subcommandHandler = (params: HandlerParams) => {
   const { args, options, globals } = params;
-  const [toUser] = args;
-  let greeting = `Greetings from ${globals.fromUser} to ${toUser}!`;
+  const [fromUser, toUser] = args;
+  let greeting = `${globals.flower} from ${fromUser} to ${toUser}!`;
 
   if (options.uppercase) {
     greeting = greeting.toUpperCase();
@@ -79,31 +89,32 @@ const subcommandHandler: CommandHandler<Options, [string]> = (params) => {
   console.log(greeting);
 };
 
-const options = new Parser()
+const baseParser = new Parser()
   .option('uppercase', {
     longFlag: '--uppercase',
     shortFlag: '-u',
     defaultValue: false,
   })
   .setGlobals(() => ({
-    fromUser: 'John',
+    flower: '🌸',
   }));
 
-const parser = options
-  .subcommand('send-greeting', {
-    args: ['to'] as const,
+const parser = baseParser
+  .subcommand('flowers', {
+    args: ['from', 'to'] as const,
     handler: subcommandHandler,
   })
   .defaultHandler();
 
-// Greetings from John to Mary!
-parser.parse(['send-greeting', 'Mary']).call();
+// 🌸 from John to Mary!
+parser.parse(['flowers', 'John', 'Mary']).call();
 
-// GREETINGS FROM JOHN TO MARY!
-parser.parse(['send-greeting', 'Mary', '-u']).call();
+// 🌸 FROM JOHN TO MARY!
+parser.parse(['flowers', 'John', 'Mary', '-u']).call();
 ```
 
 ## Good to Know
 
+- Again, due to TypeScript and the builder pattern, you need to declare your options and globals _before_ you can declare your subcommand so that the subcommand arguments, options and globals can be inferred correctly.
 - The types of all subcommand _arguments_ (`arg1`, etc.) are not validated. They will all be of type `string` because that is exactly what `stdin` gives us
 - If there is _no positional argument_ that matches a subcommand, the default handler is called. If you require a subcommand is called, you can handle this case in the default handler
