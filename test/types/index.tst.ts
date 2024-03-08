@@ -16,7 +16,7 @@ describe('subcommand params, internal declaration', () => {
     })
     .option('foo-choice', {
       defaultValue: 'default',
-      oneOf: ['other'],
+      oneOf: ['a', 'b'],
       longFlag: '--foo-long',
     })
     .option('bar', {
@@ -47,7 +47,7 @@ describe('subcommand params, internal declaration', () => {
 
   test('flags are inferred', () => {
     type ExpectedFlagParams = Record<'foo', string> &
-      Record<'foo-choice', 'default' | 'other'> &
+      Record<'foo-choice', 'default' | 'a' | 'b'> &
       Record<'bar', number> &
       Record<'bar-choice', 0> &
       Record<'baz', boolean> &

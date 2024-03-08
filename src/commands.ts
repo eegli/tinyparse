@@ -7,7 +7,7 @@ import {
   DowncastFlag,
   ErrorHandler,
   FlagOptions,
-  FlagOptionsWithOneOf,
+  FlagOptionsExt,
   FlagValue,
   FlagValueRecord,
   MetaOptions,
@@ -45,6 +45,16 @@ export class CommandBuilder<Options, Globals> {
     }
   };
 
+  #validateOneOf = <T>(id: string, type: T, ...options: T[]): void => {
+    const expectedType = typeof type;
+    const wrongType = options.find((opt) => typeof opt !== expectedType);
+    if (wrongType) {
+      throw new Error(
+        `OneOf for option "${id}" contains invalid type ${typeof wrongType}, expected ${expectedType}`,
+      );
+    }
+  };
+
   #tryRegisterCommandToken = (command?: string) => {
     if (command) {
       this.#validateCommand(command);
@@ -62,19 +72,26 @@ export class CommandBuilder<Options, Globals> {
   /**
    * Add an option (flag)
    */
-  option<K extends string, V extends FlagValue, O>(
+  option<
+    K extends string,
+    V extends FlagValue,
+    O extends unknown[],
+    C = O[number],
+  >(
     key: K,
-    opts: FlagOptionsWithOneOf<V, O>,
-  ): CommandBuilder<Options & Record<K, V | O>, Globals>;
+    opts: FlagOptionsExt<V, C>,
+  ): CommandBuilder<Options & Record<K, V | C>, Globals>;
   option<K extends string, V extends FlagValue>(
     key: K,
     opts: FlagOptions<V>,
   ): CommandBuilder<Options & Record<K, DowncastFlag<V>>, Globals>;
-  option<K extends string, V extends FlagValue>(
-    key: K,
-    opts: FlagOptions<V>,
-  ): CommandBuilder<Options & Record<K, DowncastFlag<V>>, Globals> {
-    const { longFlag, shortFlag } = opts;
+  option<K extends string, V extends FlagValue>(key: K, opts: FlagOptions<V>) {
+    const { longFlag, shortFlag, oneOf, defaultValue } = opts;
+
+    if (oneOf) {
+      this.#validateOneOf(key, defaultValue, ...oneOf);
+    }
+
     this.#validateOption(key);
     this.#config.options.set(key, opts);
 

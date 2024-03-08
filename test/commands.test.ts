@@ -58,6 +58,17 @@ describe('command builder', () => {
         });
     }).toThrow('Flag "-f" has been declared twice');
   });
+  test('throws for invalid oneOf', () => {
+    expect(() => {
+      new CommandBuilder().option('foo', {
+        defaultValue: 'default',
+        longFlag: '--foo',
+        oneOf: [1],
+      });
+    }).toThrow(
+      'OneOf for option "foo" contains invalid type number, expected string',
+    );
+  });
   test('throws for taken subparsers', () => {
     const builder = new CommandBuilder();
     builder.subcommand('foo', {

@@ -2,6 +2,14 @@ import { ValidationError } from './error';
 import { FlagOptions, FlagValue } from './types/internals';
 import Utils, { Type } from './utils';
 
+const assertIsOneOf = <T>(id: string, value: T, ...options: T[]): void => {
+  if (!options.includes(value)) {
+    const available = options.join(', ');
+    const err = `Invalid value "${value}" for option ${id}, expected one of ${available}`;
+    throw new ValidationError(err);
+  }
+};
+
 export const collectFlags = (
   inputFlags: Map<string, string | null>,
   flagOptions: Map<string, FlagOptions<FlagValue>>,
@@ -29,6 +37,9 @@ export const collectFlags = (
     const argumentIsNull = flagArg === null;
 
     if (expectedArgType === Type.String) {
+      if (opts.oneOf) {
+        assertIsOneOf(longFlag, flagArg, opts.defaultValue, ...opts.oneOf);
+      }
       if (!argumentIsNull) {
         output.set(key, flagArg as string);
         continue;
@@ -51,15 +62,18 @@ export const collectFlags = (
     }
     if (expectedArgType === Type.Number) {
       const asNumber = Utils.tryToNumber(flagArg as string);
-      if (asNumber) {
-        output.set(key, asNumber);
-        continue;
+      if (!asNumber) {
+        throw new ValidationError(
+          `Invalid type for ${longFlag}. '${
+            flagArg as string
+          }' is not a valid number`,
+        );
       }
-      throw new ValidationError(
-        `Invalid type for ${longFlag}. '${
-          flagArg as string
-        }' is not a valid number`,
-      );
+      if (opts.oneOf) {
+        assertIsOneOf(longFlag, flagArg, opts.defaultValue, ...opts.oneOf);
+      }
+      output.set(key, asNumber);
+      continue;
     }
     if (expectedArgType === Type.Date) {
       const asDate = Utils.tryToDate(flagArg as string);

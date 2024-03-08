@@ -18,9 +18,10 @@ export interface FlagOptions<V extends FlagValue> {
   defaultValue: DowncastFlag<V>;
   required?: boolean;
   description?: string;
+  oneOf?: unknown[];
 }
 
-export interface FlagOptionsWithOneOf<V extends FlagValue, T>
+export interface FlagOptionsExt<V extends FlagValue, T = unknown>
   extends FlagOptions<V> {
   oneOf: (V | T)[];
 }

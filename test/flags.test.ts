@@ -72,4 +72,18 @@ describe('flags', () => {
       );
     }
   });
+  test('respects oneof setting', () => {
+    const options: FlagOptionsMap = new Map([
+      ['foo', { longFlag: '--foo', defaultValue: 'a', oneOf: ['b'] }],
+      ['bar', { longFlag: '--bar', defaultValue: 0, oneOf: [1, 2] }],
+    ]);
+    const input = new Map([['--foo', 'c']]);
+    expect(() => collectFlags(input, options)).toThrow(ValidationError);
+    expect(() => collectFlags(input, options)).toThrow(
+      'Invalid value "c" for option --foo, expected one of a, b',
+    );
+    expect(() => collectFlags(new Map([['--bar', '3']]), options)).toThrow(
+      'Invalid value "3" for option --bar, expected one of 0, 1, 2',
+    );
+  });
 });
