@@ -32,7 +32,6 @@ describe('Helper text', () => {
       'flagD',
       {
         longFlag: '--flag-d',
-        shortFlag: '-d',
         defaultValue: 3000,
         description: 'The fourth flag',
       },
@@ -43,6 +42,15 @@ describe('Helper text', () => {
         longFlag: '--flag-c',
         shortFlag: '-c',
         defaultValue: false,
+      },
+    ],
+    [
+      'flagX',
+      {
+        longFlag: '--flag-x',
+        oneOf: ['a', 'b', 'c'],
+        defaultValue: 'a',
+        description: "Flag can be 'a', 'b' or 'c'",
       },
     ],
   ]);
@@ -144,7 +152,8 @@ describe('Helper text', () => {
     ).toMatchInlineSnapshot(`
       "Optional flags
          -c, --flag-c [boolean]   
-         -d, --flag-d [number]    The fourth flag
+         --flag-d [number]        The fourth flag
+         --flag-x <a|b|c>         Flag can be 'a', 'b' or 'c'
          --help                   Print this help message"
     `);
   });
@@ -160,7 +169,8 @@ describe('Helper text', () => {
 
       Optional flags
          -c, --flag-c [boolean]   
-         -d, --flag-d [number]    The fourth flag"
+         --flag-d [number]        The fourth flag
+         --flag-x <a|b|c>         Flag can be 'a', 'b' or 'c'"
     `);
   });
 
@@ -217,7 +227,8 @@ describe('Helper text', () => {
 
       Optional flags
          -c, --flag-c [boolean]   
-         -d, --flag-d [number]    The fourth flag
+         --flag-d [number]        The fourth flag
+         --flag-x <a|b|c>         Flag can be 'a', 'b' or 'c'
          -h, --help               Print this help message
          -v, --version            Print the version"
     `);

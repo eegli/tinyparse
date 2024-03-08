@@ -194,7 +194,7 @@ export class HelpPrinter {
   #formatOptionWithArgs(options: FlagOptions<FlagValue>[]): [string, string][] {
     return options.reduce(
       (acc, options) => {
-        const { shortFlag, longFlag, defaultValue } = options;
+        const { shortFlag, longFlag, defaultValue, oneOf } = options;
 
         let str = shortFlag ? `${shortFlag}, ${longFlag}` : longFlag;
 
@@ -203,7 +203,11 @@ export class HelpPrinter {
           longFlag !== this.#meta?.help?.longFlag &&
           longFlag !== this.#meta?.version?.longFlag
         ) {
-          str += ` [${Utils.typeof(defaultValue)}]`;
+          if (oneOf) {
+            str += ` <${oneOf.join('|')}>`;
+          } else {
+            str += ` [${Utils.typeof(defaultValue)}]`;
+          }
         }
 
         acc.push([str, options.description || '']);
