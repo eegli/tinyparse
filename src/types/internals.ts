@@ -12,17 +12,20 @@ export type FlagValue = string | number | boolean | Date;
 /**
  * The user settings for a flag option.
  */
-export interface FlagOptions<V extends FlagValue> {
+export interface FlagOptions<V extends FlagValue, R extends boolean = false> {
   longFlag: LongFlag;
   shortFlag?: ShortFlag;
   defaultValue: DowncastFlag<V>;
-  required?: boolean;
+  required?: R;
   description?: string;
   oneOf?: unknown[];
 }
 
-export interface FlagOptionsExt<V extends FlagValue, T = unknown>
-  extends FlagOptions<V> {
+export interface FlagOptionsExt<
+  V extends FlagValue,
+  R extends boolean,
+  T = unknown,
+> extends FlagOptions<V, R> {
   oneOf: (V | T)[];
 }
 

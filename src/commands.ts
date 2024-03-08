@@ -76,14 +76,16 @@ export class CommandBuilder<Options, Globals> {
     K extends string,
     V extends FlagValue,
     O extends unknown[],
-    C = O[number],
+    R extends boolean,
+    Choices = O[number],
+    Values = R extends true ? Choices : V | Choices,
   >(
     key: K,
-    opts: FlagOptionsExt<V, C>,
-  ): CommandBuilder<Options & Record<K, V | C>, Globals>;
-  option<K extends string, V extends FlagValue>(
+    opts: FlagOptionsExt<V, R, Choices>,
+  ): CommandBuilder<Options & Record<K, Values>, Globals>;
+  option<K extends string, V extends FlagValue, R extends boolean>(
     key: K,
-    opts: FlagOptions<V>,
+    opts: FlagOptions<V, R>,
   ): CommandBuilder<Options & Record<K, DowncastFlag<V>>, Globals>;
   option<K extends string, V extends FlagValue>(key: K, opts: FlagOptions<V>) {
     const { longFlag, shortFlag, oneOf, defaultValue } = opts;

@@ -170,13 +170,17 @@ describe('docs', () => {
           defaultValue: 'default',
           oneOf: ['a', 'b'],
         })
+        .option('foo-required', {
+          longFlag: '--foo-req',
+          defaultValue: 'default',
+          oneOf: ['a', 'b'],
+          required: true,
+        })
         .defaultHandler(({ options }) => {
           // foo is inferred "default", "a", or "b"
-          if (options.foo === 'a') {
-            console.log('A');
-          } else {
-            console.log('B');
-          }
+          const foo = options.foo;
+          // fooRequired is inferred "a" or "b"
+          const fooRequired = options['foo-required'];
         });
       await expect(() => parser.parse(['--foo', 'c']).call()).rejects.toThrow(
         new ValidationError(
