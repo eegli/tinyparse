@@ -87,7 +87,10 @@ export class CommandBuilder<Options, Globals> {
     key: K,
     opts: FlagOptions<V, R>,
   ): CommandBuilder<Options & Record<K, DowncastFlag<V>>, Globals>;
-  option<K extends string, V extends FlagValue>(key: K, opts: FlagOptions<V>) {
+  option<K extends string, V extends FlagValue, R extends boolean>(
+    key: K,
+    opts: FlagOptions<V, R>,
+  ) {
     const { longFlag, shortFlag, oneOf, defaultValue } = opts;
 
     if (oneOf) {
