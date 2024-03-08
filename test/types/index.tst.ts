@@ -68,6 +68,7 @@ describe('subcommand params, external declaration', () => {
   const options = new Parser()
     .option('foo', {
       defaultValue: 'default',
+      oneOf: ['a', 'b'],
       longFlag: '--foo',
     })
     .option('bar', {
@@ -79,7 +80,8 @@ describe('subcommand params, external declaration', () => {
 
   const baseParser = options.setGlobals(globalSetter);
 
-  type OptionsOrGlobals = Record<'foo', string> & Record<'bar', number>;
+  type OptionsOrGlobals = Record<'foo', 'default' | 'a' | 'b'> &
+    Record<'bar', number>;
 
   type BaseParser = typeof baseParser;
 

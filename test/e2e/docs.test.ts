@@ -5,7 +5,7 @@ import type {
   WithGlobals,
   WithOptions,
 } from '../../src';
-import { Parser } from '../../src';
+import { Parser, ValidationError } from '../../src';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -162,6 +162,27 @@ describe('docs', () => {
       for (const input of inputs) {
         await expect(parser.parse(input).call()).resolves.not.toThrow();
       }
+    });
+    test('oneOf options', async () => {
+      const parser = new Parser()
+        .option('foo', {
+          longFlag: '--foo',
+          defaultValue: 'default',
+          oneOf: ['a', 'b'],
+        })
+        .defaultHandler(({ options }) => {
+          // foo is inferred "default", "a", or "b"
+          if (options.foo === 'a') {
+            console.log('A');
+          } else {
+            console.log('B');
+          }
+        });
+      await expect(() => parser.parse(['--foo', 'c']).call()).rejects.toThrow(
+        new ValidationError(
+          'Invalid value "c" for option --foo, expected one of: a, b',
+        ),
+      );
     });
   });
   describe('globals', () => {

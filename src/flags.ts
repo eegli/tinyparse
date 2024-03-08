@@ -5,7 +5,7 @@ import Utils, { Type } from './utils';
 const assertIsOneOf = <T>(id: string, value: T, ...options: T[]): void => {
   if (!options.includes(value)) {
     const available = options.join(', ');
-    const err = `Invalid value "${value}" for option ${id}, expected one of ${available}`;
+    const err = `Invalid value "${value}" for option ${id}, expected one of: ${available}`;
     throw new ValidationError(err);
   }
 };
@@ -38,7 +38,7 @@ export const collectFlags = (
 
     if (expectedArgType === Type.String) {
       if (opts.oneOf) {
-        assertIsOneOf(longFlag, flagArg, opts.defaultValue, ...opts.oneOf);
+        assertIsOneOf(longFlag, flagArg, ...opts.oneOf);
       }
       if (!argumentIsNull) {
         output.set(key, flagArg as string);
@@ -70,7 +70,7 @@ export const collectFlags = (
         );
       }
       if (opts.oneOf) {
-        assertIsOneOf(longFlag, flagArg, opts.defaultValue, ...opts.oneOf);
+        assertIsOneOf(longFlag, flagArg, ...opts.oneOf);
       }
       output.set(key, asNumber);
       continue;
