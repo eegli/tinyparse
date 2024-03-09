@@ -75,8 +75,8 @@ export class CommandBuilder<Options, Globals> {
   option<
     K extends string,
     V extends FlagValue,
-    O extends unknown[],
     R extends boolean,
+    O extends unknown[],
     Choices = O[number],
     Values = R extends true ? Choices : V | Choices,
   >(
