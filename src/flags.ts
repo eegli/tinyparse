@@ -28,7 +28,7 @@ const assertIsOneOf = <T>({
 
 export const collectFlags = (
   inputFlags: Map<string, string | null>,
-  flagOptions: Map<string, FlagOptions<FlagValue, boolean>>,
+  flagOptions: Map<string, FlagOptions<FlagValue>>,
 ) => {
   const output = new Map<string, FlagValue>();
   for (const [key, opts] of flagOptions) {
