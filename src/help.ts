@@ -204,34 +204,26 @@ export class HelpPrinter {
         } = options;
 
         let str = shortFlag ? `${shortFlag}, ${longFlag}` : longFlag;
+        const valueType = Utils.typeof(defaultValue);
+
+        const displayOneOf =
+          valueType === Type.String || valueType === Type.Number;
 
         const isMetaCommand =
           longFlag == this.#meta?.help?.longFlag ||
           longFlag == this.#meta?.version?.longFlag;
 
-        let optionSummary = description || '';
-
         // Help and version flags have no value
         if (!isMetaCommand) {
-          if (oneOf) {
+          if (oneOf && displayOneOf) {
             const values = required ? oneOf : oneOf.concat(defaultValue);
             str += ` <${values.sort().join('|')}>`;
           } else {
             str += ` [${Utils.typeof(defaultValue)}]`;
           }
-          // Add "Default" for optional flags
-          if (!required) {
-            // Add new sentence if there is a description
-            if (optionSummary) optionSummary += '. ';
-            const defaultFormatted =
-              Utils.typeof(defaultValue) === Type.Date
-                ? (defaultValue as Date).toLocaleString()
-                : defaultValue;
-            optionSummary += `Default: ${defaultFormatted}`;
-          }
         }
 
-        acc.push([str, optionSummary]);
+        acc.push([str, description || '']);
         return acc;
       },
       [] as [string, string][],

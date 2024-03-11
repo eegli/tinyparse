@@ -46,6 +46,15 @@ describe('Helper text', () => {
       },
     ],
     [
+      'after',
+      {
+        longFlag: '--after',
+        defaultValue: new Date(),
+        oneOf: ["'2021-01-01'"],
+        description: 'After date',
+      },
+    ],
+    [
       'output',
       {
         longFlag: '--output',
@@ -152,9 +161,10 @@ describe('Helper text', () => {
       }).formatOptions(),
     ).toMatchInlineSnapshot(`
       "Optional flags
-         --output <json|yaml>      Output format. Default: json
-         --port [number]           Port to use. Default: 3000
-         -v, --verbose [boolean]   Default: false
+         --after [date]            After date
+         --output <json|yaml>      Output format
+         --port [number]           Port to use
+         -v, --verbose [boolean]   
          --help                    Print this help message"
     `);
   });
@@ -169,9 +179,10 @@ describe('Helper text', () => {
          --before [date]            
 
       Optional flags
-         --output <json|yaml>       Output format. Default: json
-         --port [number]            Port to use. Default: 3000
-         -v, --verbose [boolean]    Default: false"
+         --after [date]             After date
+         --output <json|yaml>       Output format
+         --port [number]            Port to use
+         -v, --verbose [boolean]    "
     `);
   });
 
@@ -227,9 +238,10 @@ describe('Helper text', () => {
          --before [date]            
 
       Optional flags
-         --output <json|yaml>       Output format. Default: json
-         --port [number]            Port to use. Default: 3000
-         -v, --verbose [boolean]    Default: false
+         --after [date]             After date
+         --output <json|yaml>       Output format
+         --port [number]            Port to use
+         -v, --verbose [boolean]    
          -h, --help                 Print this help message
          -v, --version              Print the version"
     `);
