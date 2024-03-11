@@ -10,18 +10,19 @@ import {
 describe('Helper text', () => {
   const requiredflags: FlagOptionsMap = new Map([
     [
-      'flagA',
+      'auth',
       {
-        longFlag: '--flag-a',
+        longFlag: '--auth',
         defaultValue: '',
         required: true,
-        description: 'The first flag',
+        description: 'Auth type to use',
+        oneOf: ['basic', '2fa', 'oauth'],
       },
     ],
     [
-      'flabB',
+      'before',
       {
-        longFlag: '--flag-b',
+        longFlag: '--before',
         defaultValue: new Date(),
         required: true,
       },
@@ -29,28 +30,28 @@ describe('Helper text', () => {
   ]);
   const optionalFlags: FlagOptionsMap = new Map([
     [
-      'flagD',
+      'port',
       {
-        longFlag: '--flag-d',
+        longFlag: '--port',
         defaultValue: 3000,
-        description: 'The fourth flag',
+        description: 'Port to use',
       },
     ],
     [
-      'flabC',
+      'verbose',
       {
-        longFlag: '--flag-c',
-        shortFlag: '-c',
+        longFlag: '--verbose',
+        shortFlag: '-v',
         defaultValue: false,
       },
     ],
     [
-      'flagX',
+      'output',
       {
-        longFlag: '--flag-x',
-        oneOf: ['a', 'b', 'c'],
-        defaultValue: 'a',
-        description: "Flag can be 'a', 'b' or 'c'",
+        longFlag: '--output',
+        oneOf: ['yaml'],
+        defaultValue: 'json',
+        description: 'Output format',
       },
     ],
   ]);
@@ -135,8 +136,8 @@ describe('Helper text', () => {
     const p = new Help({ options: requiredflags });
     expect(p.formatOptions()).toMatchInlineSnapshot(`
       "Required flags
-         --flag-a [string]   The first flag
-         --flag-b [date]     "
+         --auth <2fa|basic|oauth>   Auth type to use
+         --before [date]            "
     `);
   });
   test('optional flags formatting', () => {
@@ -151,10 +152,10 @@ describe('Helper text', () => {
       }).formatOptions(),
     ).toMatchInlineSnapshot(`
       "Optional flags
-         -c, --flag-c [boolean]   
-         --flag-d [number]        The fourth flag
-         --flag-x <a|b|c>         Flag can be 'a', 'b' or 'c'
-         --help                   Print this help message"
+         --output <json|yaml>      Output format. Default: json
+         --port [number]           Port to use. Default: 3000
+         -v, --verbose [boolean]   Default: false
+         --help                    Print this help message"
     `);
   });
   test('required and optional flags formatting', () => {
@@ -164,13 +165,13 @@ describe('Helper text', () => {
       }).formatOptions(),
     ).toMatchInlineSnapshot(`
       "Required flags
-         --flag-a [string]        The first flag
-         --flag-b [date]          
+         --auth <2fa|basic|oauth>   Auth type to use
+         --before [date]            
 
       Optional flags
-         -c, --flag-c [boolean]   
-         --flag-d [number]        The fourth flag
-         --flag-x <a|b|c>         Flag can be 'a', 'b' or 'c'"
+         --output <json|yaml>       Output format. Default: json
+         --port [number]            Port to use. Default: 3000
+         -v, --verbose [boolean]    Default: false"
     `);
   });
 
@@ -222,15 +223,15 @@ describe('Helper text', () => {
          version         Print the version
 
       Required flags
-         --flag-a [string]        The first flag
-         --flag-b [date]          
+         --auth <2fa|basic|oauth>   Auth type to use
+         --before [date]            
 
       Optional flags
-         -c, --flag-c [boolean]   
-         --flag-d [number]        The fourth flag
-         --flag-x <a|b|c>         Flag can be 'a', 'b' or 'c'
-         -h, --help               Print this help message
-         -v, --version            Print the version"
+         --output <json|yaml>       Output format. Default: json
+         --port [number]            Port to use. Default: 3000
+         -v, --verbose [boolean]    Default: false
+         -h, --help                 Print this help message
+         -v, --version              Print the version"
     `);
   });
 });

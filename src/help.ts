@@ -194,23 +194,40 @@ export class HelpPrinter {
   #formatOptionWithArgs(options: FlagOptions<FlagValue>[]): [string, string][] {
     return options.reduce(
       (acc, options) => {
-        const { shortFlag, longFlag, defaultValue, oneOf } = options;
+        const {
+          shortFlag,
+          longFlag,
+          defaultValue,
+          oneOf,
+          required,
+          description,
+        } = options;
 
         let str = shortFlag ? `${shortFlag}, ${longFlag}` : longFlag;
 
+        const isMetaCommand =
+          longFlag == this.#meta?.help?.longFlag ||
+          longFlag == this.#meta?.version?.longFlag;
+
+        let optionSummary = description || '';
+
         // Help and version flags have no value
-        if (
-          longFlag !== this.#meta?.help?.longFlag &&
-          longFlag !== this.#meta?.version?.longFlag
-        ) {
+        if (!isMetaCommand) {
           if (oneOf) {
-            str += ` <${oneOf.join('|')}>`;
+            const values = required ? oneOf : oneOf.concat(defaultValue);
+            str += ` <${values.sort().join('|')}>`;
           } else {
             str += ` [${Utils.typeof(defaultValue)}]`;
           }
+          // Add "Default" for optional flags
+          if (!required) {
+            // Add new sentence if there is a description
+            if (optionSummary) optionSummary += '. ';
+            optionSummary += `Default: ${defaultValue}`;
+          }
         }
 
-        acc.push([str, options.description || '']);
+        acc.push([str, optionSummary]);
         return acc;
       },
       [] as [string, string][],
