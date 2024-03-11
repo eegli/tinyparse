@@ -56,12 +56,13 @@ describe('flags', () => {
     );
   });
   test('rejects for invalid types', () => {
-    const inputs: [[string, string | null], FlagOptions<FlagValue>][] = [
-      [['--foo', null], { longFlag: '--foo', defaultValue: 'string' }],
-      [['--foo', 'bar'], { longFlag: '--foo', defaultValue: true }],
-      [['--foo', 'bar'], { longFlag: '--foo', defaultValue: 1 }],
-      [['--foo', 'bar'], { longFlag: '--foo', defaultValue: new Date() }],
-    ];
+    const inputs: [[string, string | null], FlagOptions<FlagValue, boolean>][] =
+      [
+        [['--foo', null], { longFlag: '--foo', defaultValue: 'string' }],
+        [['--foo', 'bar'], { longFlag: '--foo', defaultValue: true }],
+        [['--foo', 'bar'], { longFlag: '--foo', defaultValue: 1 }],
+        [['--foo', 'bar'], { longFlag: '--foo', defaultValue: new Date() }],
+      ];
     for (const [input, option] of inputs) {
       const inputs = new Map([input]);
       const options = new Map([[option.longFlag, option]]);
@@ -74,13 +75,17 @@ describe('flags', () => {
   });
   test('respects oneof setting', () => {
     const options: FlagOptionsMap = new Map([
-      ['foo', { longFlag: '--foo', defaultValue: 'a', oneOf: ['a', 'b'] }],
-      ['bar', { longFlag: '--bar', defaultValue: 0, oneOf: [0, 1] }],
+      ['foo', { longFlag: '--foo', defaultValue: 'a', oneOf: ['b'] }],
+      [
+        'bar',
+        { longFlag: '--bar', defaultValue: 0, oneOf: [0, 1], required: true },
+      ],
     ]);
-    const input = new Map([['--foo', 'c']]);
-    expect(() => collectFlags(input, options)).toThrow(ValidationError);
-    expect(() => collectFlags(input, options)).toThrow(
-      'Invalid value "c" for option --foo, expected one of: a, b',
+
+    expect(() => collectFlags(new Map([['--foo', 'c']]), options)).toThrow(
+      new ValidationError(
+        'Invalid value "c" for option --foo, expected one of: a, b',
+      ),
     );
     expect(() => collectFlags(new Map([['--bar', '2']]), options)).toThrow(
       'Invalid value "2" for option --bar, expected one of: 0, 1',

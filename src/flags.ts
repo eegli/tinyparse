@@ -2,9 +2,25 @@ import { ValidationError } from './error';
 import { FlagOptions, FlagValue } from './types/internals';
 import Utils, { Type } from './utils';
 
-const assertIsOneOf = <T>(id: string, value: T, ...options: T[]): void => {
+const assertIsOneOf = <T>({
+  id,
+  value,
+  options,
+  includeDefaultValue,
+  defaultValue,
+}: {
+  id: string;
+  value: T;
+  defaultValue: T;
+  includeDefaultValue?: boolean;
+  options: T[];
+}): void => {
+  if (includeDefaultValue) {
+    // Don't mutate the original array
+    options = options.concat(defaultValue);
+  }
   if (!options.includes(value)) {
-    const available = options.join(', ');
+    const available = options.sort().join(', ');
     const err = `Invalid value "${value}" for option ${id}, expected one of: ${available}`;
     throw new ValidationError(err);
   }
@@ -12,7 +28,7 @@ const assertIsOneOf = <T>(id: string, value: T, ...options: T[]): void => {
 
 export const collectFlags = (
   inputFlags: Map<string, string | null>,
-  flagOptions: Map<string, FlagOptions<FlagValue>>,
+  flagOptions: Map<string, FlagOptions<FlagValue, boolean>>,
 ) => {
   const output = new Map<string, FlagValue>();
   for (const [key, opts] of flagOptions) {
@@ -37,14 +53,21 @@ export const collectFlags = (
     const argumentIsNull = flagArg === null;
 
     if (expectedArgType === Type.String) {
+      if (argumentIsNull) {
+        throw new ValidationError(`${longFlag} expects an argument`);
+      }
       if (opts.oneOf) {
-        assertIsOneOf(longFlag, flagArg, ...opts.oneOf);
+        assertIsOneOf({
+          id: longFlag,
+          value: flagArg,
+          defaultValue: defaultValue,
+          // If the option is required, do not include the default value as a valid value
+          includeDefaultValue: !required,
+          options: opts.oneOf,
+        });
       }
-      if (!argumentIsNull) {
-        output.set(key, flagArg as string);
-        continue;
-      }
-      throw new ValidationError(`${longFlag} expects an argument`);
+      output.set(key, flagArg as string);
+      continue;
     }
     if (expectedArgType === Type.Boolean) {
       if (argumentIsNull) {
@@ -70,7 +93,14 @@ export const collectFlags = (
         );
       }
       if (opts.oneOf) {
-        assertIsOneOf(longFlag, flagArg, ...opts.oneOf);
+        assertIsOneOf({
+          id: longFlag,
+          value: asNumber,
+          defaultValue: defaultValue,
+
+          includeDefaultValue: !required,
+          options: opts.oneOf,
+        });
       }
       output.set(key, asNumber);
       continue;

@@ -5,7 +5,7 @@ import type {
   WithGlobals,
   WithOptions,
 } from '../../src';
-import { Parser, ValidationError } from '../../src';
+import { Parser } from '../../src';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -118,6 +118,7 @@ describe('docs', () => {
           shortFlag: '-f',
           defaultValue: 0,
           required: true,
+          oneOf: [0, 1],
           description: 'Foo option',
         })
         .defaultHandler();
@@ -127,20 +128,18 @@ describe('docs', () => {
       await expect(parser.parse(['--foo', 'zero']).call()).rejects.toThrow(
         "Invalid type for --foo. 'zero' is not a valid number",
       );
-      // "12" can be parsed as a number
-      await expect(parser.parse(['--foo', '12']).call()).resolves.not.toThrow();
+      // Ok - "1" can be parsed as a number
+      await expect(parser.parse(['--foo', '1']).call()).resolves.not.toThrow();
     });
     test('option access', () => {
-      const parser = new Parser()
-        .option('foo', {
-          longFlag: '--foo',
-          shortFlag: '-f',
-          defaultValue: 0,
-          required: true,
-          description: 'Foo option',
-        })
-        .defaultHandler();
-      expect(parser.options).toEqual({ foo: 0 });
+      expect(
+        new Parser()
+          .option('foo', {
+            longFlag: '--foo',
+            defaultValue: 'abc',
+          })
+          .defaultHandler().options,
+      ).toEqual({ foo: 'abc' });
     });
     test('boolean options', async () => {
       const parser = new Parser()
@@ -163,29 +162,42 @@ describe('docs', () => {
         await expect(parser.parse(input).call()).resolves.not.toThrow();
       }
     });
-    test('oneOf options', async () => {
+    test('constrained options', async () => {
       const parser = new Parser()
-        .option('foo', {
-          longFlag: '--foo',
-          defaultValue: 'default',
-          oneOf: ['a', 'b'],
-        })
-        .option('foo-required', {
-          longFlag: '--foo-req',
-          defaultValue: 'default',
-          oneOf: ['a', 'b'],
-          required: true,
+        .option('output', {
+          longFlag: '--output',
+          defaultValue: 'json',
+          oneOf: ['yaml'],
         })
         .defaultHandler(({ options }) => {
-          // foo is inferred "default", "a", or "b"
-          const foo = options.foo;
-          // fooRequired is inferred "a" or "b"
-          const fooRequired = options['foo-required'];
+          // Type: "json" | "yaml"
+          console.log(options.output);
         });
-      await expect(() => parser.parse(['--foo', 'c']).call()).rejects.toThrow(
-        new ValidationError(
-          'Invalid value "c" for option --foo, expected one of: a, b',
-        ),
+      await expect(
+        parser.parse(['--output', 'yaml']).call(),
+      ).resolves.not.toThrow();
+      await expect(
+        parser.parse(['--output', 'json']).call(),
+      ).resolves.not.toThrow();
+      await expect(parser.parse(['--output', 'csv']).call()).rejects.toThrow(
+        'Invalid value "csv" for option --output, expected one of: json, yaml',
+      );
+      await expect(
+        new Parser()
+          .option('output', {
+            longFlag: '--output',
+            defaultValue: 'json',
+            required: true,
+            oneOf: ['yaml'],
+          })
+          .defaultHandler(({ options }) => {
+            // Type: "yaml"
+            console.log(options.output);
+          })
+          .parse(['--output', 'json'])
+          .call(),
+      ).rejects.toThrow(
+        'Invalid value "json" for option --output, expected one of: yaml',
       );
     });
   });
