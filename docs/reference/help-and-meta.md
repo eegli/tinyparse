@@ -35,11 +35,6 @@ const parser = new Parser()
     longFlag: '--bar',
     defaultValue: new Date('2024'),
   })
-  .option('biz', {
-    longFlag: '--biz',
-    defaultValue: 'bizzz',
-    description: 'Biz option',
-  })
   .subcommand('baz', {
     args: ['arg'] as const,
     handler: () => {},
@@ -62,18 +57,17 @@ A brief description of my-cli
 Usage: my-cli [command?] <...flags>
 
 Commands
-    baz <arg>   Baz command
-    fuzz        Fuzz command
-    help        Print this help message
+  baz <arg>   Baz command
+  fuzz        Fuzz command
+  help        Print this help message
 
 Required flags
-    -f, --foo [string]   Foo option
+  -f, --foo [string]   Foo option
 
 Optional flags
-    --bar [date]         Default: 1.1.2024, 01:00:00
-    --biz [string]       Biz option. Default: bizzz
-    -h, --help           Print this help message
-    -V, --version        Print the version
+  --bar [date]
+  -h, --help           Print this help message
+  -V, --version        Print the version
 ```
 
 When you set your help and metadata configuration, Tinyparse will validate the arguments to make sure there are no conflicts with existing flags or subcommands. Note that subsequent calls to `.setMeta()` will overwrite the previous configuration.

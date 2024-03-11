@@ -103,7 +103,7 @@ describe('docs', () => {
            version                  Print the version
 
         Optional flags
-           -v, --verbose [boolean]   Default: false
+           -v, --verbose [boolean]   
            --help                    Print this help message
            --version                 Print the version",
         ]
@@ -453,11 +453,6 @@ describe('docs', () => {
           longFlag: '--bar',
           defaultValue: new Date('2024'),
         })
-        .option('biz', {
-          longFlag: '--biz',
-          defaultValue: 'bizzz',
-          description: 'Biz option',
-        })
         .subcommand('baz', {
           args: ['arg'] as const,
           handler: () => {},
@@ -496,8 +491,7 @@ describe('docs', () => {
            -f, --foo [string]   Foo option
 
         Optional flags
-           --bar [date]         Default: 1.1.2024, 01:00:00
-           --biz [string]       Biz option. Default: bizzz
+           --bar [date]         
            -h, --help           Print this help message
            -V, --version        Print the version"
       `);
