@@ -7,7 +7,7 @@ import {
   MetaOptions,
   SubparserOptionsMap,
 } from './types/internals';
-import Utils from './utils';
+import Utils, { Type } from './utils';
 
 type CommandOptions = {
   command: string;
@@ -223,7 +223,11 @@ export class HelpPrinter {
           if (!required) {
             // Add new sentence if there is a description
             if (optionSummary) optionSummary += '. ';
-            optionSummary += `Default: ${defaultValue}`;
+            const defaultFormatted =
+              Utils.typeof(defaultValue) === Type.Date
+                ? (defaultValue as Date).toLocaleString()
+                : defaultValue;
+            optionSummary += `Default: ${defaultFormatted}`;
           }
         }
 

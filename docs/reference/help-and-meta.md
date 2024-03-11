@@ -33,8 +33,12 @@ const parser = new Parser()
   })
   .option('bar', {
     longFlag: '--bar',
-    defaultValue: new Date(),
-    description: 'Bar option',
+    defaultValue: new Date('2024'),
+  })
+  .option('biz', {
+    longFlag: '--biz',
+    defaultValue: 'bizzz',
+    description: 'Biz option',
   })
   .subcommand('baz', {
     args: ['arg'] as const,
@@ -55,7 +59,7 @@ This will print the following to the console:
 ```sh
 A brief description of my-cli
 
-Usage: my-cli [command] <...flags>
+Usage: my-cli [command?] <...flags>
 
 Commands
     baz <arg>   Baz command
@@ -66,7 +70,8 @@ Required flags
     -f, --foo [string]   Foo option
 
 Optional flags
-    --bar [date]         Bar option
+    --bar [date]         Default: 1.1.2024, 01:00:00
+    --biz [string]       Biz option. Default: bizzz
     -h, --help           Print this help message
     -V, --version        Print the version
 ```
