@@ -118,6 +118,7 @@ describe('docs', () => {
           shortFlag: '-f',
           defaultValue: 0,
           required: true,
+          oneOf: [0, 1],
           description: 'Foo option',
         })
         .defaultHandler();
@@ -127,20 +128,18 @@ describe('docs', () => {
       await expect(parser.parse(['--foo', 'zero']).call()).rejects.toThrow(
         "Invalid type for --foo. 'zero' is not a valid number",
       );
-      // "12" can be parsed as a number
-      await expect(parser.parse(['--foo', '12']).call()).resolves.not.toThrow();
+      // Ok - "1" can be parsed as a number
+      await expect(parser.parse(['--foo', '1']).call()).resolves.not.toThrow();
     });
     test('option access', () => {
-      const parser = new Parser()
-        .option('foo', {
-          longFlag: '--foo',
-          shortFlag: '-f',
-          defaultValue: 0,
-          required: true,
-          description: 'Foo option',
-        })
-        .defaultHandler();
-      expect(parser.options).toEqual({ foo: 0 });
+      expect(
+        new Parser()
+          .option('foo', {
+            longFlag: '--foo',
+            defaultValue: 'abc',
+          })
+          .defaultHandler().options,
+      ).toEqual({ foo: 'abc' });
     });
     test('boolean options', async () => {
       const parser = new Parser()
@@ -162,6 +161,44 @@ describe('docs', () => {
       for (const input of inputs) {
         await expect(parser.parse(input).call()).resolves.not.toThrow();
       }
+    });
+    test('constrained options', async () => {
+      const parser = new Parser()
+        .option('output', {
+          longFlag: '--output',
+          defaultValue: 'json',
+          oneOf: ['yaml'],
+        })
+        .defaultHandler(({ options }) => {
+          // Type: "json" | "yaml"
+          console.log(options.output);
+        });
+      await expect(
+        parser.parse(['--output', 'yaml']).call(),
+      ).resolves.not.toThrow();
+      await expect(
+        parser.parse(['--output', 'json']).call(),
+      ).resolves.not.toThrow();
+      await expect(parser.parse(['--output', 'csv']).call()).rejects.toThrow(
+        'Invalid value "csv" for option --output, expected one of: json, yaml',
+      );
+      await expect(
+        new Parser()
+          .option('output', {
+            longFlag: '--output',
+            defaultValue: 'json',
+            required: true,
+            oneOf: ['yaml'],
+          })
+          .defaultHandler(({ options }) => {
+            // Type: "yaml"
+            console.log(options.output);
+          })
+          .parse(['--output', 'json'])
+          .call(),
+      ).rejects.toThrow(
+        'Invalid value "json" for option --output, expected one of: yaml',
+      );
     });
   });
   describe('globals', () => {
@@ -405,26 +442,26 @@ describe('docs', () => {
             shortFlag: '-V',
           },
         })
-        .option('foo', {
-          longFlag: '--foo',
-          shortFlag: '-f',
-          required: true,
+        .option('verbose', {
+          longFlag: '--verbose',
+          shortFlag: '-v',
+          defaultValue: false,
+          description: 'Enable verbose mode',
+        })
+        .option('outdir', {
+          longFlag: '--out',
           defaultValue: '',
-          description: 'Foo option',
+          required: true,
+          description: 'Output directory',
         })
-        .option('bar', {
-          longFlag: '--bar',
-          defaultValue: new Date(),
-          description: 'Bar option',
-        })
-        .subcommand('baz', {
-          args: ['arg'] as const,
+        .subcommand('fetch', {
+          args: ['url'] as const,
           handler: () => {},
-          description: 'Baz command',
+          description: 'Fetch a URL and save the html',
         })
-        .subparser('fuzz', {
+        .subparser('afetch', {
           parser: new Parser().defaultHandler(),
-          description: 'Fuzz command',
+          description: 'Fetch a URL with more options',
         })
         .defaultHandler();
 
@@ -447,17 +484,17 @@ describe('docs', () => {
         Usage: my-cli [command?] <...flags>
 
         Commands
-           baz <arg>   Baz command
-           fuzz        Fuzz command
-           help        Print this help message
+           afetch        Fetch a URL with more options
+           fetch <url>   Fetch a URL and save the html
+           help          Print this help message
 
         Required flags
-           -f, --foo [string]   Foo option
+           --out [string]            Output directory
 
         Optional flags
-           --bar [date]         Bar option
-           -h, --help           Print this help message
-           -V, --version        Print the version"
+           -v, --verbose [boolean]   Enable verbose mode
+           -h, --help                Print this help message
+           -V, --version             Print the version"
       `);
     });
     test('displays version', async () => {

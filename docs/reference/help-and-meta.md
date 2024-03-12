@@ -24,26 +24,26 @@ const parser = new Parser()
       shortFlag: '-V',
     },
   })
-  .option('foo', {
-    longFlag: '--foo',
-    shortFlag: '-f',
-    required: true,
+  .option('verbose', {
+    longFlag: '--verbose',
+    shortFlag: '-v',
+    defaultValue: false,
+    description: 'Enable verbose mode',
+  })
+  .option('outdir', {
+    longFlag: '--out',
     defaultValue: '',
-    description: 'Foo option',
+    required: true,
+    description: 'Output directory',
   })
-  .option('bar', {
-    longFlag: '--bar',
-    defaultValue: new Date(),
-    description: 'Bar option',
-  })
-  .subcommand('baz', {
-    args: ['arg'] as const,
+  .subcommand('fetch', {
+    args: ['url'] as const,
     handler: () => {},
-    description: 'Baz command',
+    description: 'Fetch a URL and save the html',
   })
-  .subparser('fuzz', {
+  .subparser('afetch', {
     parser: new Parser().defaultHandler(),
-    description: 'Fuzz command',
+    description: 'Fetch a URL with more options',
   })
   .defaultHandler()
   .parse(['help'])
@@ -55,20 +55,20 @@ This will print the following to the console:
 ```sh
 A brief description of my-cli
 
-Usage: my-cli [command] <...flags>
+Usage: my-cli [command?] <...flags>
 
 Commands
-    baz <arg>   Baz command
-    fuzz        Fuzz command
-    help        Print this help message
+  afetch        Fetch a URL with more options
+  fetch <url>   Fetch a URL and save the html
+  help          Print this help message
 
 Required flags
-    -f, --foo [string]   Foo option
+  --out [string]            Output directory
 
 Optional flags
-    --bar [date]         Bar option
-    -h, --help           Print this help message
-    -V, --version        Print the version
+  -v, --verbose [boolean]   Enable verbose mode
+  -h, --help                Print this help message
+  -V, --version             Print the version
 ```
 
 When you set your help and metadata configuration, Tinyparse will validate the arguments to make sure there are no conflicts with existing flags or subcommands. Note that subsequent calls to `.setMeta()` will overwrite the previous configuration.

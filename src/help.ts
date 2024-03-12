@@ -3,10 +3,11 @@ import {
   CommandOptionsMap,
   FlagOptions,
   FlagOptionsMap,
+  FlagValue,
   MetaOptions,
   SubparserOptionsMap,
 } from './types/internals';
-import Utils from './utils';
+import Utils, { Type } from './utils';
 
 type CommandOptions = {
   command: string;
@@ -15,8 +16,8 @@ type CommandOptions = {
 };
 
 export class HelpPrinter {
-  #requiredOptions: FlagOptions[];
-  #optionalOptions: FlagOptions[];
+  #requiredOptions: FlagOptions<FlagValue>[];
+  #optionalOptions: FlagOptions<FlagValue>[];
   #commands: CommandOptions[];
   #meta?: MetaOptions;
   #indent = ' '.repeat(3);
@@ -126,7 +127,7 @@ export class HelpPrinter {
         }
         return acc;
       },
-      [[], []] as [FlagOptions[], FlagOptions[]],
+      [[], []] as [FlagOptions<FlagValue>[], FlagOptions<FlagValue>[]],
     );
   }
 
@@ -190,22 +191,39 @@ export class HelpPrinter {
     return options;
   }
 
-  #formatOptionWithArgs(options: FlagOptions[]): [string, string][] {
+  #formatOptionWithArgs(options: FlagOptions<FlagValue>[]): [string, string][] {
     return options.reduce(
       (acc, options) => {
-        const { shortFlag, longFlag, defaultValue } = options;
+        const {
+          shortFlag,
+          longFlag,
+          defaultValue,
+          oneOf,
+          required,
+          description,
+        } = options;
 
         let str = shortFlag ? `${shortFlag}, ${longFlag}` : longFlag;
+        const valueType = Utils.typeof(defaultValue);
+
+        const displayOneOf =
+          valueType === Type.String || valueType === Type.Number;
+
+        const isMetaCommand =
+          longFlag == this.#meta?.help?.longFlag ||
+          longFlag == this.#meta?.version?.longFlag;
 
         // Help and version flags have no value
-        if (
-          longFlag !== this.#meta?.help?.longFlag &&
-          longFlag !== this.#meta?.version?.longFlag
-        ) {
-          str += ` [${Utils.typeof(defaultValue)}]`;
+        if (!isMetaCommand) {
+          if (oneOf && displayOneOf) {
+            const values = required ? oneOf : oneOf.concat(defaultValue);
+            str += ` <${values.sort().join('|')}>`;
+          } else {
+            str += ` [${Utils.typeof(defaultValue)}]`;
+          }
         }
 
-        acc.push([str, options.description || '']);
+        acc.push([str, description || '']);
         return acc;
       },
       [] as [string, string][],

@@ -14,8 +14,24 @@ describe('subcommand params, internal declaration', () => {
       defaultValue: 'default',
       longFlag: '--foo',
     })
+    .option('foo-choice', {
+      defaultValue: 'default',
+      oneOf: ['a', 'b'],
+      longFlag: '--foo-c',
+    })
+    .option('foo-choice-req', {
+      defaultValue: 'default',
+      oneOf: ['a', 'b'],
+      required: true,
+      longFlag: '--foo-c-req',
+    })
     .option('bar', {
       defaultValue: 0,
+      longFlag: '--bar',
+    })
+    .option('bar-choice', {
+      defaultValue: 0,
+      oneOf: [],
       longFlag: '--bar',
     })
     .option('baz', {
@@ -36,26 +52,22 @@ describe('subcommand params, internal declaration', () => {
   type GlobalParams = Params['globals'];
 
   test('flags are inferred', () => {
-    expect<FlagParams>().type.toBeAssignable<{
-      foo: string;
-      bar: number;
-      baz: boolean;
-      qux: Date;
-    }>();
-    expect<FlagParams>().type.toMatch<{
-      foo: string;
-      bar: number;
-      baz: boolean;
-      qux: Date;
-    }>();
-    expect<FlagParams>().type.not.toBeAssignable<{ unknown: string }>();
-    expect<{ unknown: string }>().type.not.toMatch<FlagParams>();
+    type ExpectedFlagParams = Record<'foo', string> &
+      Record<'foo-choice', 'default' | 'a' | 'b'> &
+      Record<'foo-choice-req', 'a' | 'b'> &
+      Record<'bar', number> &
+      Record<'bar-choice', 0> &
+      Record<'baz', boolean> &
+      Record<'qux', Date>;
+
+    expect<FlagParams>().type.toEqual<ExpectedFlagParams>();
   });
   test('globals are inferred', () => {
-    expect<GlobalParams>().type.toEqual<{
+    type ExpectedGlobalParams = {
       database: string;
       fetch: () => void;
-    }>();
+    };
+    expect<GlobalParams>().type.toEqual<ExpectedGlobalParams>();
   });
 });
 
@@ -63,6 +75,7 @@ describe('subcommand params, external declaration', () => {
   const options = new Parser()
     .option('foo', {
       defaultValue: 'default',
+      oneOf: ['a', 'b'],
       longFlag: '--foo',
     })
     .option('bar', {
@@ -74,7 +87,8 @@ describe('subcommand params, external declaration', () => {
 
   const baseParser = options.setGlobals(globalSetter);
 
-  type OptionsOrGlobals = Record<'foo', string> & Record<'bar', number>;
+  type OptionsOrGlobals = Record<'foo', 'default' | 'a' | 'b'> &
+    Record<'bar', number>;
 
   type BaseParser = typeof baseParser;
 
