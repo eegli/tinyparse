@@ -2,13 +2,16 @@ import { CommandBuilder } from '../src/commands';
 import { HelpPrinter as Help } from '../src/help';
 import {
   CommandOptionsMap,
-  FlagOptionsMap,
+  FlagOptions,
+  FlagValue,
   HelpOptions,
   VersionOptions,
 } from '../src/types/internals';
 
+type Flag = [string, FlagOptions<FlagValue, boolean>];
+
 describe('Helper text', () => {
-  const requiredflags: FlagOptionsMap = new Map([
+  const _requiredflags: Flag[] = [
     [
       'auth',
       {
@@ -27,8 +30,8 @@ describe('Helper text', () => {
         required: true,
       },
     ],
-  ]);
-  const optionalFlags: FlagOptionsMap = new Map([
+  ];
+  const _optionalFlags: Flag[] = [
     [
       'port',
       {
@@ -63,8 +66,7 @@ describe('Helper text', () => {
         description: 'Output format',
       },
     ],
-  ]);
-  const allFlags = new Map([...requiredflags, ...optionalFlags]);
+  ];
   const commands: CommandOptionsMap = new Map([
     [
       'serve',
@@ -98,7 +100,9 @@ describe('Helper text', () => {
       },
     ],
   ]);
-
+  const optionalFlags = new Map(_optionalFlags);
+  const requiredflags = new Map(_requiredflags);
+  const allFlags = new Map([...requiredflags, ...optionalFlags]);
   const help: HelpOptions = {
     command: 'help',
     longFlag: '--help',
