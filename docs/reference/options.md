@@ -71,10 +71,6 @@ const inputs: string[][] = [
   ['--foo=false'], // false
   ['--foo', 'false'], // false
 ];
-
-for (const input of inputs) {
-  await expect(parser.parse(input).call()).resolves.not.toThrow();
-}
 ```
 
 ### Methods

@@ -442,25 +442,26 @@ describe('docs', () => {
             shortFlag: '-V',
           },
         })
-        .option('foo', {
-          longFlag: '--foo',
-          shortFlag: '-f',
-          required: true,
+        .option('verbose', {
+          longFlag: '--verbose',
+          shortFlag: '-v',
+          defaultValue: false,
+          description: 'Enable verbose mode',
+        })
+        .option('outdir', {
+          longFlag: '--out',
           defaultValue: '',
-          description: 'Foo option',
+          required: true,
+          description: 'Output directory',
         })
-        .option('bar', {
-          longFlag: '--bar',
-          defaultValue: new Date('2024'),
-        })
-        .subcommand('baz', {
-          args: ['arg'] as const,
+        .subcommand('fetch', {
+          args: ['url'] as const,
           handler: () => {},
-          description: 'Baz command',
+          description: 'Fetch a URL and save the html',
         })
-        .subparser('fuzz', {
+        .subparser('afetch', {
           parser: new Parser().defaultHandler(),
-          description: 'Fuzz command',
+          description: 'Fetch a URL with more options',
         })
         .defaultHandler();
 
@@ -483,17 +484,17 @@ describe('docs', () => {
         Usage: my-cli [command?] <...flags>
 
         Commands
-           baz <arg>   Baz command
-           fuzz        Fuzz command
-           help        Print this help message
+           afetch        Fetch a URL with more options
+           fetch <url>   Fetch a URL and save the html
+           help          Print this help message
 
         Required flags
-           -f, --foo [string]   Foo option
+           --out [string]            Output directory
 
         Optional flags
-           --bar [date]         
-           -h, --help           Print this help message
-           -V, --version        Print the version"
+           -v, --verbose [boolean]   Enable verbose mode
+           -h, --help                Print this help message
+           -V, --version             Print the version"
       `);
     });
     test('displays version', async () => {
