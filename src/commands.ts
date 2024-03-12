@@ -47,6 +47,9 @@ export class CommandBuilder<Options, Globals> {
 
   #validateOneOf = <T>(id: string, type: T, ...options: T[]): void => {
     const expectedType = typeof type;
+    if (expectedType !== 'string' && expectedType !== 'number') {
+      throw new Error(`OneOf can only be used with string or number`);
+    }
     const wrongType = options.find((opt) => typeof opt !== expectedType);
     if (wrongType) {
       throw new Error(

@@ -68,6 +68,20 @@ describe('command builder', () => {
     }).toThrow(
       'OneOf for option "foo" contains invalid type number, expected string',
     );
+    expect(() => {
+      new CommandBuilder().option('foo', {
+        defaultValue: new Date(),
+        longFlag: '--foo',
+        oneOf: [],
+      });
+    }).toThrow('OneOf can only be used with string or number');
+    expect(() => {
+      new CommandBuilder().option('foo', {
+        defaultValue: false,
+        longFlag: '--foo',
+        oneOf: [],
+      });
+    }).toThrow('OneOf can only be used with string or number');
   });
   test('throws for taken subparsers', () => {
     const builder = new CommandBuilder();
