@@ -1,5 +1,11 @@
 # @eegli/tinyparse
 
+## 0.19.1
+
+### Patch Changes
+
+- 94284db: Flag options can now be configured to be one of a set of available values!
+
 ## 0.19.0
 
 ### Minor Changes
