@@ -88,7 +88,7 @@ new Parser()
 
 ## Constraining Option Values
 
-There are many scenarios in which you'd like the user to provide a value from a set of _allowed values_. Consider the following example with an `--output` option that lets the user choose an output format. By setting the `oneOf` property, you can constrain the user input to a set of allowed values. Tinyparse is smart enough to have TypeScript infer that `options.output` is either `'json'` or `'yaml'`:
+There are many scenarios in which you'd like the user to provide a value from a set of _allowed values_. Consider the following example with an `--output` option that lets the user choose an output format. By setting the `oneOf` property, you can constrain the user input to a set of allowed values. This only has an effect when the default value is a `string` or `number`. Tinyparse is smart enough to have TypeScript infer that `options.output` is either `'json'` or `'yaml'`:
 
 ```ts
 const parser = new Parser()
