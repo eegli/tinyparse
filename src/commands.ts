@@ -7,18 +7,16 @@ import {
   DowncastFlag,
   ErrorHandler,
   FlagOptions,
+  FlagOptionsExt,
   FlagValue,
   FlagValueRecord,
   MetaOptions,
   Subcommand,
   Subparser,
-} from './types';
+} from './types/internals';
 
-export class CommandBuilder<
-  Options extends FlagValueRecord,
-  Globals extends AnyGlobal,
-> {
-  #config: CommonConfig<Options, Globals> = {
+export class CommandBuilder<Options, Globals> {
+  #config: CommonConfig = {
     meta: {},
     options: new Map(),
     commands: new Map(),
@@ -47,6 +45,19 @@ export class CommandBuilder<
     }
   };
 
+  #validateOneOf = <T>(id: string, type: T, ...options: T[]): void => {
+    const expectedType = typeof type;
+    if (expectedType !== 'string' && expectedType !== 'number') {
+      throw new Error(`OneOf can only be used with string or number`);
+    }
+    const wrongType = options.find((opt) => typeof opt !== expectedType);
+    if (wrongType) {
+      throw new Error(
+        `OneOf for option "${id}" contains invalid type ${typeof wrongType}, expected ${expectedType}`,
+      );
+    }
+  };
+
   #tryRegisterCommandToken = (command?: string) => {
     if (command) {
       this.#validateCommand(command);
@@ -64,16 +75,38 @@ export class CommandBuilder<
   /**
    * Add an option (flag)
    */
-  option<K extends string, V extends FlagValue>(key: K, opts: FlagOptions<V>) {
-    const { longFlag, shortFlag } = opts;
+  option<
+    K extends string,
+    V extends FlagValue,
+    R extends boolean,
+    O extends unknown[],
+    Choices = O[number],
+    Values = R extends true ? Choices : V | Choices,
+  >(
+    key: K,
+    opts: FlagOptionsExt<V, R, Choices>,
+  ): CommandBuilder<Options & Record<K, Values>, Globals>;
+  option<K extends string, V extends FlagValue, R extends boolean>(
+    key: K,
+    opts: FlagOptions<V, R>,
+  ): CommandBuilder<Options & Record<K, DowncastFlag<V>>, Globals>;
+  option<K extends string, V extends FlagValue, R extends boolean>(
+    key: K,
+    opts: FlagOptions<V, R>,
+  ) {
+    const { longFlag, shortFlag, oneOf, defaultValue } = opts;
+
+    if (oneOf) {
+      this.#validateOneOf(key, defaultValue, ...oneOf);
+    }
+
     this.#validateOption(key);
     this.#config.options.set(key, opts);
 
     this.#tryRegisterFlagToken(longFlag);
     this.#tryRegisterFlagToken(shortFlag);
 
-    // TODO: Figure out how to make this typecheck properly
-    return this as unknown as CommandBuilder<
+    return this as CommandBuilder<
       Options & Record<K, DowncastFlag<V>>,
       Globals
     >;
@@ -87,14 +120,17 @@ export class CommandBuilder<
     opts: Subcommand<Options, Globals, A>,
   ) {
     this.#tryRegisterCommandToken(command);
-    this.#config.commands.set(command, opts);
+    this.#config.commands.set(
+      command,
+      opts as Subcommand<FlagValueRecord, AnyGlobal, A>,
+    );
     return this;
   }
 
   /**
    * Add a subparser
    */
-  subparser(command: string, opts: Subparser<FlagValueRecord, AnyGlobal>) {
+  subparser(command: string, opts: Subparser) {
     this.#tryRegisterCommandToken(command);
     this.#config.parsers.set(command, opts);
     return this;
@@ -103,11 +139,13 @@ export class CommandBuilder<
   /**
    * Set the globals
    */
-  setGlobals<G extends Globals>(
+  setGlobals<G extends AnyGlobal>(
     setGlobals: (options: Options) => G | Promise<G>,
   ) {
-    this.#config.globalSetter = setGlobals;
-    return this as unknown as CommandBuilder<Options, G>;
+    this.#config.globalSetter = setGlobals as (
+      options: FlagValueRecord,
+    ) => AnyGlobal | Promise<AnyGlobal>;
+    return this as CommandBuilder<Options, Globals & G>;
   }
 
   /**
@@ -138,9 +176,10 @@ export class CommandBuilder<
    * Set the default handler
    */
   defaultHandler(handler?: DefaultHandler<Options, Globals>) {
-    return new Parser<Options, Globals>({
+    return new Parser<Options>({
       ...this.#config,
-      defaultHandler: handler || this.#config.defaultHandler,
+      defaultHandler:
+        (handler as DefaultHandler) || this.#config.defaultHandler,
     });
   }
 }

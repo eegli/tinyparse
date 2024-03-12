@@ -2,51 +2,71 @@ import { CommandBuilder } from '../src/commands';
 import { HelpPrinter as Help } from '../src/help';
 import {
   CommandOptionsMap,
-  FlagOptionsMap,
+  FlagOptions,
+  FlagValue,
   HelpOptions,
   VersionOptions,
-} from '../src/types';
+} from '../src/types/internals';
+
+type Flag = [string, FlagOptions<FlagValue, boolean>];
 
 describe('Helper text', () => {
-  const requiredflags: FlagOptionsMap = new Map([
+  const _requiredflags: Flag[] = [
     [
-      'flagA',
+      'auth',
       {
-        longFlag: '--flag-a',
+        longFlag: '--auth',
         defaultValue: '',
         required: true,
-        description: 'The first flag',
+        description: 'Auth type to use',
+        oneOf: ['basic', '2fa', 'oauth'],
       },
     ],
     [
-      'flabB',
+      'before',
       {
-        longFlag: '--flag-b',
+        longFlag: '--before',
         defaultValue: new Date(),
         required: true,
       },
     ],
-  ]);
-  const optionalFlags: FlagOptionsMap = new Map([
+  ];
+  const _optionalFlags: Flag[] = [
     [
-      'flagD',
+      'port',
       {
-        longFlag: '--flag-d',
-        shortFlag: '-d',
+        longFlag: '--port',
         defaultValue: 3000,
-        description: 'The fourth flag',
+        description: 'Port to use',
       },
     ],
     [
-      'flabC',
+      'verbose',
       {
-        longFlag: '--flag-c',
-        shortFlag: '-c',
+        longFlag: '--verbose',
+        shortFlag: '-v',
         defaultValue: false,
       },
     ],
-  ]);
-  const allFlags = new Map([...requiredflags, ...optionalFlags]);
+    [
+      'after',
+      {
+        longFlag: '--after',
+        defaultValue: new Date(),
+        oneOf: ["'2021-01-01'"],
+        description: 'After date',
+      },
+    ],
+    [
+      'output',
+      {
+        longFlag: '--output',
+        oneOf: ['yaml'],
+        defaultValue: 'json',
+        description: 'Output format',
+      },
+    ],
+  ];
   const commands: CommandOptionsMap = new Map([
     [
       'serve',
@@ -80,7 +100,9 @@ describe('Helper text', () => {
       },
     ],
   ]);
-
+  const optionalFlags = new Map(_optionalFlags);
+  const requiredflags = new Map(_requiredflags);
+  const allFlags = new Map([...requiredflags, ...optionalFlags]);
   const help: HelpOptions = {
     command: 'help',
     longFlag: '--help',
@@ -127,8 +149,8 @@ describe('Helper text', () => {
     const p = new Help({ options: requiredflags });
     expect(p.formatOptions()).toMatchInlineSnapshot(`
       "Required flags
-         --flag-a [string]   The first flag
-         --flag-b [date]     "
+         --auth <2fa|basic|oauth>   Auth type to use
+         --before [date]            "
     `);
   });
   test('optional flags formatting', () => {
@@ -143,9 +165,11 @@ describe('Helper text', () => {
       }).formatOptions(),
     ).toMatchInlineSnapshot(`
       "Optional flags
-         -c, --flag-c [boolean]   
-         -d, --flag-d [number]    The fourth flag
-         --help                   Print this help message"
+         --after [date]            After date
+         --output <json|yaml>      Output format
+         --port [number]           Port to use
+         -v, --verbose [boolean]   
+         --help                    Print this help message"
     `);
   });
   test('required and optional flags formatting', () => {
@@ -155,12 +179,14 @@ describe('Helper text', () => {
       }).formatOptions(),
     ).toMatchInlineSnapshot(`
       "Required flags
-         --flag-a [string]        The first flag
-         --flag-b [date]          
+         --auth <2fa|basic|oauth>   Auth type to use
+         --before [date]            
 
       Optional flags
-         -c, --flag-c [boolean]   
-         -d, --flag-d [number]    The fourth flag"
+         --after [date]             After date
+         --output <json|yaml>       Output format
+         --port [number]            Port to use
+         -v, --verbose [boolean]    "
     `);
   });
 
@@ -212,14 +238,16 @@ describe('Helper text', () => {
          version         Print the version
 
       Required flags
-         --flag-a [string]        The first flag
-         --flag-b [date]          
+         --auth <2fa|basic|oauth>   Auth type to use
+         --before [date]            
 
       Optional flags
-         -c, --flag-c [boolean]   
-         -d, --flag-d [number]    The fourth flag
-         -h, --help               Print this help message
-         -v, --version            Print the version"
+         --after [date]             After date
+         --output <json|yaml>       Output format
+         --port [number]            Port to use
+         -v, --verbose [boolean]    
+         -h, --help                 Print this help message
+         -v, --version              Print the version"
     `);
   });
 });

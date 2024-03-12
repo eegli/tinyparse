@@ -13,6 +13,7 @@ const parser = new Parser()
     shortFlag: '-f',
     defaultValue: 0,
     required: true,
+    oneOf: [0, 1],
     description: 'Foo option',
   })
   .defaultHandler();
@@ -21,19 +22,12 @@ const parser = new Parser()
 - `shortFlag` is the short flag _alias_ that will match the option. It must start with `-`
 - `defaultValue` is used as a fallback and to infer the _type_ of the option. To make this possible, it can only be of **four easily checkable types**: `string`, `number`, `boolean` or `Date`
 - `required` indicates whether the option is required or not. If it is required, `defaultValue` will be overwritten (or an error is thrown if it is not present in the user input, see [validation](#validation))
+- `oneOf` allows you to constrain the user input to a set of allowed values - see more below
 - `description` is used to generate the usage text
 
 If and only if the _expected value_ (i.e., `defaultValue`) for a flag is a _number_ or valid Javascript _date string_, Tinyparse will try to convert it accordingly.
 
-## Methods
-
-- **Default option values** - i.e., the values you specify when you setup the parser - can be accessed via the `options` getter method:
-
-  ```ts
-  parser.options; // { foo: 0 }
-  ```
-
-## Validation
+### Validation
 
 Parsing will fail if either a required option is not present or the expected type does not match the input value (here, a string that can be parsed to a number):
 
@@ -44,15 +38,15 @@ parser.parse([]).call();
 // Throws: "Invalid type for --foo. 'zero' is not a valid number"
 parser.parse(['--foo', 'zero']).call();
 
-// Ok - "12" can be parsed as a number
-parser.parse(['--foo', '12']).call();
+// Ok - "1" can be parsed as a number
+parser.parse(['--foo', '1']).call();
 ```
 
 Furthermore, _building_ a parser will fail if you declare the same option or a flag twice. This also holds for any unique identifier (such as a subcommand or subparser).
 
 See the docs about [error handling](reference/error-handling.md) for more.
 
-## Boolean Options
+### Boolean Options
 
 If the default value of an option is a boolean, two special rules apply:
 
@@ -77,10 +71,68 @@ const inputs: string[][] = [
   ['--foo=false'], // false
   ['--foo', 'false'], // false
 ];
+```
 
-for (const input of inputs) {
-  await expect(parser.parse(input).call()).resolves.not.toThrow();
-}
+### Methods
+
+- **Default option values** - i.e., the values you specify when you setup the parser - can be accessed via the `options` getter method:
+
+```ts
+new Parser()
+  .option('foo', {
+    longFlag: '--foo',
+    defaultValue: 'abc',
+  })
+  .defaultHandler().options; // { foo: "abc" }
+```
+
+## Constraining Option Values
+
+There are many scenarios in which you'd like the user to provide a value from a set of _allowed values_. Consider the following example with an `--output` option that lets the user choose an output format. By setting the `oneOf` property, you can constrain the user input to a set of allowed values. This only has an effect when the default value is a `string` or `number`. Tinyparse is smart enough to have TypeScript infer that `options.output` is either `'json'` or `'yaml'`:
+
+```ts
+const parser = new Parser()
+  .option('output', {
+    longFlag: '--output',
+    defaultValue: 'json',
+    oneOf: ['yaml'],
+  })
+  .defaultHandler(({ options }) => {
+    // Type: "json" | "yaml"
+    console.log(options.output);
+  });
+```
+
+With this approach, the parser will throw an error if the user provides an output format that does not equal the string literals `'json'` (the default) or `'yaml'`:
+
+```ts
+// Throws: Invalid value "csv" for option --output, expected one of: json, yaml
+parser.parse(['--output', 'csv']).call();
+```
+
+It's important to know that **parsing works differently if an option is required** and `oneOf` is set!
+
+- If the option is _optional_, the default value is considered one of the allowed values, as shown above. Type inference also accounts for this
+- If the option is _required_, the default value is guaranteed to be overwritten. Hence, only the manually provided values via `oneOf` are allowed!
+
+In the below example, `--output` can only equal `'yaml'`. TypeScript will infer the type of `options.output` to be `'yaml'`:
+
+```ts
+new Parser()
+  .option('output', {
+    longFlag: '--output',
+    defaultValue: 'json',
+    required: true,
+    oneOf: ['yaml'],
+  })
+  .defaultHandler(({ options }) => {
+    // Type: "yaml"
+    console.log(options.output);
+  })
+  .parse(['--output', 'json'])
+  .call();
+
+// Throws: Invalid value "json" for option --output, expected one of: yaml
 ```
 
 ## Good to know

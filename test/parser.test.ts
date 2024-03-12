@@ -1,6 +1,7 @@
 import { CommandBuilder } from '../src/commands';
 import { ValidationError } from '../src/error';
 import { Parser } from '../src/parser';
+import { ErrorParams } from '../src/types/helpers';
 
 const commandHandler = jest.fn();
 const defaultHandler = jest.fn();
@@ -60,7 +61,6 @@ const expectCalledWithDefaults = (mock: jest.Mock, args: string[]) => {
       options: { flag1: 0 },
       globals: { database: 'db' },
       args,
-      usage: expect.any(String),
     }),
   );
 };
@@ -106,32 +106,32 @@ describe('parser', () => {
   test('error handler catches invalid subcommand args', async () => {
     await expect(parser.parse(['expect1']).call()).resolves.not.toThrow();
     expect(errorHandler).toHaveBeenCalledTimes(1);
-    expect(errorHandler).toHaveBeenCalledWith(
-      new ValidationError('expect1 expects 1 argument, got 0'),
-      expect.any(String),
-    );
+    expect(errorHandler).toHaveBeenCalledWith({
+      error: new ValidationError('expect1 expects 1 argument, got 0'),
+      usage: expect.any(String),
+    });
   });
   test('error handler catches handlers throwing ValidationError', async () => {
     defaultHandler.mockImplementationOnce(() => {
       throw new ValidationError('error');
     });
     await expect(parser.parse([]).call()).resolves.not.toThrow();
-    expect(errorHandler).toHaveBeenCalledWith(
-      new ValidationError('error'),
-      expect.any(String),
-    );
+    expect(errorHandler).toHaveBeenCalledWith({
+      error: new ValidationError('error'),
+      usage: expect.any(String),
+    });
   });
   test('throws if subcommand is called with too few args', async () => {
-    errorHandler.mockImplementationOnce((err) => {
-      throw err;
+    errorHandler.mockImplementationOnce(({ error }: ErrorParams) => {
+      throw error;
     });
     await expect(parser.parse(['expect1']).call()).rejects.toThrow(
       new ValidationError('expect1 expects 1 argument, got 0'),
     );
   });
   test('throws if subcommand is called with too many args', async () => {
-    errorHandler.mockImplementationOnce((err) => {
-      throw err;
+    errorHandler.mockImplementationOnce(({ error }: ErrorParams) => {
+      throw error;
     });
     await expect(parser.parse(['expectNone', 'b']).call()).rejects.toThrow(
       new ValidationError('expectNone expects 0 arguments, got 1'),

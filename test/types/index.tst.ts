@@ -1,21 +1,37 @@
 import { describe, expect, test } from 'tstyche';
 import { Parser } from '../../src';
 import {
-  CommandArgPattern,
-  HandlerGlobals,
-  HandlerOptions,
-  HandlerParams,
-  Subcommand,
-} from '../../src/types';
+  InferOptions,
+  WithArgs,
+  WithGlobals,
+  WithOptions,
+} from '../../src/types/helpers';
+import { Subcommand } from '../../src/types/internals';
 
-describe('subcommand option and global arguments', () => {
+describe('subcommand params, internal declaration', () => {
   const subcommand = new Parser()
     .option('foo', {
       defaultValue: 'default',
       longFlag: '--foo',
     })
+    .option('foo-choice', {
+      defaultValue: 'default',
+      oneOf: ['a', 'b'],
+      longFlag: '--foo-c',
+    })
+    .option('foo-choice-req', {
+      defaultValue: 'default',
+      oneOf: ['a', 'b'],
+      required: true,
+      longFlag: '--foo-c-req',
+    })
     .option('bar', {
       defaultValue: 0,
+      longFlag: '--bar',
+    })
+    .option('bar-choice', {
+      defaultValue: 0,
+      oneOf: [],
       longFlag: '--bar',
     })
     .option('baz', {
@@ -31,41 +47,86 @@ describe('subcommand option and global arguments', () => {
       fetch: () => {},
     })).subcommand;
 
-  type HandlerParams = Parameters<
-    Parameters<typeof subcommand>[1]['handler']
-  >[0];
-  type HandlerFlagParams = HandlerParams['options'];
-  type HandlerGlobalParams = HandlerParams['globals'];
+  type Params = Parameters<Parameters<typeof subcommand>[1]['handler']>[0];
+  type FlagParams = Params['options'];
+  type GlobalParams = Params['globals'];
 
   test('flags are inferred', () => {
-    expect<HandlerFlagParams>().type.toBeAssignable<{
-      foo: string;
-      bar: number;
-      baz: boolean;
-      qux: Date;
-    }>();
-    expect<HandlerFlagParams>().type.toMatch<{
-      foo: string;
-      bar: number;
-      baz: boolean;
-      qux: Date;
-    }>();
+    type ExpectedFlagParams = Record<'foo', string> &
+      Record<'foo-choice', 'default' | 'a' | 'b'> &
+      Record<'foo-choice-req', 'a' | 'b'> &
+      Record<'bar', number> &
+      Record<'bar-choice', 0> &
+      Record<'baz', boolean> &
+      Record<'qux', Date>;
+
+    expect<FlagParams>().type.toEqual<ExpectedFlagParams>();
   });
   test('globals are inferred', () => {
-    expect<HandlerGlobalParams>().type.toBeAssignable<{
+    type ExpectedGlobalParams = {
       database: string;
       fetch: () => void;
+    };
+    expect<GlobalParams>().type.toEqual<ExpectedGlobalParams>();
+  });
+});
+
+describe('subcommand params, external declaration', () => {
+  const options = new Parser()
+    .option('foo', {
+      defaultValue: 'default',
+      oneOf: ['a', 'b'],
+      longFlag: '--foo',
+    })
+    .option('bar', {
+      defaultValue: 0,
+      longFlag: '--bar',
+    });
+
+  const globalSetter = (opts: InferOptions<typeof options>) => opts;
+
+  const baseParser = options.setGlobals(globalSetter);
+
+  type OptionsOrGlobals = Record<'foo', 'default' | 'a' | 'b'> &
+    Record<'bar', number>;
+
+  type BaseParser = typeof baseParser;
+
+  test('options and globals are inferred', () => {
+    expect<WithOptions<BaseParser>>().type.toEqual<{
+      options: OptionsOrGlobals;
     }>();
-    expect<HandlerGlobalParams>().type.toMatch<{
-      database: string;
-      fetch: () => void;
+  });
+
+  test('globals are inferred', () => {
+    expect<WithGlobals<BaseParser>>().type.toEqual<{
+      globals: OptionsOrGlobals;
     }>();
+  });
+
+  test('args are inferred', () => {
+    expect<WithArgs<string[]>>().type.toEqual<{
+      args: string[];
+    }>();
+    expect<WithArgs<[string, string]>>().type.toEqual<{
+      args: [string, string];
+    }>();
+  });
+
+  test('unions work', () => {
+    expect<WithOptions<BaseParser> & WithGlobals<BaseParser>>().type.toEqual<
+      {
+        options: OptionsOrGlobals;
+      } & {
+        globals: OptionsOrGlobals;
+      }
+    >();
   });
 });
 
 describe('subcommand positional args', () => {
   type Empty = Record<never, never>;
-  type HandlerArgParams<T extends CommandArgPattern> = Parameters<
+  type HandlerArgParams<T> = Parameters<
     Subcommand<Empty, Empty, T>['handler']
   >[0]['args'];
 
@@ -82,54 +143,5 @@ describe('subcommand positional args', () => {
   });
   test('any length (literal)', () => {
     expect<HandlerArgParams<'a'>>().type.toEqual<string[]>();
-  });
-});
-
-describe('subcommand modular external definition', () => {
-  type Options = typeof options;
-  const options = new Parser()
-    .option('foo', {
-      defaultValue: 'default',
-      longFlag: '--foo',
-    })
-    .option('bar', {
-      defaultValue: 0,
-      longFlag: '--bar',
-    })
-    .setGlobals(() => ({
-      database: 'db',
-    }));
-
-  test('zero args', () => {
-    type SubcommandParams = HandlerParams;
-
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    expect<SubcommandParams>().type.toEqual<{}>();
-  });
-  test('with options', () => {
-    type SubcommandParams = HandlerParams<HandlerOptions<Options>>;
-
-    expect<SubcommandParams>().type.toEqual<{
-      options: HandlerOptions<Options>;
-    }>();
-  });
-  test('with globals and options', () => {
-    type SubcommandParams = HandlerParams<
-      HandlerOptions<Options>,
-      never,
-      HandlerGlobals<Options>
-    >;
-
-    expect<SubcommandParams>().type.toEqual<{
-      options: HandlerOptions<Options>;
-      globals: HandlerGlobals<Options>;
-    }>();
-  });
-  test('with help', () => {
-    type SubcommandParams = HandlerParams<never, never, never, string>;
-
-    expect<SubcommandParams>().type.toEqual<{
-      usage: string;
-    }>();
   });
 });

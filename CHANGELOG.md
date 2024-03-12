@@ -1,5 +1,22 @@
 # @eegli/tinyparse
 
+## 0.19.1
+
+### Patch Changes
+
+- 94284db: Flag options can now be configured to be one of a set of available values!
+
+## 0.19.0
+
+### Minor Changes
+
+- f08f0bb: - The utility types have all been refactored and/or replaced
+
+  - Unsafe type casts (`as unknown as T`) have been removed
+  - Unnecessary generics have been removed
+
+  Everything else works as usual, but external declarations of handlers and globals need a little update. It's all simpler and cleaner now!
+
 ## 0.18.3
 
 ### Patch Changes

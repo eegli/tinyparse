@@ -8,15 +8,12 @@ import {
   CommandArgPattern,
   FlagValueRecord,
   Subcommand,
-} from './types';
-export class Parser<
-  Options extends FlagValueRecord,
-  Globals extends AnyGlobal,
-> {
-  #config: CommonConfig<Options, Globals>;
-  #helpPrinter: HelpPrinter<Options, Globals>;
+} from './types/internals';
+export class Parser<Options> {
+  #config: CommonConfig;
+  #helpPrinter: HelpPrinter;
 
-  constructor(config: CommonConfig<Options, Globals>) {
+  constructor(config: CommonConfig) {
     this.#config = config;
     this.#helpPrinter = new HelpPrinter(config);
   }
@@ -35,7 +32,7 @@ export class Parser<
   #validateSubcommandArgs(
     command: string,
     args: string[],
-    commandOpts: Subcommand<Options, Globals, CommandArgPattern>,
+    commandOpts: Subcommand<FlagValueRecord, AnyGlobal, CommandArgPattern>,
   ) {
     if (Array.isArray(commandOpts.args)) {
       const expectedNumArgs = commandOpts.args.length;
@@ -80,7 +77,7 @@ export class Parser<
   }
   #handleError(error: unknown, usage: string) {
     if (error instanceof ValidationError && this.#config.errorHandler) {
-      return this.#config.errorHandler(error, usage);
+      return this.#config.errorHandler({ error, usage });
     }
     throw error;
   }
@@ -106,10 +103,13 @@ export class Parser<
         return;
       }
       try {
-        const options = collectFlags(flagMap, this.#config.options) as Options;
-        const setGlobals = this.#config.globalSetter || (() => ({}) as Globals);
+        const options = collectFlags(flagMap, this.#config.options);
+        const setGlobals =
+          this.#config.globalSetter || (() => Promise.resolve({}));
+
         const globals = await setGlobals(options);
         const subcommandOpts = this.#config.commands.get(subcommand);
+
         if (subcommandOpts) {
           this.#validateSubcommandArgs(
             subcommand,
@@ -120,14 +120,12 @@ export class Parser<
             options,
             globals,
             args: subcommandArgs,
-            usage,
           });
         } else {
           return await this.#config.defaultHandler({
             options,
             globals,
             args: positionals,
-            usage,
           });
         }
       } catch (error) {
