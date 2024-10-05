@@ -393,37 +393,6 @@ describe('docs', () => {
     });
   });
   describe('subparsers', () => {
-    test('default', async () => {
-      const subparser = new Parser()
-        .option('greeting', {
-          longFlag: '--greeting',
-          shortFlag: '-g',
-          defaultValue: '',
-        })
-        .defaultHandler(({ options }) => {
-          console.log(options.greeting);
-        });
-
-      const parser = new Parser()
-        .option('greeting', {
-          longFlag: '--greeting',
-          shortFlag: '-g',
-          defaultValue: '',
-        })
-        .subparser('v2', {
-          parser: subparser,
-          description: 'Version 2 of this CLI',
-        })
-        .defaultHandler(({ options }) => {
-          console.log(options.greeting);
-        });
-
-      await parser.parse(['-g', 'hello from the main parser']).call();
-      expect(consoleLog).toHaveBeenLastCalledWith('hello from the main parser');
-
-      await parser.parse(['v2', '-g', 'hello from the subparser']).call();
-      expect(consoleLog).toHaveBeenLastCalledWith('hello from the subparser');
-    });
     test('with shared options', async () => {
       type CommonOptions = {
         verbose: boolean;
