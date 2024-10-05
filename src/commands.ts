@@ -139,10 +139,8 @@ export class CommandBuilder<Options, Globals> {
   /**
    * Set the globals
    */
-  setGlobals<G extends AnyGlobal>(
-    setGlobals: (options: Options) => G | Promise<G>,
-  ) {
-    this.#config.globalSetter = setGlobals as (
+  globals<G extends AnyGlobal>(globals: (options: Options) => G | Promise<G>) {
+    this.#config.globalSetter = globals as (
       options: FlagValueRecord,
     ) => AnyGlobal | Promise<AnyGlobal>;
     return this as CommandBuilder<Options, Globals & G>;
@@ -151,7 +149,7 @@ export class CommandBuilder<Options, Globals> {
   /**
    * Set metadata
    */
-  setMeta(meta: MetaOptions) {
+  meta(meta: MetaOptions) {
     this.#tryRegisterCommandToken(meta.help?.command);
     this.#tryRegisterCommandToken(meta.version?.command);
 

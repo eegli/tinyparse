@@ -42,7 +42,7 @@ describe('subcommand params, internal declaration', () => {
       defaultValue: new Date(),
       longFlag: '--qux',
     })
-    .setGlobals(() => ({
+    .globals(() => ({
       database: 'db',
       fetch: () => {},
     })).subcommand;
@@ -85,7 +85,7 @@ describe('subcommand params, external declaration', () => {
 
   const globalSetter = (opts: InferOptions<typeof options>) => opts;
 
-  const baseParser = options.setGlobals(globalSetter);
+  const baseParser = options.globals(globalSetter);
 
   type OptionsOrGlobals = Record<'foo', 'default' | 'a' | 'b'> &
     Record<'bar', number>;

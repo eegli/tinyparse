@@ -32,7 +32,7 @@ const setGlobals = (opts: InferOptions<typeof parserOptions>) => {
   };
 };
 
-const baseParser = parserOptions.setGlobals(setGlobals);
+const baseParser = parserOptions.globals(setGlobals);
 type BaseParser = typeof baseParser;
 
 // Define all subcommands
@@ -86,7 +86,7 @@ const handleDefault = ({ args, globals, options }: HandleDefaultArgs) => {
 
 // Bring it all together
 const parser = baseParser
-  .setMeta({
+  .meta({
     command: 'my-cli',
     summary: 'Work with files and folders',
     help: {

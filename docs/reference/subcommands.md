@@ -80,7 +80,7 @@ const baseParser = new Parser()
     shortFlag: '-u',
     defaultValue: false,
   })
-  .setGlobals(() => ({
+  .globals(() => ({
     flower: '🌸',
   }));
 
