@@ -52,7 +52,7 @@ const baseParser = new Parser()
     longFlag: '--foo',
     defaultValue: 'default',
   })
-  .setGlobals(() => ({
+  .globals(() => ({
     bar: 'baz',
   }));
 

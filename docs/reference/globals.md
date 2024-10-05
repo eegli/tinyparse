@@ -4,7 +4,7 @@
 
 Often times, subcommands need access to a shared object such as a database connection or a logger. You can attach such an object in the building phase and it will be passed to the handler of each subcommand (and the default handler). Setting the globals is done via a function that has access to all the options that have been collected while parsing.
 
-Globals are expected to be static and should only be set once. _Calling `.setGlobals()` multiple times will override the previous value._
+Globals are expected to be static and should only be set once. _Calling `.globals()` multiple times will override the previous value._
 
 ```ts
 import { Parser } from '@eegli/tinyparse';
@@ -14,7 +14,7 @@ const globals = {
 };
 
 new Parser()
-  .setGlobals(() => globals)
+  .globals(() => globals)
   .defaultHandler(({ globals }) => {
     const user = globals.database('John');
     console.log(`Hello, ${user}!`);
@@ -48,5 +48,5 @@ const globalSetter = (options: Options) => ({
     }
   },
 });
-const parser = parserOptions.setGlobals(globalSetter).defaultHandler();
+const parser = parserOptions.globals(globalSetter).defaultHandler();
 ```

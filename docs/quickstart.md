@@ -43,7 +43,7 @@ const parser = new Parser()
     shortFlag: '-v',
     defaultValue: false,
   })
-  .setGlobals((options) => ({
+  .globals((options) => ({
     getUserFromDB: (name: string) => `${name} Smith`,
     log: (message: string) => {
       if (options.verbose) {
@@ -62,7 +62,7 @@ const parser = new Parser()
     shortFlag: '-v',
     defaultValue: false,
   })
-  .setGlobals((options) => ({
+  .globals((options) => ({
     getUserFromDB: (name: string) => `${name} Smith`,
     log: (message: string) => {
       if (options.verbose) {
@@ -89,7 +89,7 @@ const parser = new Parser()
     shortFlag: '-v',
     defaultValue: false,
   })
-  .setGlobals((options) => ({
+  .globals((options) => ({
     getUserFromDB: (name: string) => `${name} Smith`,
     log: (message: string) => {
       if (options.verbose) {
@@ -105,7 +105,7 @@ const parser = new Parser()
       globals.log(`Hello, ${userName}!`);
     },
   })
-  .setMeta({
+  .meta({
     command: 'my-cli',
     summary: 'A brief description of my-cli',
     help: {
@@ -129,7 +129,7 @@ const parser = new Parser()
     shortFlag: '-v',
     defaultValue: false,
   })
-  .setGlobals((options) => ({
+  .globals((options) => ({
     getUserFromDB: (name: string) => `${name} Smith`,
     log: (message: string) => {
       if (options.verbose) {
@@ -145,7 +145,7 @@ const parser = new Parser()
       globals.log(`Hello, ${userName}!`);
     },
   })
-  .setMeta({
+  .meta({
     command: 'my-cli',
     summary: 'A brief description of my-cli',
     help: {

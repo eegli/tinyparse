@@ -23,7 +23,7 @@ const parser = new Parser()
     required: true,
     defaultValue: '',
   })
-  .setGlobals(async ({ token }) => {
+  .globals(async ({ token }) => {
     // Use the token to establish a connection
     return { database: async (name: string) => name };
   })

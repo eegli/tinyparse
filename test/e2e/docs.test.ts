@@ -49,7 +49,7 @@ describe('docs', () => {
           shortFlag: '-v',
           defaultValue: false,
         })
-        .setGlobals((options) => ({
+        .globals((options) => ({
           getUserFromDB: (name: string) => `${name} Smith`,
           log: (message: string) => {
             if (options.verbose) {
@@ -65,7 +65,7 @@ describe('docs', () => {
             globals.log(`Hello, ${userName}!`);
           },
         })
-        .setMeta({
+        .meta({
           command: 'my-cli',
           summary: 'A brief description of my-cli',
           help: {
@@ -208,7 +208,7 @@ describe('docs', () => {
       };
 
       await new Parser()
-        .setGlobals(() => globals)
+        .globals(() => globals)
         .defaultHandler(({ globals }) => {
           const user = globals.database('John');
           console.log(`Hello, ${user}!`);
@@ -234,7 +234,7 @@ describe('docs', () => {
           }
         },
       });
-      const parser = parserOptions.setGlobals(globalSetter).defaultHandler();
+      const parser = parserOptions.globals(globalSetter).defaultHandler();
       await expect(
         parser.parse(['do-a-thing', '--verbose']).call(),
       ).resolves.toBeUndefined();
@@ -291,7 +291,7 @@ describe('docs', () => {
           shortFlag: '-u',
           defaultValue: false,
         })
-        .setGlobals(() => ({
+        .globals(() => ({
           flower: '🌸',
         }));
 
@@ -341,7 +341,7 @@ describe('docs', () => {
           longFlag: '--foo',
           defaultValue: 'default',
         })
-        .setGlobals(() => ({
+        .globals(() => ({
           bar: 'baz',
         }));
 
@@ -393,42 +393,50 @@ describe('docs', () => {
     });
   });
   describe('subparsers', () => {
-    test('default', async () => {
-      const subparser = new Parser()
-        .option('greeting', {
-          longFlag: '--greeting',
-          shortFlag: '-g',
-          defaultValue: '',
-        })
-        .defaultHandler(({ options }) => {
-          console.log(options.greeting);
-        });
+    test('with shared options', async () => {
+      type CommonOptions = {
+        verbose: boolean;
+      };
 
-      const parser = new Parser()
-        .option('greeting', {
-          longFlag: '--greeting',
-          shortFlag: '-g',
-          defaultValue: '',
-        })
+      const withCommonOptions = <O, G>(
+        parser: Parser<O, G>,
+      ): Parser<O & CommonOptions, G> => {
+        return parser.option('verbose', {
+          longFlag: '--verbose',
+          shortFlag: '-v',
+          defaultValue: false,
+        });
+      };
+      const subparser = withCommonOptions(new Parser()).defaultHandler(
+        ({ options }) => {
+          console.log(`[subparser] Verbose mode: ${options.verbose}`);
+        },
+      );
+
+      const parser = withCommonOptions(new Parser())
         .subparser('v2', {
           parser: subparser,
           description: 'Version 2 of this CLI',
         })
         .defaultHandler(({ options }) => {
-          console.log(options.greeting);
+          console.log(`[main parser] Verbose mode: ${options.verbose}`);
         });
 
-      await parser.parse(['-g', 'hello from the main parser']).call();
-      expect(consoleLog).toHaveBeenLastCalledWith('hello from the main parser');
+      await parser.parse(['-v']).call();
+      expect(consoleLog).toHaveBeenLastCalledWith(
+        '[main parser] Verbose mode: true',
+      );
 
-      await parser.parse(['v2', '-g', 'hello from the subparser']).call();
-      expect(consoleLog).toHaveBeenLastCalledWith('hello from the subparser');
+      await parser.parse(['v2', '-v']).call();
+      expect(consoleLog).toHaveBeenLastCalledWith(
+        '[subparser] Verbose mode: true',
+      );
     });
   });
   describe('help and meta', () => {
     test('calls help printer', async () => {
       const parser = new Parser()
-        .setMeta({
+        .meta({
           command: 'my-cli',
           summary: 'A brief description of my-cli',
           help: {
@@ -499,7 +507,7 @@ describe('docs', () => {
     });
     test('displays version', async () => {
       const parser = new Parser()
-        .setMeta({
+        .meta({
           command: 'my-cli',
           summary: 'A brief description of my-cli',
           version: {
@@ -576,7 +584,7 @@ describe('docs', () => {
           required: true,
           defaultValue: '',
         })
-        .setGlobals(async ({ token }) => {
+        .globals(async ({ token }) => {
           // Use the token to establish a connection
           return { database: async (name: string) => name };
         })

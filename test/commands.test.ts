@@ -107,7 +107,7 @@ describe('command builder', () => {
         handler: () => {},
       });
     expect(() => {
-      builder.setMeta({
+      builder.meta({
         help: {
           command: 'help',
           longFlag: '--ignore',
@@ -115,14 +115,14 @@ describe('command builder', () => {
       });
     }).toThrow('Command "help" has been declared twice');
     expect(() => {
-      builder.setMeta({
+      builder.meta({
         help: {
           longFlag: '--help',
         },
       });
     }).toThrow('Flag "--help" has been declared twice');
     expect(() => {
-      builder.setMeta({
+      builder.meta({
         help: {
           longFlag: '--ignore',
           shortFlag: '-h',
@@ -131,7 +131,7 @@ describe('command builder', () => {
     }).toThrow('Flag "-h" has been declared twice');
   });
   test('throws for taken tokens (meta first)', () => {
-    const builder = new CommandBuilder().setMeta({
+    const builder = new CommandBuilder().meta({
       help: {
         command: 'help',
         longFlag: '--help',

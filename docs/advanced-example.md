@@ -41,14 +41,14 @@ const parserOptions = new Parser()
     description: 'Comma-separated list of file extensions to include',
   });
 
-const setGlobals = (opts: InferOptions<typeof parserOptions>) => {
+const globals = (opts: InferOptions<typeof parserOptions>) => {
   return {
     userName: 'me',
     extensions: opts.extensions.split(','),
   };
 };
 
-const baseParser = parserOptions.setGlobals(setGlobals);
+const baseParser = parserOptions.globals(globals);
 type BaseParser = typeof baseParser;
 
 // Define all subcommands
@@ -102,7 +102,7 @@ const handleDefault = ({ args, globals, options }: HandleDefaultArgs) => {
 
 // Bring it all together
 const parser = baseParser
-  .setMeta({
+  .meta({
     command: 'my-cli',
     summary: 'Work with files and folders',
     help: {
