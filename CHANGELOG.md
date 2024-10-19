@@ -1,5 +1,15 @@
 # @eegli/tinyparse
 
+## 0.20.0
+
+### Minor Changes
+
+- 86f2c54: Rename `setGlobals` to `globals` and `setMeta` to `meta`
+
+### Patch Changes
+
+- 86f2c54: Update docs to with shared/global options example
+
 ## 0.19.1
 
 ### Patch Changes

@@ -7,6 +7,7 @@ module.exports = {
   },
   rootDir: '.',
   roots: ['<rootDir>'],
+  modulePathIgnorePatterns: ['<rootDir>/_release'],
   collectCoverageFrom: ['<rootDir>/src/**', '!<rootDir>/src/lib/**'],
   coverageThreshold: {
     global: {
