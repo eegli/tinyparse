@@ -1,6 +1,6 @@
 # Advanced Example
 
-Here's a full example on how you could build a minimal command line interface with Tinyparse. We're building a small CLI tool does various file operations. The tool supports various (optional) subcommands. Make sure your `package.json`'s `type` field is set to `module` or convert the `import` to a `require` statement.
+Here's a full example on how you could build a minimal command line interface with Tinyparse. We're building a small CLI that tool does various file operations. The tool supports various (optional) subcommands. Make sure your `package.json`'s `type` field is set to `module` or convert the `import` to a `require` statement.
 
 Here are some ways in which you could run the CLI
 
